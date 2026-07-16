@@ -1,5 +1,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
+import Stickynav from "./components/navcomponents/StickyNav";
+import OccasionBar from "./components/navcomponents/OccasionsBar";
+import Topline from "./components/navcomponents/Topline";
+import PhoneHeader from "./components/navcomponents/Phoneheader";
+import GoToTopButton from "./components/GoToTopButton";
+import MobileNavbar from "./components/navcomponents/MobileNav";
+import Footer from "./components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +30,18 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+       
+        <GoToTopButton />
+       <PhoneHeader/>
+        <Topline/>
+        <Navbar/>
+         <MobileNavbar />
+        <Stickynav/>
+             
+        {children}
+        <Footer/>
+        </body>
     </html>
   );
 }
