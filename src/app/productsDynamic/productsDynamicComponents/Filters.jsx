@@ -178,14 +178,14 @@ const Filters = () => {
             Filter
           </h2>
           <div
-            className="h-[3px] w-10 mt-2 rounded-full"
-            style={{ backgroundColor: ACCENT }}
+            className="h-[2px] w-10 mt-1 rounded-full bg-[#98022e]"
+            
           />
         </div>
         <button
           type="button"
           onClick={handleClear}
-          className="flex items-center justify-center gap-1.5 bg-black text-white text-sm font-['Sarabun',sans-serif] px-4 py-1.5 hover:bg-gray-800 transition-colors cursor-pointer hover:scale-102 active:scale-98"
+          className="flex items-center justify-center gap-1.5 bg-black text-white text-sm font-['Sarabun',sans-serif] px-4 py-1.5 hover:bg-gray-800 transition-colors cursor-pointer hover:scale-102 active:scale-98 hover:rounded-xl"
         >
           <CircleX size={14} />
           <span>Clear</span>

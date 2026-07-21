@@ -8,6 +8,7 @@ import PhoneHeader from "./components/navcomponents/Phoneheader";
 import GoToTopButton from "./components/GoToTopButton";
 import MobileNavbar from "./components/navcomponents/MobileNav";
 import Footer from "./components/Footer";
+import Provider from "./components/Provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +30,10 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+     
     >
-      <body className="min-h-full flex flex-col">
-       
+      <body className="min-h-full flex flex-col"  suppressHydrationWarning={true}>
+       <Provider>
         <GoToTopButton />
        <PhoneHeader/>
         <Topline/>
@@ -41,6 +43,7 @@ export default function RootLayout({ children }) {
              
         {children}
         <Footer/>
+        </Provider>
         </body>
     </html>
   );

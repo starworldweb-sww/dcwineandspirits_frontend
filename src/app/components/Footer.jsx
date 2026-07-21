@@ -9,6 +9,7 @@ import {
   Mail,
   Star,
 } from "lucide-react";
+import NewsletterSection from "./NewsletterSection";
 
 // 1. Font - everything in the footer uses Hind Madurai
 const hindMadurai = Hind_Madurai({
@@ -124,6 +125,9 @@ function FooterLink({ label, href }) {
 
 export default function Footer() {
   return (
+
+    <>
+    <NewsletterSection/>
     <footer className={`w-full bg-white ${hindMadurai.variable}`} style={{ fontFamily: "var(--font-hind-madurai)" }}>
       {/* 5. Padding convention applied here */}
       <div className="px-3 2xl:px-32 py-12">
@@ -170,7 +174,7 @@ export default function Footer() {
           {/* 6c. Logo + contact info column */}
           <div className="lg:w-[300px]">
             <img
-              src="/images/logo/dc-wine-and-spirits-logo.png"
+              src="/dc-wine_logo-360x90.webp"
               alt="DC Wine & Spirits"
               className="h-14 w-auto object-contain"
             />
@@ -300,5 +304,6 @@ export default function Footer() {
         </p>
       </div>
     </footer>
+    </>
   );
 }

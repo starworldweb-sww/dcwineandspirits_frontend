@@ -1,33 +1,22 @@
-import React from "react";
-import HeroPic from "./components/HeroPic";
-import GiftsByOccasionHero from "./components/GiftsByOccasionHero";
-import HomeProductSlider from "./components/HomeProductSlider";
-import ShopByBrand from "./components/ShopByBrands";
-import BulkOrderBanner from "./components/BulkOrderBanner";
-import HomepageSeoSection from "./components/HomepageSeoSection";
-import ProductViewTabs from "./components/ProductViewsTabs";
-import NewsletterSection from "./components/NewsletterSection";
-import CategoryShowcase from "./components/categoryShowcase/CategoryShowcase";
-import OccasionBar from "./components/navcomponents/OccasionsBar";
+import { categoryKeys } from "@/libs/queryKeys";
+import HomePageClient from "./components/HomePageClient";
 
-const page = () => {
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import { categoryService } from "./api/services/categoryService";
+
+
+export default async function Page() {
+
+
+
+
   return (
-    <>
-      <div className="bg-white">
-         <OccasionBar/> 
-        <HeroPic />
-        <CategoryShowcase />
-        <GiftsByOccasionHero />
-        <HomeProductSlider />
-
-        <ShopByBrand />
-        <BulkOrderBanner />
-        <HomepageSeoSection />
-        <ProductViewTabs />
-        <NewsletterSection />
-      </div>
-    </>
+    
+      <HomePageClient />
+    
   );
-};
-
-export default page;
+}

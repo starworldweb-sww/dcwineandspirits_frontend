@@ -4,7 +4,7 @@ import ProductsDynamicMain from "./ProductsDynamicMain";
 
 const ProductsDynamicClient = () => {
   return (
-    <div className='2xl:px-32 flex items-center justify-between gap-6'>
+    <div className='2xl:px-32 flex items-start justify-between gap-6'>
     <Filters/>
     <ProductsDynamicMain/>
      

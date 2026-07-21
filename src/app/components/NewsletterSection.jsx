@@ -24,7 +24,7 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="w-full border-t-4 border-black bg-[#E9E9E9]">
+    <section className="w-full bg-[#E9E9E9]">
       {/* 4. Padding convention applied here */}
       <div className="px-3 2xl:px-32 py-12 text-center">
         {/* 5. Heading + small underline */}

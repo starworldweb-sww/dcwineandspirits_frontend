@@ -3,6 +3,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Sumana } from "next/font/google";
+import { useGetGiftByOccasion } from "../api/hooks/category/useGiftsByOccassion";
+
+
+// 0. constants ki jagah seedha env variable use kar rahe hain
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 // 1. "Sumana" font ko next/font/google se load kiya hai — sirf Gifts By Occasion
 //    section ke liye use hoga. Baaki purana banner section apne existing font mein hi rahega.
@@ -28,22 +33,27 @@ const BANNERS = [
   },
 ];
 
-// 2. OCCASION DATA — "Gifts By Occasion" section ke liye naya data.
-//    Naya occasion add karna ho to bas is array mein ek naya object daal do.
-const OCCASIONS = [
-  { name: "Graduation Gifts",      slug: "graduation-gifts",      image: "/occasions/graduation-gifts.jpg" },
-  { name: "Birthday Gifts",        slug: "birthday-gifts",        image: "/occasions/birthday-gifts.jpg" },
-  { name: "Anniversary Gifts",      slug: "anniversary-gifts",      image: "/occasions/anniversary-gifts.jpg" },
-  { name: "Congratulations Gifts",  slug: "congratulations-gifts",  image: "/occasions/congratulations-gifts.jpg" },
-  { name: "Housewarming Gifts",     slug: "housewarming-gifts",     image: "/occasions/housewarming-gifts.jpg" },
-  { name: "Thank You Gifts",        slug: "thank-you-gifts",        image: "/occasions/thank-you-gifts.jpg" },
-  { name: "Get Well Soon Gifts",    slug: "get-well-soon-gifts",    image: "/occasions/get-well-soon-gifts.jpg" },
-  { name: "Wedding Gifts",          slug: "wedding-gifts",          image: "/occasions/wedding-gifts.jpg" },
-  { name: "New Year Gifts",         slug: "new-year-gifts",         image: "/occasions/new-year-gifts.jpg" },
-];
+const GiftsByOccasionHero = () => {
+  // 2. Live data ab API se aa raha hai — static OCCASIONS array hata diya.
+  const { data, isLoading, isError } = useGetGiftByOccasion();
 
-const Page = () => {
-  // 3. Mobile pe horizontal slider ke liye ref + arrow show/hide state
+  // 3. Response shape: { sections: [ {heading, items: "text"}, {heading:null, items: [...]} ] }
+  //    Pehla section sirf heading/subtitle text hai, doosra section mein asli
+  //    occasion cards (items array) hain — wahi humein grid mein chahiye.
+  const occasionSection = Array.isArray(data?.sections)
+    ? data.sections.find((section) => Array.isArray(section.items))
+    : null;
+
+  // 4. Backend fields (title, seo_url, custom_url, image) ko design ke existing
+  //    shape (name, slug, image, href) mein map kar rahe hain — design/JSX same rakha.
+  const occasions = (occasionSection?.items || []).map((item) => ({
+    name: item.title,
+    slug: item.seo_url,
+    image: `${IMAGE_BASE_URL}${item.image}`,
+    href: item.custom_url ? item.custom_url : `/${item.seo_url}/`,
+  }));
+
+  // 5. Mobile pe horizontal slider ke liye ref + arrow show/hide state
   //    (sirf Gifts By Occasion section ke liye chahiye, banner section ko iski zaroorat nahi)
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -58,7 +68,7 @@ const Page = () => {
 
   useEffect(() => {
     updateArrows();
-  }, []);
+  }, [occasions.length]);
 
   const scroll = (direction) => {
     const el = scrollRef.current;
@@ -101,7 +111,9 @@ const Page = () => {
       {/* ============================================================= */}
       <div className={`w-full bg-white px-3 2xl:px-32 py-12 md:py-16 ${sumana.className}`}>
 
-        {/* Header: Title + Subtitle */}
+        {/* Header: Title + Subtitle (design same — static text, API ka heading/subtitle
+            HTML ke tarike se aata hai jo yaha ke existing styling se match nahi karta,
+            isliye design consistency ke liye ye static hi rakha hai) */}
         <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10">
           <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-black">
             Gifts By Occasion
@@ -155,26 +167,36 @@ const Page = () => {
             className="flex flex-nowrap items-start gap-4 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth
                        md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-6 md:overflow-visible"
           >
-            {OCCASIONS.map((item) => (
-              <Link
-                title={item.name}
-                key={item.slug}
-                href={`/${item.slug}/`}
-                className="flex-shrink-0 w-[42vw] md:w-auto group"
-              >
-                <div className="w-full aspect-square overflow-hidden rounded-md border border-gray-200 bg-gray-50">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <p className="mt-3 text-center text-[14px] md:text-[15px] text-black group-hover:text-[#c99000] transition-colors">
-                  {item.name}
-                </p>
-              </Link>
-            ))}
+            {isLoading ? (
+              <p className="w-full text-center py-6 text-gray-500">Loading...</p>
+            ) : isError ? (
+              <p className="w-full text-center py-6 text-[#98022e]">
+                Failed to load occasions. Please try again.
+              </p>
+            ) : occasions.length === 0 ? (
+              <p className="w-full text-center py-6 text-gray-400">No occasions found.</p>
+            ) : (
+              occasions.map((item) => (
+                <Link
+                  title={item.name}
+                  key={item.slug}
+                  href={item.href}
+                  className="flex-shrink-0 w-[42vw] md:w-auto group"
+                >
+                  <div className="w-full aspect-square overflow-hidden rounded-md border border-gray-200 bg-gray-50">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <p className="mt-3 text-center text-[14px] md:text-[15px] text-black group-hover:text-[#c99000] transition-colors">
+                    {item.name}
+                  </p>
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -182,4 +204,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default GiftsByOccasionHero;

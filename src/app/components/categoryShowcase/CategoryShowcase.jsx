@@ -3,6 +3,8 @@
 import React, { useRef } from "react";
 import { Hind_Madurai } from "next/font/google";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useGetTopCategories } from "@/app/api/hooks/category/useTopCategories";
+
 
 // Loads the "Hind Madurai" font from Google Fonts.
 // We apply this font's className further down on the outer wrapper div,
@@ -13,43 +15,11 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
-// ---------------------------------------------------------------
-// 1. CATEGORY DATA
-// This is just a list of the cards we want to show.
-// To add/remove/edit a category, just add/remove/edit an object here.
-// "image" should point to a file inside your /public folder,
-// e.g. /public/wine-gift.webp -> use "/wine-gift.webp" below.
-// ---------------------------------------------------------------
-const CATEGORIES = [
-  {
-    label: "Wine Gifts",
-    href: "/wine-gifts",
-    image: "/prosecco-gift-800x800.webp",
-  },
-  {
-    label: "Champagne Gifts",
-    href: "/champagne-gifts",
-    image: "/prosecco-gift-800x800.webp",
-  },
-  {
-    label: "Prosecco Gifts",
-    href: "/prosecco-gifts",
-    image: "/prosecco-gift-800x800.webp",
-  },
-  {
-    label: "Cheese Baskets",
-    href: "/cheese-baskets",
-    image: "/cheese-basket.webp",
-  },
-  {
-    label: "Chocolate Gifts",
-    href: "/chocolate-gifts",
-    image: "/chocolate-gift.webp",
-  },
-];
+// 0. Image base URL - seedha env variable se (constants file use nahi karni)
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 // ---------------------------------------------------------------
-// 2. SINGLE CARD
+// 1. SINGLE CARD
 // This is ONE square image + label. It gets reused for both the
 // slider (desktop/tablet) and the grid (mobile) below.
 // ---------------------------------------------------------------
@@ -83,12 +53,33 @@ const CategoryCard = ({ label, href, image }) => (
 );
 
 // ---------------------------------------------------------------
-// 3. MAIN COMPONENT
+// 2. MAIN COMPONENT
 // Shows a horizontal slider on desktop/tablet (md and up),
 // and switches to a simple 2-column grid on mobile.
 // Below that: a short description + "Explore All Products" button.
 // ---------------------------------------------------------------
 const CategoryShowcase = () => {
+  // 2a. Live data ab API se aa raha hai — static CATEGORIES array hata diya.
+  const { data, isLoading, isError } = useGetTopCategories();
+
+  // 2b. Response ka pehla section hi card list hai (dusra section sirf
+  //     description text hota hai "items" key mein string ke roop mein,
+  //     usko humein use nahi karna kyunki design mein already static
+  //     description paragraph hai neeche).
+  const cardSection = Array.isArray(data?.sections)
+    ? data.sections.find((section) => Array.isArray(section.items))
+    : null;
+
+  // 2c. Backend fields (title, custom_url, seo_url, image, alt) ko design ke
+  //     existing card shape (label, href, image) mein map kar rahe hain.
+  //     custom_url hamesha priority mein hai (agar mojood hai), warna
+  //     seo_url se internal link bana rahe hain.
+  const CATEGORIES = (cardSection?.items || []).map((item) => ({
+    label: item.title,
+    href: item.custom_url || (item.seo_url ? `/${item.seo_url}/` : "#"),
+    image: `${IMAGE_BASE_URL}${item.image}`,
+  }));
+
   // This "ref" lets us grab the actual slider DOM element,
   // so the arrow buttons below know what to scroll.
   const sliderRef = useRef(null);
@@ -116,11 +107,21 @@ const CategoryShowcase = () => {
           ref={sliderRef}
           className="flex gap-5 overflow-x-auto no-scrollbar scroll-smooth justify-between"
         >
-          {CATEGORIES.map((category) => (
-            <div key={category.label} className="w-[234px] shrink-0">
-              <CategoryCard {...category} />
-            </div>
-          ))}
+          {isLoading ? (
+            <p className="w-full text-center py-6 text-gray-500">Loading...</p>
+          ) : isError ? (
+            <p className="w-full text-center py-6 text-[#98022e]">
+              Failed to load categories. Please try again.
+            </p>
+          ) : CATEGORIES.length === 0 ? (
+            <p className="w-full text-center py-6 text-gray-400">No categories found.</p>
+          ) : (
+            CATEGORIES.map((category) => (
+              <div key={category.label} className="w-[234px] shrink-0">
+                <CategoryCard {...category} />
+              </div>
+            ))
+          )}
         </div>
 
         {/* Left arrow button */}
@@ -142,9 +143,19 @@ const CategoryShowcase = () => {
 
       {/* ---------- MOBILE VIEW: simple 2-column grid ---------- */}
       <div className="grid grid-cols-2 gap-5 md:hidden">
-        {CATEGORIES.map((category) => (
-          <CategoryCard key={category.label} {...category} />
-        ))}
+        {isLoading ? (
+          <p className="col-span-2 text-center py-6 text-gray-500">Loading...</p>
+        ) : isError ? (
+          <p className="col-span-2 text-center py-6 text-[#98022e]">
+            Failed to load categories. Please try again.
+          </p>
+        ) : CATEGORIES.length === 0 ? (
+          <p className="col-span-2 text-center py-6 text-gray-400">No categories found.</p>
+        ) : (
+          CATEGORIES.map((category) => (
+            <CategoryCard key={category.label} {...category} />
+          ))
+        )}
       </div>
 
       {/* ---------- DESCRIPTION TEXT + BUTTON ---------- */}
@@ -158,7 +169,7 @@ const CategoryShowcase = () => {
         </p>
 
         <a
-          href="/all-products"
+          href="/products/"
           className="inline-block mt-6 bg-black hover:bg-[#98022e] text-white text-sm uppercase tracking-wide px-8 py-4 transition-colors active:scale-95 hover:rounded-2xl"
         >
           Explore All Products

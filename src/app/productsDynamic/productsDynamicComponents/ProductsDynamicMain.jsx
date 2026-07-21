@@ -76,6 +76,58 @@ const staticProducts = [
     price: "129.00",
     image: "/prosecco-gift-800x800.webp",
   },
+    {
+    id: 3,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },
+     {
+    id: 4,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },
+     {
+    id: 5,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },
+    {
+    id: 6,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },  {
+    id: 7,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },  {
+    id: 8,
+    brand: "Veuve Clicquot",
+    name: "Spring-Themed Veuve Clicquot Gift Set",
+    description:
+      "Celebrate the season with this beautifully curated Spring-Themed Veuve Clicquot Gift Set, featuring the iconic yellow label champagne paired with seasonal floral accents for a fresh, elegant presentation.",
+    price: "129.00",
+    image: "/prosecco-gift-800x800.webp",
+  },
 ];
 
 // -----------------------------------------------------------------
@@ -125,7 +177,7 @@ const ProductListActions = () => {
       {/* Add to Cart - flex-1 so it stretches in list view */}
       <button
         type="button"
-        className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer"
+        className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer "
       >
         <ShoppingBag size={16} />
         Add to Cart
@@ -246,7 +298,7 @@ const ProductGridCard = ({ product }) => {
 
       <button
         type="button"
-        className={`${hindMadurai.className} mt-4 w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-colors cursor-pointer hover:rounded-xl`}
+        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-colors cursor-pointer hover:rounded-xl  `}
       >
         Add to Cart
       </button>
