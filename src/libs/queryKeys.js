@@ -13,7 +13,7 @@ export const categoryKeys = {
   // Future-proofing: Agar kabhi single category detail ka endpoint banayein
   singleCategoryDetail: (slug) => [...categoryKeys.details(), slug],
 };
-
+  
 export const homeKeys = {
   // Base keys for home page specific data
   all: ["home"],
