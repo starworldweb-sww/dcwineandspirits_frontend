@@ -154,4 +154,51 @@ export const categoryService = {
       return null;
     }
   },
+
+
+
+   getShopByBrandTitle: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/shopByBrand-title");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch shop by brand title:", error);
+      return { sections: [] };
+    }
+  },
+
+
+  // 7. For Top Category (singular - category specific, alag hai top-categories se)
+    getTopCategory: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/top-category");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch top category:", error);
+      return { sections: [] };
+    }
+  },
+
+
+    getOccasionMenu: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/occasion-menu");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch occasion menu:", error);
+      return { sections: [] };
+    }
+  },
 };

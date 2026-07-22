@@ -29,6 +29,9 @@ export const homeKeys = {
   wineGifts: () => [...homeKeys.lists(), "wine-gifts"],
   topCategories: () => [...homeKeys.lists(), "top-categories"],
   pageText: () => [...homeKeys.lists(), "home-page-text"],
+  shopByBrandTitle: () => [...categoryKeys.lists(), "shop-by-brand-title"],
+  topCategory: () => [...homeKeys.lists(), "top-category"],
+  occasionMenu: () => [...homeKeys.lists(), "occasion-menu"],
 };
 
 export const productKeys = {

@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Sumana } from "next/font/google";
 import { ChevronDown, ShoppingBag } from "lucide-react";
+import { useTopCategoryHeader } from "@/app/api/hooks/category/useTopCategoryHeader";
+// Apna exact path zaroor check kar lena
 
 // Loads the "Sumana" font, same way Enriqueta was loaded in the old Stickynav
 const sumana = Sumana({
@@ -12,22 +14,33 @@ const sumana = Sumana({
   display: "swap",
 });
 
-// Menu items shown on the left side of the sticky nav.
-// Each one can optionally have a dropdown (hasDropdown: true).
-// Wire up your real dropdown components where the comments say so.
-const MENU_ITEMS = [
-  { label: "Gifts By", href: "/gifts-by", hasDropdown: true },
-  { label: "Shop By Brand", href: "/shop-by-brand", hasDropdown: true },
-  { label: "Personalization", href: "/personalization", hasDropdown: true },
-  { label: "Wine Gifts", href: "/wine-gifts", hasDropdown: true },
-  { label: "Occasion", href: "/occasion", hasDropdown: true },
-  { label: "Deals & Sale", href: "/deals-and-sale", hasDropdown: false },
-];
+// 1. Title ko URL-friendly slug mein convert karne ka helper
+//    (e.g. "Gifts By" -> "gifts-by", "Deals & Sale" -> "deals-and-sale")
+const toSlug = (title) =>
+  title
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 const Stickynav = () => {
   // Tracks which menu item's dropdown is currently open (by label).
   // null means no dropdown is open.
   const [openMenu, setOpenMenu] = useState(null);
+
+  // 2. Top Category (singular) ka data fetch kar rahe hain - menu items yahan se aa rahe hain
+  const { data, isLoading, isError } = useTopCategoryHeader();
+
+  // 3. Data extraction - API seedha array de rahi hai (data.data)
+  const rawItems = data || [];
+
+  // 4. MENU_ITEMS dynamically bana rahe hain API data se
+  //    - "Deals & Sale" ke alawa baaki sabka dropdown hai (purani static list jaisa hi pattern)
+  const MENU_ITEMS = rawItems.map((item) => ({
+    label: item.title,
+    href: `/${toSlug(item.title)}`,
+    hasDropdown: item.title !== "Deals & Sale",
+  }));
 
   // Replace these with your real cart data (React Query / context / etc.)
   const cartItemCount = 0;
@@ -37,19 +50,14 @@ const Stickynav = () => {
     <div className={`${sumana.className} hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1`}>
       <div className="flex items-center justify-between w-full h-12">
 
-        {/* Left side: hamburger icon + main menu links */}
+        {/* Left side: main menu links (dynamically loaded from API) */}
         <div className="flex items-center h-full gap-8 py-6">
 
-          {/* Hamburger / all-categories icon, like in the reference image */}
-          <button className="text-black hover:text-[#98022e] transition-colors">
-            <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
-              <path d="M0 1H20" stroke="currentColor" strokeWidth="2" />
-              <path d="M0 7H20" stroke="currentColor" strokeWidth="2" />
-              <path d="M0 13H20" stroke="currentColor" strokeWidth="2" />
-            </svg>
-          </button>
+          {/* 5. Loading/error state - simple fallback, UI break na ho */}
+          {isLoading && <span className="text-sm text-gray-400 normal-case"></span>}
+          {isError && <span className="text-sm text-gray-400 normal-case">Menu unavailable</span>}
 
-          {MENU_ITEMS.map((item) => (
+          {!isLoading && !isError && MENU_ITEMS.map((item, index) => (
             <div
               key={item.label}
               className="relative h-full flex items-center"
@@ -58,8 +66,16 @@ const Stickynav = () => {
             >
               <Link
                 href={item.href}
-                className="flex items-center gap-1 font-bold text-[17px] text-black hover:text-[#98022e] transition-colors "
+                className="flex items-center gap-2 font-bold text-[17px] text-black hover:text-[#98022e] transition-colors "
               >
+                {/* 6. Lines/hamburger icon SIRF pehle item ("Gifts By") ke saath aayega */}
+                {index === 0 && (
+                  <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+                    <path d="M0 1H20" stroke="currentColor" strokeWidth="2" />
+                    <path d="M0 7H20" stroke="currentColor" strokeWidth="2" />
+                    <path d="M0 13H20" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                )}
                 {item.label}
                 {item.hasDropdown && <ChevronDown size={14} className="mt-[2px]" />}
               </Link>
