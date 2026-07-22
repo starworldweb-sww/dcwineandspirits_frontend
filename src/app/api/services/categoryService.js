@@ -88,6 +88,9 @@ export const categoryService = {
       console.error("Failed to fetch shop by brand:", error);
       return { sections: [] };
     }
+
+
+    
   },
 
 
@@ -198,6 +201,82 @@ export const categoryService = {
       return { sections: [] };
     } catch (error) {
       console.error("Failed to fetch occasion menu:", error);
+      return { sections: [] };
+    }
+  },
+
+
+
+  // 9. For Gifts By Dropdown - Main
+    getGiftDropDown: async () => {
+    try {
+      const res = await axiosInstance.get("header-category/giftDropDown");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch gift dropdown:", error);
+      return { sections: [] };
+    }
+  },
+
+    // 10. For Gifts By Dropdown - Shop By Category
+    getGiftDropDownShopByCategory: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/giftDropDown-shop-by-category");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch gift dropdown shop by category:", error);
+      return { sections: [] };
+    }
+  },
+
+    // 11. For Gifts By Dropdown - Gift By Origin
+    getGiftDropDownGiftByOrigin: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/giftDropDown-gift-by-origin");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch gift dropdown gift by origin:", error);
+      return { sections: [] };
+    }
+  },
+
+    // 12. For Gifts By Dropdown - Shop By Price
+    getGiftDropDownShopByPrice: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/giftDropDown-shop-by-price");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch gift dropdown shop by price:", error);
+      return { sections: [] };
+    }
+  },
+  // 13. For Personalization
+    getPersonalization: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/personalization");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch personalization:", error);
       return { sections: [] };
     }
   },

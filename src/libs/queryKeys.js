@@ -32,6 +32,11 @@ export const homeKeys = {
   shopByBrandTitle: () => [...categoryKeys.lists(), "shop-by-brand-title"],
   topCategory: () => [...homeKeys.lists(), "top-category"],
   occasionMenu: () => [...homeKeys.lists(), "occasion-menu"],
+  giftDropDown: () => [...homeKeys.lists(), "gift-drop-down"],
+  giftDropDownShopByCategory: () => [...homeKeys.lists(), "gift-drop-down-shop-by-category"],
+  giftDropDownGiftByOrigin: () => [...homeKeys.lists(), "gift-drop-down-gift-by-origin"],
+  giftDropDownShopByPrice: () => [...homeKeys.lists(), "gift-drop-down-shop-by-price"],
+  personalization: () => [...homeKeys.lists(), "personalization"],
 };
 
 export const productKeys = {
