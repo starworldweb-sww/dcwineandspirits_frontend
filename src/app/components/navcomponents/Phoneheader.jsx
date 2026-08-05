@@ -28,7 +28,7 @@ const PhoneHeader = () => {
   const handleLogout = () => {
     setIsProfileOpen(false);
     setIsLoggedIn(false);
-    console.log("Logout clicked");
+   
   };
 
   return (
@@ -47,7 +47,7 @@ const PhoneHeader = () => {
               className="flex items-center gap-1 text-white hover:text-gray-300 transition-colors"
             >
               <User size={16} strokeWidth={2} />
-              <p className="text-[0.8rem]">Hi, {mockUser.name}</p>
+              <p className="text-[0.8rem]">Hi, {mockUser?.name}</p>
               <ChevronDown
                 size={14}
                 strokeWidth={2}

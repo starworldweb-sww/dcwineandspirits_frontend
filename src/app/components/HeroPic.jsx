@@ -16,9 +16,7 @@ const HeroPic = () => {
   const altText = banner?.alt;
   const titleText = banner?.title;
 
-  // YAHAN CONSOLE.LOG LAGAYEIN - Check karne ke liye ki data proper aa raha hai ya nahi
-  console.log("Image URL Output:", `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${imageUrl}`);
-
+  
   return (
     <section 
       className="w-full lg:px-3 2xl:px-32 lg:py-4" 

@@ -146,13 +146,7 @@ const DescriptionAndReview = () => {
     }
     setIsSubmitting(true);
 
-    console.log("Fake review submit (no API call):", {
-      product_id: STATIC_PRODUCT.id,
-      author: e.target.author.value,
-      text: e.target.text.value,
-      rating: rating,
-      images: selectedImages,
-    });
+   
 
     setTimeout(() => {
       alert("Thank You For Your Review! (this is a fake/mock submit)");

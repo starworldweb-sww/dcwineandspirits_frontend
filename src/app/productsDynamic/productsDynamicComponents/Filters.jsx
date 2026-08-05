@@ -142,7 +142,8 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
-const Filters = () => {
+const Filters = ({data}) => {
+  console.log("data",data)
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
@@ -234,13 +235,13 @@ const Filters = () => {
         <div className="flex flex-col px-4 py-2">
           {STATIC_BRANDS.map((brand) => (
             <label
-              key={brand.id}
+              key={brand?.id}
               className="flex items-center gap-3 py-2.5 cursor-pointer"
             >
               <input
                 type="checkbox"
-                checked={selectedBrandIds.includes(brand.id)}
-                onChange={() => toggleBrand(brand.id)}
+                checked={selectedBrandIds.includes(brand?.id)}
+                onChange={() => toggleBrand(brand?.id)}
                 className="w-4 h-4 flex-shrink-0"
                 style={{ accentColor: ACCENT }}
               />
@@ -250,13 +251,13 @@ const Filters = () => {
                 <Image
                   fill
                   loading="lazy"
-                  src={brand.image}
-                  alt={brand.name}
+                  src={`${brand?.image}`}
+                  alt={brand?.name}
                   className="object-contain"
                 />
               </div>
               <span className="font-['Sarabun',sans-serif] text-sm text-[#374254]">
-                {brand.name}
+                {brand?.name}
               </span>
             </label>
           ))}

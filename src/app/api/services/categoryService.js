@@ -5,7 +5,7 @@ export const categoryService = {
   getCategory: async () => {
     try {
       const res = await axiosInstance.get("/category");
-      console.log("res", res);
+
 
       if (res.data && res.data.success) {
         return res.data.data;
@@ -22,7 +22,7 @@ export const categoryService = {
   getHeaderCategory: async () => {
     try {
       const res = await axiosInstance.get("/header-category");
-      console.log("res", res);
+
 
       if (res.data && res.data.success) {
         return res.data.data;
@@ -41,7 +41,7 @@ export const categoryService = {
       const res = await axiosInstance.get(
         "/header-category/home-page-products",
       );
-      console.log("res", res);
+
 
       if (res.data && res.data.success) {
         return res.data.data;
@@ -61,7 +61,7 @@ export const categoryService = {
       const res = await axiosInstance.get(
         "/header-category/home-page-top-banner",
       );
-      console.log("res", res);
+
 
       if (res.data && res.data.success) {
         return res.data.data;
@@ -79,7 +79,7 @@ export const categoryService = {
   getShopByBrand: async () => {
     try {
       const res = await axiosInstance.get("/header-category/shop-by-brand");
-      console.log("res", res);
+
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -96,7 +96,7 @@ export const categoryService = {
   getGiftByOccasion: async () => {
     try {
       const res = await axiosInstance.get("/header-category/gift-by-occasion");
-      console.log("res", res);
+
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -109,10 +109,10 @@ export const categoryService = {
 
 
 
-   getWineGifts: async () => {
+  getWineGifts: async () => {
     try {
       const res = await axiosInstance.get("/header-category/wine-gifts");
-      console.log("res", res);
+
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -125,10 +125,10 @@ export const categoryService = {
 
 
 
-    getTopCategories: async () => {
+  getTopCategories: async () => {
     try {
       const res = await axiosInstance.get("/header-category/top-categories");
-      console.log("res", res);
+
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -144,7 +144,7 @@ export const categoryService = {
     try {
       // Adjust the endpoint to "/header-category/home-page-text" if needed
       const res = await axiosInstance.get("/header-category/home-page-text");
-      console.log("res", res);
+
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -154,4 +154,20 @@ export const categoryService = {
       return null;
     }
   },
+
+
+  getLovebyBanners: async () => {
+    try {
+      // Adjust the endpoint to "/header-category/home-page-text" if needed
+      const res = await axiosInstance.get("/header-category/love-banners");
+
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to fetch love by Bnanner: ", error);
+      return null;
+    }
+  }
 };

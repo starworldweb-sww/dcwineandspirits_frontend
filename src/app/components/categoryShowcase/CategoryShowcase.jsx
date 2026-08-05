@@ -79,7 +79,7 @@ const CategoryShowcase = () => {
     href: item.custom_url || (item.seo_url ? `/${item.seo_url}/` : "#"),
     image: `${IMAGE_BASE_URL}${item.image}`,
   }));
-
+  
   // This "ref" lets us grab the actual slider DOM element,
   // so the arrow buttons below know what to scroll.
   const sliderRef = useRef(null);
