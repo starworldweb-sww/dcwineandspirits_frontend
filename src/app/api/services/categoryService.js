@@ -224,7 +224,7 @@ export const categoryService = {
   // 9. For Gifts By Dropdown - Main
     getGiftDropDown: async () => {
     try {
-      const res = await axiosInstance.get("header-category/giftDropDown");
+      const res = await axiosInstance.get("/header-category/giftDropDown");
       console.log("res", res);
       if (res.data && res.data.success) {
         return res.data.data;

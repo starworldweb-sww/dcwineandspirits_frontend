@@ -39,10 +39,11 @@ const Stickynav = () => {
   const [compactLeft, setCompactLeft] = useState(0);
   const itemRefs = useRef({});
   const { data, isLoading, isError } = useTopCategoryHeader();
+  console.log("Top Category Header Data:", data);
   const rawItems = data || [];
 
   // 3. "Deals & Sale" ke alawa baaki sabka dropdown hai
-  const MENU_ITEMS = rawItems.map((item) => ({
+  const MENU_ITEMS = rawItems?.map((item) => ({
     label: item.title,
     href: `/${toSlug(item.title)}`,
     hasDropdown: item.title !== "Deals & Sale",
