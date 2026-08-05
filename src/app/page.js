@@ -35,8 +35,24 @@ export default async function Page() {
     }),
 
      queryClient.prefetchQuery({
-      queryKey: homeKeys.pageProducts(),
+      queryKey: homeKeys.pageText(),
       queryFn: () => categoryService.getHomePageText(),
+    }),
+
+
+     queryClient.prefetchQuery({
+      queryKey: homeKeys.shopByBrandTitle(),
+      queryFn: () => categoryService.getShopByBrandTitle(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: homeKeys.topCategory(),
+      queryFn: () => categoryService.getTopCategory(),
+    }),
+
+
+      queryClient.prefetchQuery({
+      queryKey: homeKeys.occasionMenu(),
+      queryFn: () => categoryService.getOccasionMenu(),
     }),
   ]);
 

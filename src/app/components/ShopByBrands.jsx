@@ -1,12 +1,13 @@
 "use client"; // Hook use kar rahe hain isliye client component banana zaroori hai
 import React from 'react';
-import { useHomeBrands } from '../api/hooks/category/useHomeBrands';
-// Apna path zaroor check kar lena
+import { useShopByBrandTitle } from '../api/hooks/category/useHomeShopByBrand';
+
+// Apna exact path zaroor check kar lena - jahan bhi ye hook file rakhi hai
 
 
 export default function ShopByBrand() {
   // 1. API hook call
-  const { data, isLoading, isError } = useHomeBrands();
+  const { data, isLoading, isError } = useShopByBrandTitle();
 
   // Loading state (UI kharab na ho isliye simple text/spinner rakh sakte hain)
   if (isLoading) return <div className="w-full px-3 2xl:px-32 py-10 text-center text-gray-500">Loading Brands...</div>;
@@ -37,27 +38,31 @@ export default function ShopByBrand() {
         </h2>
       </div>
 
-      {/* Grid Layout Container */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-        {brands.map((brand) => (
-          <a
-            key={brand.id}
-            // SEO URL ke basis par link bana diya
-            href={`/brand/${brand.seo_url}`} 
-            className="group relative block w-full overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg"
-            style={{ aspectRatio: '310 / 160' }} 
-          >
-            {/* 
-              Placeholder div hata kar actual <img> tag laga diya, 
-              environment variable wala image URL use karke!
-            */}
-            <img 
-              src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ''}${brand.image}`}
-              alt={brand.title || brand.seo_url} 
-              className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
-            />
-          </a>
-        ))}
+      {/* Grid Layout Container - 6 brands ek line mein (lg aur upar) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
+        {brands.map((brand) => {
+          // 3. Slug preference: seo_url pehle, agar empty hai toh custom_url use karo
+          const slug = brand.seo_url || brand.custom_url;
+
+          // 4. Agar dono hi empty hain toh is brand ko skip kar do (galat link na bane)
+          if (!slug) return null;
+
+          return (
+            <a
+              key={brand.id}
+              // 5. Fallback slug ke basis par link bana diya
+              href={`/brand/${slug}`}
+              className="group relative block w-full overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg"
+              style={{ aspectRatio: '310 / 160' }}
+            >
+              <img
+                src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ''}${brand.image}`}
+                alt={brand.title || slug}
+                className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
+              />
+            </a>
+          );
+        })}
       </div>
       
     </section>
