@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { Sumana } from "next/font/google";
 import { ChevronDown, ShoppingBag } from "lucide-react";
@@ -8,13 +8,11 @@ import { useTopCategoryHeader } from "@/app/api/hooks/category/useTopCategoryHea
 import GiftsByDropDown from "../DropdownComponent/GiftsByDropdown";
 import ShopByBrandDropDown from "../DropdownComponent/ShopByBrandDropdown";
 import PersonalizedDropDown from "../DropdownComponent/PersonalizedDropDown";
+import WineGiftsDropdown from "../DropdownComponent/WineGiftsDropdown";
+
 // Apna exact path zaroor check kar lena
 
-const sumana = Sumana({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  display: "swap",
-});
+
 
 const toSlug = (title) =>
   title
@@ -29,14 +27,21 @@ const DROPDOWN_COMPONENTS = {
   "Gifts By": GiftsByDropDown,
   "Shop By Brand": ShopByBrandDropDown,
   "Personalization": PersonalizedDropDown,
+  "Wine Gifts": WineGiftsDropdown, // Agar Wine Gifts ka dropdown same hai toh yahan bhi use kar sakte hain
 };
+
+// 2. Jo dropdown chhote/compact hain (apne button ke niche chipakne wale)
+//    baaki sab default full-width rahenge (left-0)
+const COMPACT_DROPDOWNS = ["Gifts By"];
 
 const Stickynav = () => {
   const [openMenu, setOpenMenu] = useState(null);
+  const [compactLeft, setCompactLeft] = useState(0);
+  const itemRefs = useRef({});
   const { data, isLoading, isError } = useTopCategoryHeader();
   const rawItems = data || [];
 
-  // 2. "Deals & Sale" ke alawa baaki sabka dropdown hai
+  // 3. "Deals & Sale" ke alawa baaki sabka dropdown hai
   const MENU_ITEMS = rawItems.map((item) => ({
     label: item.title,
     href: `/${toSlug(item.title)}`,
@@ -46,8 +51,21 @@ const Stickynav = () => {
   const cartItemCount = 0;
   const cartTotal = "0.00";
 
+  // 4. Hover hote hi is item ka left offset (nav ke andar) nikal ke store kar rahe hain
+  //    - ye sirf compact dropdowns ke liye use hoga
+  const handleOpen = (label) => {
+    setOpenMenu(label);
+    const el = itemRefs.current[label];
+    if (el) {
+      setCompactLeft(el.offsetLeft);
+    }
+  };
+
+  const ActiveDropdown = DROPDOWN_COMPONENTS[openMenu];
+  const isCompact = COMPACT_DROPDOWNS.includes(openMenu);
+
   return (
-    <div className={`${sumana.className} relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1`}>
+    <div className="font-sumana relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1">
       <div className="flex items-center justify-between w-full h-12">
 
         <div className="flex items-center h-full gap-8 py-6">
@@ -58,8 +76,9 @@ const Stickynav = () => {
           {!isLoading && !isError && MENU_ITEMS.map((item, index) => (
             <div
               key={item.label}
+              ref={(el) => (itemRefs.current[item.label] = el)}
               className="relative h-full flex items-center"
-              onMouseEnter={() => item.hasDropdown && setOpenMenu(item.label)}
+              onMouseEnter={() => item.hasDropdown && handleOpen(item.label)}
               onMouseLeave={() => item.hasDropdown && setOpenMenu(null)}
             >
               <Link
@@ -94,17 +113,19 @@ const Stickynav = () => {
 
       </div>
 
-      {/* 3. Active dropdown ko mapping se uthaya - agar mapping mein nahi mila toh kuch render nahi hoga */}
-      {(() => {
-        const ActiveDropdown = DROPDOWN_COMPONENTS[openMenu];
-        if (!ActiveDropdown) return null;
-
-        return (
-          <div onMouseEnter={() => setOpenMenu(openMenu)} onMouseLeave={() => setOpenMenu(null)}>
-            <ActiveDropdown />
-          </div>
-        );
-      })()}
+      {/* 5. Single dropdown container - jaisa pehle tha
+             Compact wale (Gifts By) ke liye left dynamically set hoga (button ke exact niche)
+             Baaki sab (full-width) left-0 pe hi rahenge, jaisa pehle behave kar rahe the */}
+      {ActiveDropdown && (
+        <div
+          onMouseEnter={() => setOpenMenu(openMenu)}
+          onMouseLeave={() => setOpenMenu(null)}
+          className={isCompact ? "absolute top-full" : ""}
+          style={isCompact ? { left: `${compactLeft}px` } : undefined}
+        >
+          <ActiveDropdown />
+        </div>
+      )}
     </div>
   );
 };

@@ -97,7 +97,7 @@ const CategoryShowcase = () => {
   };
 
   return (
-    <div className={`${hindMadurai.className} w-full px-3 2xl:px-32 py-10`}>
+    <div className={`${hindMadurai.className} w-full px-3 2xl:px-32 py-6 lg:py-10`}>
 
       {/* ---------- DESKTOP / TABLET VIEW: horizontal slider ---------- */}
       <div className="hidden md:block relative">

@@ -42,7 +42,7 @@ const OccasionBar = () => {
             <React.Fragment key={occasion.id || label}>
               <Link
                 href={`/${slug}`}
-                className={`flex items-center gap-1.5 text-[14px] font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
+                className={`flex font-sumana items-center gap-1.5 text-[14px] font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
                   active
                     ? "text-[#98022e] font-bold"
                     : "text-[#2b2b2b] font-normal hover:text-[#98022e]"

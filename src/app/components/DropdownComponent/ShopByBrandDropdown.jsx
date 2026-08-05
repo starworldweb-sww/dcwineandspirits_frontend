@@ -41,7 +41,7 @@ const ShopByBrandDropDown = () => {
       <div className="mt-4">
         <Link
           href="/brands/"
-          className="inline-block bg-[#98022e] hover:bg-[#7e1a3c] text-white text-[13px] font-bold uppercase tracking-wide px-6 py-3 transition-colors"
+          className="inline-block bg-[#98022e] hover:bg-[#7e1a3c] text-white text-[13px] font-bold uppercase tracking-wide px-6 py-3 transition-colors hover:rounded-xl"
         >
           View All
         </Link>

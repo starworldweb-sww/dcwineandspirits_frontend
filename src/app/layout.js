@@ -9,10 +9,29 @@ import GoToTopButton from "./components/GoToTopButton";
 import MobileNavbar from "./components/navcomponents/MobileNav";
 import Footer from "./components/Footer";
 import Provider from "./components/Provider";
+import { Sumana, Hind_Madurai, Sarabun } from "next/font/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const sumana = Sumana({
+  subsets: ["latin"],
+  weight: ["400", "700"], // Sumana sirf 400 & 700 support karta hai
+  variable: "--font-sumana",
+});
+
+const hindMadurai = Hind_Madurai({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-hind-madurai",
+});
+
+const sarabun = Sarabun({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-sarabun",
 });
 
 const geistMono = Geist_Mono({
@@ -27,24 +46,26 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-     
-    >
-      <body className="min-h-full flex flex-col"  suppressHydrationWarning={true}>
-       <Provider>
-        <GoToTopButton />
-       <PhoneHeader/>
-        <Topline/>
-        <Navbar/>
-         <MobileNavbar />
-        <Stickynav/>
-             
-        {children}
-        <Footer/>
+   <html
+  lang="en"
+  className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
+>
+      <body
+        className="min-h-full flex flex-col"
+        suppressHydrationWarning={true}
+      >
+        <Provider>
+          <GoToTopButton />
+          <PhoneHeader />
+          <Topline />
+          <Navbar />
+          <MobileNavbar />
+          <Stickynav />
+
+          {children}
+          <Footer />
         </Provider>
-        </body>
+      </body>
     </html>
   );
 }

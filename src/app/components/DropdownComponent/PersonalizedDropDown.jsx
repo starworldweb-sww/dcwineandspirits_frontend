@@ -54,8 +54,8 @@ const PersonalizedDropDown = () => {
                   <li key={item.id}>
                     <Link
                       href={`/${item.seo_url}`}
-                      className="text-[14px] text-gray-800 hover:text-[#98022e] transition-colors normal-case"
-                      style={{ fontFamily: "'Sumana', serif" }}
+                      className="text-[14px] text-gray-800 hover:text-[#98022e] transition-colors normal-case font-hind-madurai"
+                     
                     >
                       {item.title}
                     </Link>

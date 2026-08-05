@@ -25,7 +25,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 } */
 
-
+@theme inline {
+  --font-sumana: var(--font-sumana), serif;
+  --font-hind-madurai: var(--font-hind-madurai), sans-serif;
+  --font-sarabun: var(--font-sarabun), sans-serif;
+}
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

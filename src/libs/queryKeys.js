@@ -37,6 +37,9 @@ export const homeKeys = {
   giftDropDownGiftByOrigin: () => [...homeKeys.lists(), "gift-drop-down-gift-by-origin"],
   giftDropDownShopByPrice: () => [...homeKeys.lists(), "gift-drop-down-shop-by-price"],
   personalization: () => [...homeKeys.lists(), "personalization"],
+  occasionTreasures: () => [...homeKeys.lists(), "occasion-treasures"],
+  
+
 };
 
 export const productKeys = {

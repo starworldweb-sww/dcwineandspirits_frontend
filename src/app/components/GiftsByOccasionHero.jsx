@@ -9,12 +9,8 @@ import { useGetGiftByOccasion } from "../api/hooks/category/useGiftsByOccassion"
 // 0. constants ki jagah seedha env variable use kar rahe hain
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
-// 1. "Sumana" font ko next/font/google se load kiya hai — sirf Gifts By Occasion
-//    section ke liye use hoga. Baaki purana banner section apne existing font mein hi rahega.
-const sumana = Sumana({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+
+
 
 // ---------------------------------------------------------------
 // BANNER DATA (YE PURANA CODE HAI — ISME KUCH NAHI BADLA)
@@ -109,16 +105,16 @@ const GiftsByOccasionHero = () => {
       {/* ============================================================= */}
       {/* NAYA SECTION — GIFTS BY OCCASION                              */}
       {/* ============================================================= */}
-      <div className={`w-full bg-white px-3 2xl:px-32 py-12 md:py-16 ${sumana.className}`}>
+      <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
 
         {/* Header: Title + Subtitle (design same — static text, API ka heading/subtitle
             HTML ke tarike se aata hai jo yaha ke existing styling se match nahi karta,
             isliye design consistency ke liye ye static hi rakha hai) */}
         <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-black">
+          <h2 className="text-2xl md:text-[24px] font-bold uppercase tracking-widest text-black font-sumana">
             Gifts By Occasion
           </h2>
-          <p className="mt-3 text-[15px] md:text-base text-gray-700 leading-relaxed">
+          <p className="mt-3 text-[16px] md:text-base text-gray-700 leading-relaxed font-hind-madurai">
             Celebrate every moment with thoughtfully curated wine gifts for every occasion.
             <br className="hidden md:block" />
             From birthdays to anniversaries, find the perfect bottle or basket to make it memorable.

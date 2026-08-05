@@ -52,7 +52,7 @@ const Navbar = () => {
           className="flex items-center gap-2 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-sm font-semibold px-3 md:px-4 py-3 hover:rounded-md whitespace-nowrap transition-colors"
         >
           <Download size={16} />
-          <span className="hidden md:inline">BULK ORDERS FORM</span>
+          <span className="hidden md:inline font-sarabun">BULK ORDERS FORM</span>
         </Link>
 
       </div>

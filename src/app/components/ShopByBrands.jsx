@@ -1,6 +1,7 @@
 "use client"; // Hook use kar rahe hain isliye client component banana zaroori hai
 import React from 'react';
 import { useShopByBrandTitle } from '../api/hooks/category/useHomeShopByBrand';
+import Link from 'next/link';
 
 // Apna exact path zaroor check kar lena - jahan bhi ye hook file rakhi hai
 
@@ -22,14 +23,10 @@ export default function ShopByBrand() {
     <section className="w-full px-3 2xl:px-32 bg-white">
       
       {/* Heading Section */}
-      <div className="mb-8 flex justify-between items-center border-t pt-2 border-gray-200 pb-2">
+      <div className=" flex justify-between items-center border-t pt-2 border-gray-200 pb-2">
         <h2 
-          className="uppercase tracking-wide"
-          style={{ 
-            fontFamily: "'Hind Madurai', sans-serif",
-            color: "rgb(152, 2, 46)",
-            fontWeight: 400
-          }}
+          className="uppercase tracking-wide font-sumana mb-8"
+         
         >
           {/* API se aaya heading dynamically use kar liya */}
           <span className="text-2xl font-semibold md:text-2xl md:font-bold text-black">
@@ -48,7 +45,7 @@ export default function ShopByBrand() {
           if (!slug) return null;
 
           return (
-            <a
+            <Link
               key={brand.id}
               // 5. Fallback slug ke basis par link bana diya
               href={`/brand/${slug}`}
@@ -60,7 +57,7 @@ export default function ShopByBrand() {
                 alt={brand.title || slug}
                 className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
               />
-            </a>
+            </Link>
           );
         })}
       </div>

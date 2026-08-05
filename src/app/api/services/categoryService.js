@@ -114,7 +114,7 @@ export const categoryService = {
 
    getWineGifts: async () => {
     try {
-      const res = await axiosInstance.get("/header-category/wine-gifts");
+      const res = await axiosInstance.get("/header-category/winegifts");
       console.log("res", res);
       if (res.data && res.data.success) {
         return res.data.data;
@@ -277,6 +277,36 @@ export const categoryService = {
       return { sections: [] };
     } catch (error) {
       console.error("Failed to fetch personalization:", error);
+      return { sections: [] };
+    }
+  },
+
+    getWineGiftsPage: async () => {
+    try {
+      const res = await axiosInstance.get("/winegifts");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch wine gifts page:", error);
+      return { sections: [] };
+    }
+  },
+
+
+  // 15. For Occasion Treasures (Maps to: GET /header-category/occasion-treasures)
+  getOccasionTreasures: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/occasion-treasures");
+      console.log("res", res);
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return { sections: [] };
+    } catch (error) {
+      console.error("Failed to fetch occasion treasures:", error);
       return { sections: [] };
     }
   },

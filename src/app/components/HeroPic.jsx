@@ -25,7 +25,7 @@ const HeroPic = () => {
       aria-label="Top Banner"
     >
       <Link
-      href={slug}
+      href="/"
       >
 
       <img
