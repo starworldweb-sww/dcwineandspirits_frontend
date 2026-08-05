@@ -18,14 +18,7 @@ import {
 } from "lucide-react";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import ProductsHeader from "../../components/TittleAndBreadcrumb";
-import DescriptionAndReview from "./DescriptionAndReview";
-import RecommendedProducts from "./RecommendedProducts";
 
-// -----------------------------------------------------------------
-// FONTS
-// Sumana font -> sirf price aur "Message On Gift Card" heading ke liye
-// Hind Madurai font -> baaki poore page ka normal text
-// -----------------------------------------------------------------
 const sumana = Sumana({
   weight: ["400", "700"],
   subsets: ["latin"],
@@ -38,85 +31,37 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
-// -----------------------------------------------------------------
-// STEP 1: MOCK PRODUCT DATA
-// -----------------------------------------------------------------
-const product = {
-  name: "Billecart-Salmon Champagne & Silver Oak Cabernet Gift Set",
-  model: "WDG186",
-  sku: "VC00514",
-  upc: "8175305020",
-  brandName: "Veuve Clicquot",
-  quantity: 12,
-  original_price: "249.00",
-  special_price: null,
-  image:
-    "https://www.dcwineandspirits.com/image/cache/catalog/champagne/billecart-salmon-silver-oak-wedding-set-sparkling-rhinestones-1100x1100.webp",
-  images: [
-    "/images/products/billecart-salmon-gift-set-1.jpg",
-    "/images/products/billecart-salmon-gift-set-2.jpg",
-    "/images/products/billecart-salmon-gift-set-3.jpg",
-  ],
-  product_review: [{ rating: 5 }],
-
-  // ---------------------------------------------------------------
-  // MOCK DATA FOR DescriptionAndReview COMPONENT
-  // description -> Description tab me dikhega (HTML string, decode hoga)
-  // reviews -> Reviews tab me dikhega
-  // ---------------------------------------------------------------
-  id: "WDG186",
-  description:
-    "<p>This exquisite gift set pairs a bottle of Billecart-Salmon Champagne with a bottle of Silver Oak Cabernet Sauvignon, presented together in an elegant sparkling rhinestone-accented box. Perfect for weddings, anniversaries, or any celebration that calls for both bubbles and bold red wine.</p><p>Each bottle is carefully selected to represent the finest in its category, making this a memorable gift for wine and champagne lovers alike.</p>",
-  reviews: {
-    total: 1,
-    items: [
-      {
-        author: "John D.",
-        date: "2026-06-01",
-        text: "Amazing gift set! Both bottles were excellent and the packaging was beautiful.",
-        rating: 5,
-        images: [],
-      },
-    ],
-  },
-};
-
-export default function Page() {
-  // -----------------------------------------------------------------
-  // STEP 2: PAGE KA STATE
-  // -----------------------------------------------------------------
+export default function ProductMain({ product }) {
   const [stock] = useState(product.quantity > 0);
-  const [mainImage, setMainImage] = useState(product.image);
+  const productImage = product.image 
+    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+    : "/prosecco-gift-800x800.webp";
+  const [mainImage, setMainImage] = useState(productImage);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const [giftMessage, setGiftMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // -----------------------------------------------------------------
-  // STEP 3: DERIVED VALUES
-  // -----------------------------------------------------------------
-  const reviews = product.product_review || [];
+  const reviews = product.reviews || [];
   const reviewCount = reviews.length;
+  const averageRating = product.average_rating || 0;
 
-  const averageRating =
-    reviewCount > 0
-      ? reviews.reduce((total, review) => total + Number(review.rating), 0) /
-        reviewCount
-      : 0;
+  const productImages = product.images?.map(img => 
+    img.image ? `https://www.dcwineandspirits.com/image/${img.image}` : null
+  ).filter(Boolean) || [];
+  
+  const allImages = productImages.length
+    ? [productImage, ...productImages]
+    : [productImage];
 
-  const allImages = product.images?.length
-    ? [product.image, ...product.images]
-    : [product.image];
+  const originalPrice = product.price;
+  const specialPrice = product.special_price;
+  const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined;
 
-  const hasSpecialPrice =
-    product.special_price !== null &&
-    product.special_price !== undefined &&
-    product.special_price !== "";
-
-  // -----------------------------------------------------------------
-  // STEP 4: EVENT HANDLERS
-  // -----------------------------------------------------------------
+  const brandName = product.manufacturer?.name || "";
+  const brandurl = product.manufacturer?.manufacturer_seo_url || "";
+ 
   const handleImageChange = (clickedImage) => {
     setMainImage(clickedImage);
     setIsImageHovered(false);
@@ -132,32 +77,25 @@ export default function Page() {
 
   const handleAddToCartClick = () => {
     setIsAddingToCart(true);
-    console.log("Add to cart:", { quantity, giftMessage });
+    
     setTimeout(() => setIsAddingToCart(false), 800);
   };
 
   const handleAddToWishlistClick = () => {
-    console.log("Add to wishlist");
+    console.log("Add to wishlist", product.product_id);
   };
 
   const handleWriteReviewClick = () => {
-    console.log("Write a review clicked");
+    console.log("Write a review clicked for", product.product_id);
   };
 
-  // -----------------------------------------------------------------
-  // STEP 5: PAGE KA UI (JSX)
-  // -----------------------------------------------------------------
   return (
     <>
       <ProductsHeader />
       <main className={`min-h-screen w-full bg-white ${hindMadurai.className}`}>
         <section className="bg-white px-3 2xl:px-32 py-6">
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
-            {/* =============================================================
-              LEFT COLUMN: PRODUCT IMAGES
-          ============================================================= */}
             <div className="w-full lg:w-auto flex flex-row gap-3 lg:gap-4">
-              {/* Thumbnails - sirf tab dikhte hain jab 1 se zyada image ho */}
               {allImages.length > 1 && (
                 <div className="flex flex-col gap-3 w-14 sm:w-16 lg:w-20 flex-shrink-0">
                   {allImages.map((imageUrl, index) => (
@@ -180,11 +118,6 @@ export default function Page() {
                 </div>
               )}
 
-              {/* Main image box - fixed 486x486px on lg screens.
-                NOTE: ye 486px sirf image ki apni height hai. Right side
-                wale info card ki height isi 486px se match karti hai,
-                lekin perk bar (neeche wali strip) is calculation me
-                shaamil NAHI hai - wo apni khud ki natural height leta hai. */}
               <div
                 onMouseEnter={() => setIsImageHovered(true)}
                 onMouseMove={handleImageMove}
@@ -210,44 +143,29 @@ export default function Page() {
               </div>
             </div>
 
-            {/* =============================================================
-              RIGHT COLUMN: PRODUCT INFO
-              NOTE: outer wrapper pe koi fixed height nahi hai.
-              Sirf andar wala light-gray info card (price se lekar
-              reviews tak) 486px height ka hai aur agar content zyada
-              lamba ho jaye toh andar hi scroll hoga (overflow-y-auto).
-              Perk bar iske bahar hai - apni natural height leta hai,
-              486px ke calculation me count nahi hota.
-          ============================================================= */}
             <div className="w-full lg:w-1/2 min-w-0 flex flex-col justify-between">
               <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:h-[486px] lg:overflow-y-auto">
-                {/* --- Price | divider | Stock/Model/SKU/UPC | Brand logo --- */}
                 <div className="flex items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
                   <div className="flex items-stretch gap-4">
-                    {/* Price */}
-                    <div
-                      className={`${sumana.className} flex flex-col justify-center`}
-                    >
+                    <div className={`${sumana.className} flex flex-col justify-center`}>
                       {hasSpecialPrice ? (
                         <div className="flex flex-col">
                           <span className="font-semibold text-lg text-gray-400 line-through">
-                            ${Number(product.original_price).toFixed(2)}
+                            ${Number(originalPrice).toFixed(2)}
                           </span>
                           <h1 className="font-bold text-2xl lg:text-3xl text-black">
-                            ${Number(product.special_price).toFixed(2)}
+                            ${Number(specialPrice).toFixed(2)}
                           </h1>
                         </div>
                       ) : (
                         <h1 className="font-bold text-2xl lg:text-3xl text-black">
-                          ${Number(product.original_price).toFixed(2)}
+                          ${Number(originalPrice).toFixed(2)}
                         </h1>
                       )}
                     </div>
 
-                    {/* Vertical divider line */}
                     <div className="w-px bg-gray-300" />
 
-                    {/* Stock status + Model/SKU/UPC list */}
                     <div className="flex flex-col gap-1 text-sm justify-center">
                       <div className="flex items-center gap-1">
                         {stock ? (
@@ -295,17 +213,15 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* Brand logo box */}
-                  {product.brandName && (
+                  {brandName && (
                     <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
-                      <span className="text-xs tracking-widest text-gray-700 text-center px-2">
-                        {product.brandName}
-                      </span>
+                      <a href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
+                        {brandName}
+                      </a>
                     </div>
                   )}
                 </div>
 
-                {/* --- Gift message textarea --- */}
                 <div className="w-full mt-5 mb-5">
                   <label
                     htmlFor="gift-message"
@@ -324,7 +240,6 @@ export default function Page() {
                   />
                 </div>
 
-                {/* --- Quantity selector + Add To Cart button --- */}
                 <div className="w-full pb-4 border-b border-gray-200 ">
                   <div className="flex items-stretch gap-3">
                     <div className="flex items-center border border-gray-300 bg-white">
@@ -352,7 +267,7 @@ export default function Page() {
                           type="button"
                           onClick={() =>
                             setQuantity((currentQty) =>
-                              Math.max(1, currentQty - 1),
+                              Math.max(1, currentQty - 1)
                             )
                           }
                           className="px-2 hover:bg-gray-100 border-t border-gray-300 cursor-pointer"
@@ -394,7 +309,6 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* --- Star rating + review count --- */}
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                   <div className="flex items-center gap-0.5">
                     {[1, 2, 3, 4, 5].map((starNumber) => (
@@ -429,12 +343,6 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* =========================================================
-                BOTTOM PERK BAR
-                NOTE: Ye 486px calculation ke bahar hai - apni khud ki
-                natural height leta hai, upar wale info card se totally
-                independent.
-            ========================================================= */}
               <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-200">
                   <a

@@ -10,8 +10,6 @@ import {
   Heart,
   Repeat,
   ShoppingBag,
-  ChevronRight,
-  ChevronsRight,
   Logs,
 } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -173,7 +171,7 @@ const ProductListRow = ({ product }) => {
 // GRID VIEW CARD
 // -----------------------------------------------------------------
 const ProductGridCard = ({ product }) => {
-  const productLink = `/${product.seo_url || product.product_id}/`;
+  const productLink = `/${product.seo_url || product.custom_url}/`;
   const imageUrl = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
@@ -223,74 +221,6 @@ const ProductGridCard = ({ product }) => {
 };
 
 // -----------------------------------------------------------------
-// PAGINATION COMPONENT
-// -----------------------------------------------------------------
-const Pagination = ({ currentPage, totalPages, totalItems, itemsPerPage, onPageChange }) => {
-  const MAX_VISIBLE_PAGES = 9;
-
-  const getVisiblePages = () => {
-    const start = Math.max(1, currentPage - Math.floor(MAX_VISIBLE_PAGES / 2));
-    const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES - 1);
-    const adjustedStart = Math.max(1, end - MAX_VISIBLE_PAGES + 1);
-
-    const pages = [];
-    for (let page = adjustedStart; page <= end; page++) {
-      pages.push(page);
-    }
-    return pages;
-  };
-
-  const visiblePages = getVisiblePages();
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
-  return (
-    <div className="w-full py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div className="flex items-center gap-1 flex-wrap">
-        {visiblePages.map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => onPageChange(page)}
-            aria-label={`Go to page ${page}`}
-            aria-current={page === currentPage ? "page" : undefined}
-            className={`w-9 h-9 flex items-center justify-center text-sm font-semibold text-white transition-colors cursor-pointer ${
-              page === currentPage
-                ? "bg-[#303841]"
-                : "bg-[#98022e] hover:bg-[#7a0225]"
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-          aria-label="Next page"
-          className="w-9 h-9 flex items-center justify-center bg-[#98022e] hover:bg-[#7a0225] text-white transition-colors cursor-pointer"
-        >
-          <ChevronRight size={16} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onPageChange(totalPages)}
-          aria-label="Last page"
-          className="w-9 h-9 flex items-center justify-center bg-[#98022e] hover:bg-[#7a0225] text-white transition-colors cursor-pointer"
-        >
-          <ChevronsRight size={16} />
-        </button>
-      </div>
-
-      <p className={`${sumana.className} text-[#303841] text-base`}>
-        Showing {startItem} to {endItem} of {totalItems} ({totalPages} Pages)
-      </p>
-    </div>
-  );
-};
-
-// -----------------------------------------------------------------
 // MAIN COMPONENT (Connected to dynamic props from client)
 // -----------------------------------------------------------------
 const ProductsMain = ({
@@ -303,10 +233,8 @@ const ProductsMain = ({
   setSortOption,
   showNum,
   setShowNum,
-  currentPage,
-  setCurrentPage,
 }) => {
-
+   
   // 1. Sort the products based on the dropdown selection
   const sortedProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
@@ -331,16 +259,6 @@ const ProductsMain = ({
         return sorted; // Default order
     }
   }, [products, sortOption]);
-
-  // 2. Calculate dynamic pagination details
-  const totalItems = sortedProducts.length;
-  const totalPages = Math.ceil(totalItems / showNum) || 1;
-
-  // 3. Slice the array for the current page
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * showNum;
-    return sortedProducts.slice(startIndex, startIndex + showNum);
-  }, [sortedProducts, currentPage, showNum]);
 
   return (
     <section className="w-full bg-white px-3 2xl:px-32">
@@ -378,7 +296,6 @@ const ProductsMain = ({
               value={sortOption}
               onChange={(e) => {
                 setSortOption(e.target.value);
-                setCurrentPage(1); // Reset page to 1 when sorting changes
               }}
               className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
             >
@@ -398,7 +315,6 @@ const ProductsMain = ({
               value={showNum}
               onChange={(e) => {
                 setShowNum(Number(e.target.value));
-                setCurrentPage(1); // Reset page to 1 when show amount changes
               }}
               className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
             >
@@ -429,30 +345,19 @@ const ProductsMain = ({
         <>
           {layout === "list" ? (
             <div>
-              {paginatedProducts.map((product, index) => (
+              {sortedProducts.map((product, index) => (
                 <ProductListRow key={product.product_id || index} product={product} />
               ))}
             </div>
           ) : (
             // 5. items-stretch added so every card in a row matches the tallest one
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
-              {paginatedProducts.map((product, index) => (
+              {sortedProducts.map((product, index) => (
                 <ProductGridCard key={product.product_id || index} product={product} />
               ))}
             </div>
           )}
         </>
-      )}
-
-      {/* --- Pagination --- */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          itemsPerPage={showNum}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
       )}
     </section>
   );

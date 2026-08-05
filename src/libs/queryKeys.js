@@ -28,6 +28,7 @@ export const homeKeys = {
   giftByOccasion: () => [...homeKeys.lists(), "gift-by-occasion"],
   wineGifts: () => [...homeKeys.lists(), "wine-gifts"],
   topCategories: () => [...homeKeys.lists(), "top-categories"],
+  loveByBanner: () => [...homeKeys.lists(), "love-by-banners"],
   pageText: () => [...homeKeys.lists(), "home-page-text"],
   shopByBrandTitle: () => [...categoryKeys.lists(), "shop-by-brand-title"],
   topCategory: () => [...homeKeys.lists(), "top-category"],
@@ -49,14 +50,11 @@ export const productKeys = {
   details: () => [...productKeys.all, "detail"],
 
   // 1. getAllProducts ke liye (Maps to: GET /)
-  allProducts: () => [...productKeys.lists(), "all-data"],
+  allProducts: (showNum = 24) => [...productKeys.lists(), "all-data", showNum],
 
   // 2. getProductBySlugOrId ke liye (Maps to: GET /:slug)
   bySlugOrId: (slug) => [...productKeys.lists(), "by-slug-or-id", slug],
 
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
-  
-  
-  
 };

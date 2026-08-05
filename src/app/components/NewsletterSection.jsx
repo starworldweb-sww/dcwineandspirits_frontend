@@ -19,8 +19,7 @@ export default function NewsletterSection() {
       return;
     }
 
-    console.log("Subscribing email:", email);
-    // TODO: call your newsletter API here
+    
   };
 
   return (

@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Sumana } from "next/font/google";
 import { useGetGiftByOccasion } from "../api/hooks/category/useGiftsByOccassion";
+import { useLovebyBanner } from "../api/hooks/category/useLovebyBanner";
 
 
 // 0. constants ki jagah seedha env variable use kar rahe hain
@@ -14,25 +15,26 @@ const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 // ---------------------------------------------------------------
 // BANNER DATA (YE PURANA CODE HAI — ISME KUCH NAHI BADLA)
-// Add/remove/edit banners here. Each one is just a clickable image.
+// Add/remove/edit Banners here. Each one is just a clickable image.
 // ---------------------------------------------------------------
-const BANNERS = [
-  {
-    href: "/veuve-clicquot-champagne-and-flutes-gift-set/",
-    image: "https://www.dcwineandspirits.com/image/cache/catalog/Banners/veuve-clicquot-champagne-and-flutes-giftset-1047x349.webp",
-    alt: "veuve-clicquot-champagne-and-flutes-gift-set",
-  },
-  {
-    href: "/graduation-gifts/",
-    image: "/graduation-1047x349.webp",
-    alt: "graduation-day-cheers",
-  },
-];
+// const Banners = [
+//   {
+//     href: "/veuve-clicquot-champagne-and-flutes-gift-set/",
+//     image: "https://www.dcwineandspirits.com/image/cache/catalog/Banners/veuve-clicquot-champagne-and-flutes-giftset-1047x349.webp",
+//     alt: "veuve-clicquot-champagne-and-flutes-gift-set",
+//   },
+//   {
+//     href: "/graduation-gifts/",
+//     image: "/graduation-1047x349.webp",
+//     alt: "graduation-day-cheers",
+//   },
+// ];
 
 const GiftsByOccasionHero = () => {
   // 2. Live data ab API se aa raha hai — static OCCASIONS array hata diya.
   const { data, isLoading, isError } = useGetGiftByOccasion();
-
+  const { data: Banners } = useLovebyBanner()
+  console.log("banners", Banners)
   // 3. Response shape: { sections: [ {heading, items: "text"}, {heading:null, items: [...]} ] }
   //    Pehla section sirf heading/subtitle text hai, doosra section mein asli
   //    occasion cards (items array) hain — wahi humein grid mein chahiye.
@@ -83,24 +85,39 @@ const GiftsByOccasionHero = () => {
       <div className="w-full px-3 2xl:px-32 py-6">
 
         {/* 4. "EXPLORE ALL PRODUCTS" button — banner grid ke upar */}
-       
+
 
         {/* PROMO BANNER ROW — Desktop/tablet: side by side. Mobile: stacked. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {BANNERS.map((banner) => (
-            <Link key={banner.href} href={banner.href} className="block w-full">
-              <img
-                src={banner.image}
-                alt={banner.alt}
-                width={640}
-                height={220}
-                loading="lazy"
-                className="block w-full h-auto aspect-[640/220] object-cover"
-              />
-            </Link>
-          ))}
+          {Banners?.sections?.flatMap(section =>
+            section?.items?.map((item) => {
+              const href =
+                item.type === "custom"
+                  ? item.custom_url
+                  : `/${item.seo_url || item.id}`; 
+
+              return (
+                <Link
+                  key={item.id}
+                  href={href}
+                  className="block w-full"
+                  target={item.type === "custom" ? "_blank" : undefined}
+                >
+                  <img
+                    src={`${IMAGE_BASE_URL}${item.image}`}
+                    alt={item.alt}
+                    width={640}
+                    height={220}
+                    loading="lazy"
+                    className="block w-full h-auto aspect-[640/220] object-cover"
+                  />
+                </Link>
+              );
+            })
+          )}
         </div>
       </div>
+
 
       {/* ============================================================= */}
       {/* NAYA SECTION — GIFTS BY OCCASION                              */}
