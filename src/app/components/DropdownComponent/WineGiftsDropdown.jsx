@@ -9,86 +9,92 @@ export default function WineGiftsDropdown() {
 
   if (isLoading || isError) return null;
 
-  const sections = wineGiftsResponse?.data?.sections || [];
+  const sections = wineGiftsResponse?.sections || [];
 
-  // Helper to find sections by keyword
   const findSection = (keyword) =>
     sections.find(
-      (s) => s.heading && s.heading.toLowerCase().includes(keyword.toLowerCase())
+      (s) =>
+        s.heading && s.heading.toLowerCase().includes(keyword.toLowerCase()),
     );
 
-  // Extract main sections
-  const mainSections = [
-    findSection("type"),
-    findSection("glasses"),
-    findSection("gourmet"),
-    findSection("variet"),
-    findSection("bottle"),
-    findSection("gifting"),
-  ].filter(Boolean);
+  const columns = [
+    [findSection("type")],
+    [findSection("glasses"), findSection("gourmet")],
+    [findSection("variet")],
+    [findSection("bottle"), findSection("gifting")],
+  ].map((col) => col.filter(Boolean));
 
-  // Recommended section
   const recommendedSection = sections.find((s) => s.heading === "");
   const recommendedItems = (recommendedSection?.items || []).filter(
-    (item) => item.seo_url || item.custom_url
+    (item) => item.seo_url || item.custom_url,
   );
 
   return (
-    <div className="w-full bg-white">
-      {/* Main Dropdown Content - ShopByBrand ke exact padding */}
-      <div className="w-full px-3 2xl:px-32">
-        
-        {/* Grid Layout - exact same as ShopByBrand */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 py-4">
-          {mainSections.map((section, idx) => (
-            <div key={idx} className="space-y-2">
-              {/* Section Heading */}
-              <h3 className="font-sumana text-xs font-bold uppercase tracking-wider text-black">
-                {section.heading}
-              </h3>
+    <div className="absolute top-full left-0 w-full bg-white border border-gray-200 shadow-xl z-50">
+      {/* Main Dropdown Content */}
+      <div className="w-full px-3 2xl:px-32 py-10">
+        <div className="flex">
+          {columns.map((col, colIdx) => {
+            if (col.length === 0) return null;
 
-              {/* Section Items */}
-              <ul className="space-y-1.5">
-                {section.items?.slice(0, 6).map((item) => {
-                  const slug = item.seo_url || item.custom_url;
-                  if (!slug) return null;
+            return (
+              <div
+                key={colIdx}
+                className={`flex-1 ${
+                  colIdx !== 0 ? "border-l border-gray-200 pl-10 ml-10" : ""
+                }`}
+              >
+                {col.map((section, secIdx) => (
+                  <div
+                    key={section.heading}
+                    className={secIdx !== 0 ? "mt-8" : ""}
+                  >
+                    <h3 className="text-[18px] mb-1 text-[#98022e] font-sumana font-semibold">
+                      {section.heading}
+                    </h3>
 
-                  return (
-                    <li key={item.id || slug}>
-                      <Link
-                        href={`/${slug.replace(/^\//, "")}`}
-                        className="text-xs text-gray-600 hover:text-[#98022e] transition-colors duration-200 block"
-                      >
-                        {item.title}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+                    <ul className="space-y-0">
+                      {section.items?.map((item) => {
+                        const slug = item.seo_url || item.custom_url;
+                        if (!slug) return null;
+
+                        return (
+                          <li key={item.id || slug}>
+                            <Link
+                              href={`/${slug.replace(/^\//, "")}`}
+                              className="block text-[14px] text-gray-600 hover:text-[#98022e] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
+                            >
+                              {item.title}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Recommended Bar */}
       {recommendedItems.length > 0 && (
-        <div className="bg-gray-50 border-t border-gray-200 w-full">
-          <div className="w-full px-3 2xl:px-32 py-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-sumana text-xs font-bold uppercase tracking-wider text-black">
+        <div className="bg-[#98022e] w-full">
+          <div className="w-full px-3 2xl:px-32 py-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-hind-madurai">
+            <span className="font-bold text-white mr-1 text-[16px] normal-case">
               Recommended:
             </span>
-            {recommendedItems.slice(0, 8).map((item, index) => {
+            {recommendedItems.map((item, index) => {
               const slug = item.seo_url || item.custom_url;
               if (!slug) return null;
 
               return (
                 <React.Fragment key={item.id || slug}>
-                  {index !== 0 && (
-                    <span className="text-gray-300 text-xs">•</span>
-                  )}
+                  {index !== 0 && <span className="text-white">•</span>}
                   <Link
                     href={`/${slug.replace(/^\//, "")}`}
-                    className="text-xs text-gray-600 hover:text-[#98022e] transition-colors duration-200"
+                    className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200"
                   >
                     {item.title}
                   </Link>

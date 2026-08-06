@@ -8,6 +8,6 @@ import { categoryService } from "../../services/categoryService";
 export const useOccasionTreasures = () => {
   return useQuery({
     queryKey: homeKeys.occasionTreasures(),
-    queryFn: () => categoryServiceice.getOccasionTreasures(),
+    queryFn: () => categoryService.getOccasionTreasures(),
   });
 };

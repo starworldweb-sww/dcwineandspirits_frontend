@@ -114,7 +114,7 @@ export const categoryService = {
 
   getWineGifts: async () => {
     try {
-      const res = await axiosInstance.get("/header-category/wine-gifts");
+      const res = await axiosInstance.get("/header-category/winegifts");
 
       if (res.data && res.data.success) {
         return res.data.data;

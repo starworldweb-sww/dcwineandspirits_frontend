@@ -42,19 +42,19 @@ const PersonalizedDropDown = () => {
           {linkColumns.map((column) => (
             <div key={column.heading}>
               {/* 8. Column ka heading - site ke Hind Madurai font aur maroon color mein */}
-              <h4
-                className="text-[15px] font-semibold uppercase text-black mb-4"
-                style={{ fontFamily: "'Hind Madurai', sans-serif" }}
+              <h3
+                className="text-[18px] font-semibold text-[#98022e] uppercase  mb-2 font-sumana "
+              
               >
                 {column.heading}
-              </h4>
+              </h3>
 
-              <ul className="space-y-3">
+              <ul className="space-y-0">
                 {(column.items || []).map((item) => (
                   <li key={item.id}>
                     <Link
                       href={`/${item.seo_url}`}
-                      className="text-[14px] text-gray-800 hover:text-[#98022e] transition-colors normal-case font-hind-madurai"
+                      className="text-[14px] text-gray-800 hover:text-[#98022e] normal-case font-hind-madurai hover:pl-1 transition-all duration-200"
                      
                     >
                       {item.title}
@@ -79,24 +79,24 @@ const PersonalizedDropDown = () => {
       </div>
 
       {/* ================= BOTTOM "RECOMMENDED" BLACK BAR ================= */}
-      {recommendedItems.length > 0 && (
-        <div className="bg-black px-3 2xl:px-32 py-3 flex items-center flex-wrap gap-x-2 gap-y-1 text-[13px] normal-case">
-          <span className="font-bold text-white">Recommended:</span>
-          {recommendedItems.map((item, index) => (
-            <React.Fragment key={item.id}>
-              <Link
-                href={`/${item.seo_url}`}
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                {item.title}
-              </Link>
-              {index < recommendedItems.length - 1 && (
-                <span className="text-gray-500">•</span>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      )}
+   {recommendedItems.length > 0 && (
+  <div className="bg-[#98022e] px-3 2xl:px-32 py-3 flex items-center flex-wrap gap-x-2 gap-y-1 font-hind-madurai">
+    <span className="font-bold text-white mr-1 text-[16px] normal-case">
+      Recommended:
+    </span>
+    {recommendedItems.map((item, index) => (
+      <React.Fragment key={item.id}>
+        {index !== 0 && <span className="text-white">•</span>}
+        <Link
+          href={`/${item.seo_url}`}
+          className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200 "
+        >
+          {item.title}
+        </Link>
+      </React.Fragment>
+    ))}
+  </div>
+)}
     </div>
   );
 };

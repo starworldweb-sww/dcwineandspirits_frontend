@@ -9,6 +9,7 @@ import GiftsByDropDown from "../DropdownComponent/GiftsByDropdown";
 import ShopByBrandDropDown from "../DropdownComponent/ShopByBrandDropdown";
 import PersonalizedDropDown from "../DropdownComponent/PersonalizedDropDown";
 import WineGiftsDropdown from "../DropdownComponent/WineGiftsDropdown";
+import OcassionsDropDown from "../DropdownComponent/OcassionsDropDown";
 
 // Apna exact path zaroor check kar lena
 
@@ -27,7 +28,8 @@ const DROPDOWN_COMPONENTS = {
   "Gifts By": GiftsByDropDown,
   "Shop By Brand": ShopByBrandDropDown,
   "Personalization": PersonalizedDropDown,
-  "Wine Gifts": WineGiftsDropdown, // Agar Wine Gifts ka dropdown same hai toh yahan bhi use kar sakte hain
+  "Wine Gifts": WineGiftsDropdown,
+  "Occasion": OcassionsDropDown, // Agar Wine Gifts ka dropdown same hai toh yahan bhi use kar sakte hain
 };
 
 // 2. Jo dropdown chhote/compact hain (apne button ke niche chipakne wale)
