@@ -25,7 +25,7 @@ const ProductsClient = () => {
 
   return (
     <div>
-      <ProductsHeader />
+      <ProductsHeader/>
       
       <ProductsMain 
         products={allProducts} 

@@ -49,11 +49,11 @@ export default function WineGiftsDropdown() {
                     key={section.heading}
                     className={secIdx !== 0 ? "mt-8" : ""}
                   >
-                    <h3 className="text-[18px] mb-1 text-[#98022e] font-sumana font-semibold">
+                    <h3 className="text-[18px] mb-3 text-[#98022e] font-sumana font-semibold">
                       {section.heading}
                     </h3>
 
-                    <ul className="space-y-0">
+                    <ul className="space-y-2">
                       {section.items?.map((item) => {
                         const slug = item.seo_url || item.custom_url;
                         if (!slug) return null;

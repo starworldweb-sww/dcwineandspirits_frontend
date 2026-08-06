@@ -17,7 +17,7 @@ const ProductsHeader = ({ categoryName, breadcrumbs }) => {
 
       <div className="w-full bg-[#eeeeee] pt-3 px-3 2xl:px-20 text-center flex flex-col items-center">
         <h1
-          className={`${sumana.className} block w-full max-w-[1400px] text-[#303841] text-[22px] md:text-[26px] font-bold leading-[31.2px] tracking-[1px] text-center capitalize transition-all duration-300 mb-2`}
+          className={`${sumana.className} block w-full max-w-[1400px] text-[#303841] text-[22px] md:text-[26px] leading-[31.2px] tracking-[1px] text-center capitalize transition-all duration-300 mb-2`}
         >
           {/* Yahan 'categoryName' ka use karein hardcoded "Product" ki jagah */}
           {categoryName}
