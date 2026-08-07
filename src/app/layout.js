@@ -10,6 +10,7 @@ import MobileNavbar from "./components/navcomponents/MobileNav";
 import Footer from "./components/Footer";
 import Provider from "./components/Provider";
 import { Sumana, Hind_Madurai, Sarabun } from "next/font/google";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,10 +47,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-   <html
-  lang="en"
-  className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
->
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
+    >
       <body
         className="min-h-full flex flex-col"
         suppressHydrationWarning={true}
@@ -61,8 +62,8 @@ export default function RootLayout({ children }) {
           <Navbar />
           <MobileNavbar />
           <Stickynav />
-
           {children}
+          <Toaster position="top-right" richColors />
           <Footer />
         </Provider>
       </body>

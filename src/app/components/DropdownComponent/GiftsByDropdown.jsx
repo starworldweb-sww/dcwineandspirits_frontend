@@ -6,7 +6,6 @@ import { useGiftDropDown } from "@/app/api/hooks/category/useGiftDropDown";
 import { useGiftsShopyByCategory } from "@/app/api/hooks/category/useGiftsShopByCategory";
 import { useGiftDropDownGiftByOrigin } from "@/app/api/hooks/category/useGiftDropDownGiftsByOrigin";
 import { useGiftDropDownShopByPrice } from "@/app/api/hooks/category/useGiftsDropDownShopByPrice";
-
 // Apna exact hook path check kar lena
 
 // ============================================
@@ -134,7 +133,7 @@ const GiftsByDropdown = () => {
               }}
             >
               <a className="w-full flex items-center justify-between px-2 py-4 text-left cursor-pointer group">
-                <span className="text-[16px] font-bold uppercase tracking-wide text-black font-hind-madurai group-hover:text-[#d70b48] transition-colors">
+                <span className="text-[14px] font-bold uppercase tracking-wide text-black font-sumana group-hover:text-[#d70b48] transition-colors hover:pl-1">
                   {item.title}
                 </span>
 

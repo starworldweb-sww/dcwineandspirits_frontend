@@ -57,4 +57,33 @@ export const productKeys = {
 
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
+}; export const customerKeys = {
+  // Base keys
+  all: ["customer"],
+  lists: () => [...customerKeys.all, "list"],
+  details: () => [...customerKeys.all, "detail"],
+
+  // 1. login ke liye (Maps to: POST /customer/login)
+  login: () => [...customerKeys.all, "login"],
+
+  // 2. register ke liye (Maps to: POST /customer/register)
+  register: () => [...customerKeys.all, "register"],
+
+  // 3. forgotPassword ke liye (Maps to: POST /customer/forgot-password)
+  forgotPassword: () => [...customerKeys.all, "forgot-password"],
+
+  // 4. resetPassword ke liye (Maps to: POST /customer/reset-password)
+  resetPassword: () => [...customerKeys.all, "reset-password"],
+
+  // 5. logout ke liye (Maps to: POST /customer/logout)
+  logout: () => [...customerKeys.all, "logout"],
+
+  // 6. profile ke liye (Maps to: GET /customer/profile)
+  profile: () => [...customerKeys.details(), "profile"],
+
+  // 7. changePassword ke liye (Maps to: PUT /customer/change-password)
+  changePassword: () => [...customerKeys.all, "change-password"],
+
+  // 8. editAccountInformation ke liye (Maps to: PUT /customer/edit-information)
+  editInformation: () => [...customerKeys.all, "edit-information"],
 };

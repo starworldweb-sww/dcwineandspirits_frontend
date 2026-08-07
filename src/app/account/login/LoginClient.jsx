@@ -1,11 +1,13 @@
-//@ts-nocheck
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Eye, EyeOff } from "lucide-react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-
+import { useLogin } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
@@ -28,13 +30,58 @@ const breadcrumbs = [
 const inputClass =
   "w-full bg-white border border-[#d9d9d9] rounded-[3px] px-3 py-2.5 text-[14px] text-[#333333] placeholder:text-[#9a9a9a] outline-none transition-colors duration-200 focus:border-[#8c1a3c] focus:ring-1 focus:ring-[#8c1a3c]/30";
 
-const LoginClient = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+// --- VALIDATION SCHEMA ---
+const validationSchema = Yup.object({
+  email: Yup.string().email("Invalid email address").required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
 
-  const handleLogin = (e) => {
+const LoginClient = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const loginMutation = useLogin();
+
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await loginMutation.mutateAsync(values);
+        // success toast + redirect already useLogin hook ke andar ho raha hai
+      } catch (error) {
+        toast.error(error?.message || "Invalid email or password");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const renderError = (field) =>
+    formik.touched[field] && formik.errors[field] ? (
+      <p className="text-red-600 text-[12px] mt-1">{formik.errors[field]}</p>
+    ) : null;
+
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    // static UI only — no API wiring
+
+    const errors = formik.errors;
+    const hasErrors = Object.keys(errors).length > 0;
+
+    if (hasErrors) {
+      const firstErrorMessage = Object.values(errors)[0];
+      toast.error(firstErrorMessage || "Please fill all required fields correctly");
+
+      const touchedFields = Object.keys(formik.initialValues).reduce(
+        (acc, field) => ({ ...acc, [field]: true }),
+        {}
+      );
+      formik.setTouched(touchedFields);
+      return;
+    }
+
+    formik.handleSubmit(e);
   };
 
   return (
@@ -65,31 +112,44 @@ const LoginClient = () => {
             Returning Customer
           </h2>
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] sm:items-center gap-1.5 sm:gap-4">
               <label className="text-[14px] font-hind-madurai text-[#333333]">
                 E-Mail Address
               </label>
-              <input
-                type="email"
-                placeholder="E-Mail Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-              />
+              <div>
+                <input
+                  type="email"
+                  placeholder="E-Mail Address"
+                  {...formik.getFieldProps("email")}
+                  className={inputClass}
+                />
+                {renderError("email")}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] sm:items-center gap-1.5 sm:gap-4">
               <label className="text-[14px] font-hind-madurai text-[#333333]">
                 Password
               </label>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-              />
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    {...formik.getFieldProps("password")}
+                    className={`${inputClass} pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#8c1a3c] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {renderError("password")}
+              </div>
             </div>
 
             <Link
@@ -102,9 +162,10 @@ const LoginClient = () => {
 
             <button
               type="submit"
-              className="w-full bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 mt-3 transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer"
+              disabled={formik.isSubmitting || loginMutation.isPending}
+              className="w-full bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 mt-3 transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Login
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </button>
           </form>
         </div>

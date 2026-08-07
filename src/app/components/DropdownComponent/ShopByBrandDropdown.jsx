@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { useShopByBrand } from "@/app/api/hooks/category/useShopByBrands";
 
-
 const ShopByBrandDropDown = () => {
   // 1. API se brands ka data fetch kar rahe hain
   const { data } = useShopByBrand();
@@ -14,23 +13,20 @@ const ShopByBrandDropDown = () => {
   const brands = data?.items || [];
 
   return (
-    // 3. Poora dropdown panel - nav ki poori width, seedha niche se shuru
-    //    px-3 chhote screens ke liye, 2xl:px-32 bade screens pe (tera standard pattern)
     <div className="absolute top-full left-0 w-full bg-white border border-gray-200 shadow-xl z-50 px-3 2xl:px-32 py-6">
 
       {/* ================= BRANDS GRID (6 columns) ================= */}
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid grid-cols-6 gap-4 xl:gap-6">
         {brands.map((brand) => (
           <Link
             key={brand.id}
             href={`/${brand.slug}`}
-            className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors"
-            style={{ width: "190px", height: "79px" }}
+            className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors aspect-[190/79] w-full"
           >
-            {/* 4. Brand ka logo image - fixed size 190x79 ke andar fit kiya */}
             <img
               src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
               alt={brand.name}
+              loading="lazy"
               className="max-h-full max-w-[85%] object-contain"
             />
           </Link>

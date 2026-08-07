@@ -71,7 +71,7 @@ const Stickynav = () => {
     <div className="font-sumana relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1">
       <div className="flex items-center justify-between w-full h-12">
 
-        <div className="flex items-center h-full gap-8 py-6">
+        <div className="flex items-center h-full gap-3 xl:gap-5 py-6">
 
           {isLoading && <span className="text-sm text-gray-400 normal-case"></span>}
           {isError && <span className="text-sm text-gray-400 normal-case">Menu unavailable</span>}
@@ -86,7 +86,7 @@ const Stickynav = () => {
             >
               <Link
                 href={item.href}
-                className="flex items-center gap-2 font-bold text-[17px] text-black hover:text-[#98022e] transition-colors "
+                className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-colors "
               >
                 {index === 0 && (
                   <svg width="20" height="14" viewBox="0 0 20 14" fill="none">

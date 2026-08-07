@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Hind } from "next/font/google";
 import { User, Package, ChevronDown, LogOut } from "lucide-react";
 import WavingEmoji from "./WavingEmoji";
+import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 
 // Loads the "Hind" font from Google Fonts.
 // Applied on the outer wrapper div, so all text inside uses it automatically.
@@ -15,20 +16,17 @@ const hind = Hind({
 });
 
 const PhoneHeader = () => {
-  // 1. MOCK LOGIN STATE
-  // Abhi ke liye ye 2 lines hi tumhara "auth" hain, taaki UI test ho sake.
-  // Baad me jab real useUser/useLogout hook ready ho, isko unse replace karna.
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // true kar ke test karo
-  const mockUser = { name: "Aditya" }; // yahan naam change kar ke dekh sakte ho
+  // Real auth state — profile data cookie ke basis pe fetch hoti hai
+  const { data: user, isLoading } = useUser();
+  const logoutMutation = useLogout();
+  const isLoggedIn = !!user;
 
-  // 2. Profile dropdown open/close state (jab user login hai tab use hoga)
+  // Profile dropdown open/close state (jab user login hai tab use hoga)
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Fake logout - abhi sirf state false kar deta hai
   const handleLogout = () => {
     setIsProfileOpen(false);
-    setIsLoggedIn(false);
-   
+    logoutMutation.mutate();
   };
 
   return (
@@ -39,7 +37,13 @@ const PhoneHeader = () => {
     >
       {/* LEFT - Login (agar login nahi hai) ya User ka naam (agar login hai) */}
       <div className="flex items-center gap-3">
-        {isLoggedIn ? (
+        {isLoading ? (
+          // ---- LOADING: profile check ho raha hai ----
+          <div className="flex items-center gap-1 text-white">
+            <User size={16} strokeWidth={2} />
+            <p className="text-[0.8rem]">...</p>
+          </div>
+        ) : isLoggedIn ? (
           // ---- LOGGED IN: user ka naam + waving emoji dikhao, click pe dropdown khule ----
           <div className="relative">
             <button
@@ -47,7 +51,7 @@ const PhoneHeader = () => {
               className="flex items-center gap-1 text-white hover:text-gray-300 transition-colors"
             >
               <User size={16} strokeWidth={2} />
-              <p className="text-[0.8rem]">Hi, {mockUser?.name}</p>
+              <p className="text-[0.8rem]">Hi, {user?.firstname}</p>
               <ChevronDown
                 size={14}
                 strokeWidth={2}
@@ -67,25 +71,24 @@ const PhoneHeader = () => {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                  disabled={logoutMutation.isPending}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors disabled:opacity-60"
                 >
                   <LogOut size={14} strokeWidth={2} />
-                  Logout
+                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
                 </button>
               </div>
             )}
           </div>
         ) : (
-          // ---- LOGGED OUT: sirf Login link dikhao ----
-          // NOTE: abhi ke liye click karne pe bhi login "on" kar denge (testing ke liye),
-          // asli app me ye ek normal <Link href="/login"> hi rahega jo login page pe le jaayega
-          <button
-            onClick={() => setIsLoggedIn(true)}
+          // ---- LOGGED OUT: Login page pe le jaayega ----
+          <Link
+            href="/account/login"
             className="flex items-center gap-1 text-white hover:text-gray-300 transition-colors"
           >
             <User size={16} strokeWidth={2} />
             <p className="text-[0.8rem]">Login</p>
-          </button>
+          </Link>
         )}
       </div>
 
