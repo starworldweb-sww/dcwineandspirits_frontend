@@ -13,7 +13,7 @@ const page = async () => {
     queryKey: productKeys.allProducts(initialShowNum),
     queryFn: async ({ pageParam = 1 }) => {
       const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-      const res = await fetch(`${baseURL}/api/v1/products?page=${pageParam}&limit=${initialShowNum}`);
+      const res = await fetch(`${baseURL}/products?page=${pageParam}&limit=${initialShowNum}`);
       const data = await res.json();
       if (data.success) {
         return data.data;

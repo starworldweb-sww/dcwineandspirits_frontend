@@ -64,7 +64,7 @@ export default async function ProductsSlugPage({ params }) {
       queryKey: productKeys.singleProductDetail(slug),
       queryFn: async () => {
         const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-        const res = await fetch(`${baseURL}/api/v1/products/single-product/${slug}`, {
+        const res = await fetch(`${baseURL}/products/single-product/${slug}`, {
           next: { revalidate: 3600 },
         });
         const data = await res.json();
@@ -87,7 +87,7 @@ export default async function ProductsSlugPage({ params }) {
     queryKey: productKeys.bySlugOrId(slug),
     queryFn: async () => {
       const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const res = await fetch(`${baseURL}/api/v1/products/${slug}`, {
+      const res = await fetch(`${baseURL}/products/${slug}`, {
         next: { revalidate: 3600 },
       });
       const data = await res.json();

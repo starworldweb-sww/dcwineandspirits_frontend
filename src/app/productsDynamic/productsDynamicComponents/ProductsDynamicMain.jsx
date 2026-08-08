@@ -15,6 +15,7 @@ import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -120,7 +121,7 @@ const ProductGridCard = ({ product }) => {
       >
         <img
           src={productImage}
-          alt={product.name}
+          alt={decodeHtml(product.name)}
           loading="lazy"
           className="max-w-full max-h-full object-contain"
         />
@@ -128,7 +129,7 @@ const ProductGridCard = ({ product }) => {
 
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
         <h2 className="mt-4 text-lg text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
-          {product.name}
+          {decodeHtml(product.name)}
         </h2>
       </Link>
 

@@ -5,7 +5,6 @@ import { Hind_Madurai } from "next/font/google";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetTopCategories } from "@/app/api/hooks/category/useTopCategories";
 
-
 // Loads the "Hind Madurai" font from Google Fonts.
 // We apply this font's className further down on the outer wrapper div,
 // so every bit of text inside this component uses it automatically.
@@ -24,8 +23,11 @@ const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 // slider (desktop/tablet) and the grid (mobile) below.
 // ---------------------------------------------------------------
 const CategoryCard = ({ label, href, image }) => (
-  <a href={href} className="flex flex-col items-center text-center group" title={label}>
-
+  <a
+    href={href}
+    className="flex flex-col items-center text-center group"
+    title={label}
+  >
     {/* Image box.
         - "border-2 border-transparent" = invisible border by default.
         - "active:border-black" = as soon as you click/tap and hold,
@@ -76,10 +78,15 @@ const CategoryShowcase = () => {
   //     seo_url se internal link bana rahe hain.
   const CATEGORIES = (cardSection?.items || []).map((item) => ({
     label: item.title,
-    href: item.custom_url || (item.seo_url ? `/${item.seo_url}/` : "#"),
+    href:
+      item.type === "custom"
+        ? item.custom_url || "#"
+        : item.seo_url
+          ? `/${item.seo_url}/`
+          : "#",
     image: `${IMAGE_BASE_URL}${item.image}`,
   }));
-  
+
   // This "ref" lets us grab the actual slider DOM element,
   // so the arrow buttons below know what to scroll.
   const sliderRef = useRef(null);
@@ -97,11 +104,11 @@ const CategoryShowcase = () => {
   };
 
   return (
-    <div className={`${hindMadurai.className} w-full px-3 2xl:px-32 py-6 lg:py-10`}>
-
+    <div
+      className={`${hindMadurai.className} w-full px-3 2xl:px-32 py-6 lg:py-10`}
+    >
       {/* ---------- DESKTOP / TABLET VIEW: horizontal slider ---------- */}
       <div className="hidden md:block relative">
-
         {/* The scrollable row of cards */}
         <div
           ref={sliderRef}
@@ -114,7 +121,9 @@ const CategoryShowcase = () => {
               Failed to load categories. Please try again.
             </p>
           ) : CATEGORIES.length === 0 ? (
-            <p className="w-full text-center py-6 text-gray-400">No categories found.</p>
+            <p className="w-full text-center py-6 text-gray-400">
+              No categories found.
+            </p>
           ) : (
             CATEGORIES.map((category) => (
               <div key={category.label} className="w-[234px] shrink-0">
@@ -144,13 +153,17 @@ const CategoryShowcase = () => {
       {/* ---------- MOBILE VIEW: simple 2-column grid ---------- */}
       <div className="grid grid-cols-2 gap-5 md:hidden">
         {isLoading ? (
-          <p className="col-span-2 text-center py-6 text-gray-500">Loading...</p>
+          <p className="col-span-2 text-center py-6 text-gray-500">
+            Loading...
+          </p>
         ) : isError ? (
           <p className="col-span-2 text-center py-6 text-[#98022e]">
             Failed to load categories. Please try again.
           </p>
         ) : CATEGORIES.length === 0 ? (
-          <p className="col-span-2 text-center py-6 text-gray-400">No categories found.</p>
+          <p className="col-span-2 text-center py-6 text-gray-400">
+            No categories found.
+          </p>
         ) : (
           CATEGORIES.map((category) => (
             <CategoryCard key={category.label} {...category} />
@@ -162,10 +175,11 @@ const CategoryShowcase = () => {
       {/* Feel free to edit this paragraph to whatever copy you want. */}
       <div className="text-center mt-10 max-w-4xl mx-auto">
         <p className="text-gray-600 text-[15px] leading-relaxed">
-          At DC Wine & Spirits, we bring you a premium collection of wine, champagne,
-          gourmet baskets & sets. Each gift of our selection is designed to delight.
-          Elegantly wrapped and carefully curated, our offerings turn gifting into a
-          memorable experience, making personal and corporate gifting effortless.
+          At DC Wine & Spirits, we bring you a premium collection of wine,
+          champagne, gourmet baskets & sets. Each gift of our selection is
+          designed to delight. Elegantly wrapped and carefully curated, our
+          offerings turn gifting into a memorable experience, making personal
+          and corporate gifting effortless.
         </p>
 
         <a
@@ -175,7 +189,6 @@ const CategoryShowcase = () => {
           Explore All Products
         </a>
       </div>
-
     </div>
   );
 };
