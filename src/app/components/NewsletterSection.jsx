@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
+import Modal from "@/app/components/ui/Modal";
+import PrivacyPolicyContent from "@/app/components/ui/PrivacyPolicyContent";
 import { useNewsletterSubscribe } from "../api/hooks/newsletter/useNewletter";
 
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const newsletterMutation = useNewsletterSubscribe();
 
@@ -83,12 +86,25 @@ export default function NewsletterSection() {
           />
           <span>
             I have read and agree to the{" "}
-            <a href="/privacy-policy" className="text-[#b8225a] hover:underline">
+            <button
+              type="button"
+              onClick={() => setIsPrivacyModalOpen(true)}
+              className="underline font-medium text-[#b8225a] hover:opacity-80 transition-opacity cursor-hover"
+            >
               Privacy Policy
-            </a>
+            </button>
           </span>
         </label>
       </div>
+
+      {/* ================= PRIVACY POLICY MODAL ================= */}
+      <Modal
+        open={isPrivacyModalOpen}
+        onOpenChange={setIsPrivacyModalOpen}
+        title="Privacy Policy"
+      >
+        <PrivacyPolicyContent />
+      </Modal>
     </section>
   );
 }
