@@ -34,7 +34,7 @@ const GiftsByOccasionHero = () => {
   // 2. Live data ab API se aa raha hai — static OCCASIONS array hata diya.
   const { data, isLoading, isError } = useGetGiftByOccasion();
   const { data: Banners } = useLovebyBanner()
-  console.log("banners", Banners)
+  
   // 3. Response shape: { sections: [ {heading, items: "text"}, {heading:null, items: [...]} ] }
   //    Pehla section sirf heading/subtitle text hai, doosra section mein asli
   //    occasion cards (items array) hain — wahi humein grid mein chahiye.

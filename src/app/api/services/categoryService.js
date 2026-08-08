@@ -177,7 +177,7 @@ export const categoryService = {
    getShopByBrandTitle: async () => {
     try {
       const res = await axiosInstance.get("/header-category/shopByBrand-title");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -193,7 +193,7 @@ export const categoryService = {
     getTopCategory: async () => {
     try {
       const res = await axiosInstance.get("/header-category/top-category");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -208,7 +208,7 @@ export const categoryService = {
     getOccasionMenu: async () => {
     try {
       const res = await axiosInstance.get("/header-category/occasion-menu");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -225,7 +225,7 @@ export const categoryService = {
     getGiftDropDown: async () => {
     try {
       const res = await axiosInstance.get("/header-category/giftDropDown");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -240,7 +240,7 @@ export const categoryService = {
     getGiftDropDownShopByCategory: async () => {
     try {
       const res = await axiosInstance.get("/header-category/giftDropDown-shop-by-category");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -255,7 +255,7 @@ export const categoryService = {
     getGiftDropDownGiftByOrigin: async () => {
     try {
       const res = await axiosInstance.get("/header-category/giftDropDown-gift-by-origin");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -270,7 +270,7 @@ export const categoryService = {
     getGiftDropDownShopByPrice: async () => {
     try {
       const res = await axiosInstance.get("/header-category/giftDropDown-shop-by-price");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -284,7 +284,7 @@ export const categoryService = {
     getPersonalization: async () => {
     try {
       const res = await axiosInstance.get("/header-category/personalization");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -298,7 +298,7 @@ export const categoryService = {
     getWineGiftsPage: async () => {
     try {
       const res = await axiosInstance.get("/winegifts");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }
@@ -314,7 +314,7 @@ export const categoryService = {
   getOccasionTreasures: async () => {
     try {
       const res = await axiosInstance.get("/header-category/occasion-treasures");
-      console.log("res", res);
+      
       if (res.data && res.data.success) {
         return res.data.data;
       }

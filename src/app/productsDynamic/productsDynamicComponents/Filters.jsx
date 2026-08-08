@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { CircleX, Minus, Plus } from "lucide-react";
 import { Box, Slider, Input, Typography, Stack } from "@mui/material";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // STEP 1: Design tokens for DC Wine's filter look (from the reference
 // screenshot) — a dark navy for the price slider, and a maroon/pink accent
@@ -13,7 +14,7 @@ const ACCENT = "#98022e";
 
 // STEP 2: Static sample data (no props/API needed — this is a standalone
 // demo). Swap these arrays/images for real data whenever you wire this up.
-const STATIC_PRICE = { min: 0, max: 300, value: [39, 199] };
+
 
 const STATIC_AVAILABILITY = [
   { id: "in_stock", label: "In Stock" },
@@ -27,9 +28,11 @@ const STATIC_BRANDS = [
   { id: 4, name: "Mionetto", image: "/brands/mionetto.png" },
 ];
 
-const PriceSlider = () => {
-  const [localValue, setLocalValue] = useState(STATIC_PRICE.value);
+const PriceSlider = (priceData) => {
 
+  const STATIC_PRICE = { min: priceData?.priceData?.min, max: priceData?.priceData?.max, value: [priceData?.priceData?.min, priceData?.priceData?.max] };
+  const [localValue, setLocalValue] = useState(STATIC_PRICE.value);
+ 
   return (
     <Box sx={{ width: "100%", px: 1, pb: 2 }}>
       <Slider
@@ -131,7 +134,7 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
     </p>
     <span
       className="w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 bg-white border-1 border-[#9c1750]"
-      
+
     >
       {isOpen ? (
         <Minus size={12} className="text-[#98022e]" />
@@ -142,8 +145,8 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
-const Filters = ({data}) => {
-  console.log("data",data)
+const Filters = ({ data }) => {
+   
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
@@ -180,7 +183,7 @@ const Filters = ({data}) => {
           </h2>
           <div
             className="h-[2px] w-10 mt-1 rounded-full bg-[#98022e]"
-            
+
           />
         </div>
         <button
@@ -197,7 +200,7 @@ const Filters = ({data}) => {
       <SectionHeader label="Price" isOpen={priceOpen} onToggle={() => setPriceOpen((p) => !p)} />
       {priceOpen && (
         <div className="px-1 pt-4 pb-2">
-          <PriceSlider />
+          <PriceSlider priceData={data?.priceRange} />
         </div>
       )}
 
@@ -232,32 +235,31 @@ const Filters = ({data}) => {
       {/* BRANDS */}
       <SectionHeader label="Brands" isOpen={brandsOpen} onToggle={() => setBrandsOpen((p) => !p)} />
       {brandsOpen && (
-        <div className="flex flex-col px-4 py-2">
-          {STATIC_BRANDS.map((brand) => (
+        <div className="flex flex-col px-4 py-2 h-64 overflow-scroll overflow-x-hidden">
+          {data?.brands?.map((brand) => (
             <label
-              key={brand?.id}
+              key={brand?.manufacturer_id}
               className="flex items-center gap-3 py-2.5 cursor-pointer"
             >
               <input
                 type="checkbox"
-                checked={selectedBrandIds.includes(brand?.id)}
-                onChange={() => toggleBrand(brand?.id)}
+                checked={selectedBrandIds.includes(brand?.manufacturer_id)}
+                onChange={() => toggleBrand(brand?.manufacturer_id)}
                 className="w-4 h-4 flex-shrink-0"
                 style={{ accentColor: ACCENT }}
               />
               <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative">
-                {/* NOTE: placeholder image path — swap with the real
-                    brand logo asset paths when wiring this up. */}
+                
                 <Image
                   fill
                   loading="lazy"
-                  src={`${brand?.image}`}
+                  src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${brand?.image}`}
                   alt={brand?.name}
                   className="object-contain"
                 />
               </div>
               <span className="font-['Sarabun',sans-serif] text-sm text-[#374254]">
-                {brand?.name}
+                {decodeHtml(brand?.name)}
               </span>
             </label>
           ))}

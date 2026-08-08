@@ -6,7 +6,7 @@ import { useGetProductBySlugOrId } from "@/app/api/hooks/useAllProducts";
 
 const ProductsDynamicClient = ({ slug }) => {
   const { data: dynamicData, isLoading, isError } = useGetProductBySlugOrId(slug);
-  console.log("dynimc Product",dynamicData)
+ 
   if (isLoading) {
     return (
       <div className="w-full py-20 text-center text-gray-500 font-bold text-lg">

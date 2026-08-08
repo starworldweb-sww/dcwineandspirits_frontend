@@ -7,7 +7,7 @@ import { useOccasionTreasures } from "@/app/api/hooks/category/useOccasionTreasu
 
 const OcassionsDropDown = () => {
   const { data, isLoading, isError } = useOccasionTreasures();
-  console.log("OccasionsDropDown sections:", data);
+ 
 
 
 

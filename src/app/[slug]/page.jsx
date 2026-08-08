@@ -46,13 +46,13 @@ export default async function ProductsSlugPage({ params }) {
   const queryClient = getQueryClient();
 
   let meta = await getMetaByType("category", slug);
-  console.log("meta",meta)
+  
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
   }
 
   const productMeta = await getMetaByType("product", slug);
-   console.log("line no 55")
+  
 
   if (!meta && !productMeta) {
     notFound();
@@ -97,7 +97,7 @@ export default async function ProductsSlugPage({ params }) {
       return null;
     },
   });
-console.log("line no 99")
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ProductsDynamicClient slug={slug} />
