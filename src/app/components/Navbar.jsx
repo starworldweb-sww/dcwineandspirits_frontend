@@ -1,14 +1,25 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, Heart, Download, Search } from 'lucide-react';
+import { User, Heart, Download, Edit3, FileText, LogOut, ChevronDown } from 'lucide-react';
 import SearchBar from './navcomponents/SearchBar';
+import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 
 const Navbar = () => {
-  // Change this to your actual wishlist count from state/API
+  const { data: user } = useUser();
+  const logoutMutation = useLogout();
+  const isLoggedIn = !!user;
+
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
   const wishlistCount = 0;
+
+  const handleLogout = () => {
+    setIsAccountOpen(false);
+    logoutMutation.mutate();
+  };
 
   return (
     <div className="header hidden lg:flex w-full bg-white flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6 px-3 2xl:px-32 py-2 lg:py-8">
@@ -16,7 +27,7 @@ const Navbar = () => {
       {/* Logo */}
       <Link href="/" className="shrink-0" title='DC Wine & Spirits'>
         <Image
-          src="/dc-wine_logo-360x90.webp" // replace with your actual logo path
+          src="/dc-wine_logo-360x90.webp"
           alt="Logo"
           width={240}
           height={60}
@@ -25,17 +36,70 @@ const Navbar = () => {
       </Link>
 
       {/* Search Bar */}
-      {/* order-3 pushes the search bar to its own row on small screens,
-          lg:order-none puts it back in the middle on large screens */}
-     <SearchBar />
+      <SearchBar />
 
       {/* Right Side Icons + Button */}
       <div className="flex items-center gap-4 md:gap-5 shrink-0">
 
-        {/* Account Icon */}
-        <Link href="/account" className="text-[#98022e] hover:opacity-80 transition-opacity" title='Account'>
-          <User size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
-        </Link>
+        {/* Account Icon / Dropdown */}
+        {isLoggedIn ? (
+          <div className="relative">
+            <button
+              onClick={() => setIsAccountOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 text-[#98022e] hover:opacity-80 transition-opacity cursor-pointer"
+              title="Account"
+            >
+              <User size={30} className="md:w-[34px] md:h-[34px] " strokeWidth={1} />
+              <span className="hidden md:inline text-sm font-semibold tracking-wide">
+                ACCOUNT
+              </span>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                className={`transition-transform duration-200 ${isAccountOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isAccountOpen && (
+              <div className="absolute top-full right-0 mt-3 w-56 bg-white border border-gray-100 rounded-md shadow-xl shadow-black/10 overflow-hidden z-50">
+                <Link
+                  href="/account/edit"
+                  onClick={() => setIsAccountOpen(false)}
+                  className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                >
+                  <Edit3 size={18} strokeWidth={1.75} />
+                  EDIT ACCOUNT
+                </Link>
+                <div className="h-px bg-gray-100 mx-5" />
+                <Link
+                  href="/account/orders"
+                  onClick={() => setIsAccountOpen(false)}
+                  className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                >
+                  <FileText size={18} strokeWidth={1.75} />
+                  MY ORDERS
+                </Link>
+                <div className="h-px bg-gray-100 mx-5" />
+                <button
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  className="w-full flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors disabled:opacity-60"
+                >
+                  <LogOut size={18} strokeWidth={1.75} />
+                  {logoutMutation.isPending ? "LOGGING OUT..." : "LOGOUT"}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link
+            href="/account/login"
+            className="text-[#98022e] hover:opacity-80 transition-opacity"
+            title="Login"
+          >
+            <User size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
+          </Link>
+        )}
 
         {/* Wishlist Icon with count badge */}
         <Link href="/wishlist" className="relative text-[#98022e] hover:opacity-80 transition-opacity" title='Wishlist'>
@@ -45,9 +109,9 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Bulk Orders Form Button - text hides on smaller screens, icon stays */}
+        {/* Bulk Orders Form Button */}
         <Link
-        title='Bulk Order Form'
+          title='Bulk Order Form'
           href="/bulk-orders"
           className="flex items-center gap-2 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-sm font-semibold px-3 md:px-4 py-3 hover:rounded-md whitespace-nowrap transition-colors"
         >

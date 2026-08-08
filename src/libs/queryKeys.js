@@ -43,6 +43,16 @@ export const homeKeys = {
 
 };
 
+
+
+export const newsletterKeys = {
+  // Base keys
+  all: ["newsletter"],
+
+  // 1. subscribe ke liye (Maps to: POST /newsletter/subscribe)
+  subscribe: () => [...newsletterKeys.all, "subscribe"],
+};
+
 export const productKeys = {
   // Base keys
   all: ["products"],
