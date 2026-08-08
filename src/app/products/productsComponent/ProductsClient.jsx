@@ -13,6 +13,7 @@ const ProductsClient = () => {
   const [layout, setLayout] = useState("grid");
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllProducts(showNum);
+  console.log("Fetched Products Data:", data);
   
   const allProducts = useMemo(() => {
     if (!data?.pages) return [];

@@ -1,11 +1,10 @@
-// @/config/axiosConfig.js
 import axios from 'axios';
 
-const baseURL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1` || "http://localhost:8000/api/v1";
+const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
-  withCredentials: true
+  withCredentials: true,
 });
 
 export default axiosInstance;
