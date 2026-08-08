@@ -67,7 +67,8 @@ export const productKeys = {
 
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
-}; export const customerKeys = {
+};
+ export const customerKeys = {
   // Base keys
   all: ["customer"],
   lists: () => [...customerKeys.all, "list"],
@@ -97,3 +98,10 @@ export const productKeys = {
   // 8. editAccountInformation ke liye (Maps to: PUT /customer/edit-information)
   editInformation: () => [...customerKeys.all, "edit-information"],
 };
+
+export const cartKeys = {
+  all:["cart"],
+  getCartList:()=>[...cartKeys.all,"cartList"],
+  addtoCart:()=>[...cartKeys.getCartList()],
+
+}

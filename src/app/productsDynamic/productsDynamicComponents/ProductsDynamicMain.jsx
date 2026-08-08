@@ -13,6 +13,8 @@ import {
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { toast } from "sonner";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -94,11 +96,21 @@ const ProductListRow = ({ product }) => {
 };
 
 const ProductGridCard = ({ product }) => {
+  const {mutate:addtoCart } =  useAddtoCart()
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
   const productImage = product.image 
     ? `https://www.dcwineandspirits.com/image/${product.image}` 
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
+
+  const handleAddtoCart = (product_id)=>{
+ 
+   addtoCart(product_id,{
+    onSuccess:(data)=>{
+      toast.success(data?.message || "Add to Cart Successful ")
+    }
+   })
+  }
 
   return (
     <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
@@ -126,6 +138,7 @@ const ProductGridCard = ({ product }) => {
 
       <button
         type="button"
+        onClick={()=>handleAddtoCart(product?.product_id)}
         className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-colors cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
