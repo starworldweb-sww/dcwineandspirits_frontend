@@ -101,6 +101,7 @@ export default async function ProductsSlugPage({ params }) {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ProductsDynamicClient slug={slug} />
+      l
     </HydrationBoundary>
   );
 }
