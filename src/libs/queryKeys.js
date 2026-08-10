@@ -13,7 +13,7 @@ export const categoryKeys = {
   // Future-proofing: Agar kabhi single category detail ka endpoint banayein
   singleCategoryDetail: (slug) => [...categoryKeys.details(), slug],
 };
-  
+
 export const homeKeys = {
   // Base keys for home page specific data
   all: ["home"],
@@ -34,16 +34,21 @@ export const homeKeys = {
   topCategory: () => [...homeKeys.lists(), "top-category"],
   occasionMenu: () => [...homeKeys.lists(), "occasion-menu"],
   giftDropDown: () => [...homeKeys.lists(), "gift-drop-down"],
-  giftDropDownShopByCategory: () => [...homeKeys.lists(), "gift-drop-down-shop-by-category"],
-  giftDropDownGiftByOrigin: () => [...homeKeys.lists(), "gift-drop-down-gift-by-origin"],
-  giftDropDownShopByPrice: () => [...homeKeys.lists(), "gift-drop-down-shop-by-price"],
+  giftDropDownShopByCategory: () => [
+    ...homeKeys.lists(),
+    "gift-drop-down-shop-by-category",
+  ],
+  giftDropDownGiftByOrigin: () => [
+    ...homeKeys.lists(),
+    "gift-drop-down-gift-by-origin",
+  ],
+  giftDropDownShopByPrice: () => [
+    ...homeKeys.lists(),
+    "gift-drop-down-shop-by-price",
+  ],
   personalization: () => [...homeKeys.lists(), "personalization"],
   occasionTreasures: () => [...homeKeys.lists(), "occasion-treasures"],
-  
-
 };
-
-
 
 export const newsletterKeys = {
   // Base keys
@@ -68,7 +73,7 @@ export const productKeys = {
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
 };
- export const customerKeys = {
+export const customerKeys = {
   // Base keys
   all: ["customer"],
   lists: () => [...customerKeys.all, "list"],
@@ -100,8 +105,12 @@ export const productKeys = {
 };
 
 export const cartKeys = {
-  all:["cart"],
-  getCartList:()=>[...cartKeys.all,"cartList"],
-  addtoCart:()=>[...cartKeys.getCartList()],
+  all: ["cart"],
+  getCartList: () => [...cartKeys.all, "cartList"],
+  addtoCart: () => [...cartKeys.getCartList()],
+};
 
-}
+export const mobileCategoryKeys = {
+  all: ["mobileCategory"],
+  list: () => [...mobileCategoryKeys.all, "list"],
+};
