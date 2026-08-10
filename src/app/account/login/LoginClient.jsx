@@ -8,6 +8,8 @@ import * as Yup from "yup";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useLogin } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
+import AccountClient from "../AccountClient";
+import AccountSidebar from "@/app/components/AccountSidebar";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
@@ -32,7 +34,9 @@ const inputClass =
 
 // --- VALIDATION SCHEMA ---
 const validationSchema = Yup.object({
-  email: Yup.string().email("Invalid email address").required("Email is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
 
@@ -71,11 +75,13 @@ const LoginClient = () => {
 
     if (hasErrors) {
       const firstErrorMessage = Object.values(errors)[0];
-      toast.error(firstErrorMessage || "Please fill all required fields correctly");
+      toast.error(
+        firstErrorMessage || "Please fill all required fields correctly",
+      );
 
       const touchedFields = Object.keys(formik.initialValues).reduce(
         (acc, field) => ({ ...acc, [field]: true }),
-        {}
+        {},
       );
       formik.setTouched(touchedFields);
       return;
@@ -172,27 +178,7 @@ const LoginClient = () => {
 
         {/* Right Column: Sidebar */}
         <div className="w-full lg:w-[260px] shrink-0">
-          <div className="bg-[#eeeeee] rounded-[4px] p-5">
-            <ul>
-              {sidebarLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="group flex items-center gap-1.5 py-2.5 text-[15px] font-hind-madurai text-[#333333] transition-colors duration-300"
-                  >
-                    <ChevronRight
-                      size={16}
-                      className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
-                      style={{ color: ACCENT }}
-                    />
-                    <span className="transition-colors duration-300 group-hover:text-[#8c1a3c]">
-                      {link.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <AccountSidebar />
         </div>
       </div>
     </div>

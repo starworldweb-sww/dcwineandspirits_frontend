@@ -89,7 +89,7 @@ export default function NewsletterSection() {
             <button
               type="button"
               onClick={() => setIsPrivacyModalOpen(true)}
-              className="underline font-medium text-[#b8225a] hover:opacity-80 transition-opacity cursor-hover"
+              className="underline font-medium text-[#b8225a] hover:opacity-80 transition-opacity cursor-pointer"
             >
               Privacy Policy
             </button>
