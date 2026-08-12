@@ -28,6 +28,7 @@ const Navbar = () => {
       <Link href="/" className="shrink-0" title='DC Wine & Spirits'>
         <Image
           src="/dc-wine_logo-360x90.webp"
+          loading="eager"
           alt="Logo"
           width={240}
           height={60}

@@ -91,7 +91,7 @@ export default function ProductMain({ product }) {
 
   return (
     <>
-      <ProductsHeader />
+      <ProductsHeader categoryName={product.name} />
       <main className={`min-h-screen w-full bg-white ${hindMadurai.className}`}>
         <section className="bg-white px-3 2xl:px-32 py-6">
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
@@ -215,9 +215,9 @@ export default function ProductMain({ product }) {
 
                   {brandName && (
                     <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
-                      <a href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
+                      <img href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
                         {brandName}
-                      </a>
+                      </img>
                     </div>
                   )}
                 </div>

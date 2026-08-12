@@ -199,7 +199,7 @@ const ProductGridCard = ({ product }) => {
       {/* 3. Title ke liye 2 lines ki fixed height reserve - 1 line wale aur
              2 line wale titles ke baad bhi price/button ki position same rahegi */}
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-lg text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
+        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center font-hind-madurai">
           {decodeHtml(product.name)}
         </h2>
       </Link>

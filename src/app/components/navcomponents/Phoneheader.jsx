@@ -7,6 +7,7 @@ import { Hind } from "next/font/google";
 import WavingEmoji from "./WavingEmoji";
 import { useUser, useLogout } from "@/app/api/hooks/useAuth";
 import { WiSunset } from "react-icons/wi";
+import { GiNightSleep } from "react-icons/gi";
 
 import {
   User,
@@ -15,8 +16,6 @@ import {
   LogOut,
   Sunrise,
   Sun,
-  Sunset,
-  Moon,
 } from "lucide-react";
 
 const hind = Hind({
@@ -40,7 +39,7 @@ const PhoneHeader = () => {
       return { text: "Good afternoon", Icon: Sun, color: "text-yellow-400" };
     if (hour >= 17 && hour < 21)
       return { text: "Good evening", Icon: WiSunset, color: "text-orange-400" };
-    return { text: "Good night", Icon: Moon, color: "text-indigo-300" };
+    return { text: "Good night", Icon: GiNightSleep, color: "text-indigo-300" };
   };
 
   const handleLogout = () => {
@@ -58,25 +57,25 @@ const PhoneHeader = () => {
     <div
       className={`${hind.className} w-full bg-black flex items-center justify-between py-2 px-4 md:flex lg:hidden relative border-b border-white/10`}
     >
-      {/* LEFT */}
-
-      {/* RIGHT */}
+      {/* LEFT — Track Order */}
       <div>
         <Link
           href="/track-order"
           className="flex items-center gap-1.5 text-white/85 hover:text-white transition-colors duration-200 group"
         >
           <p className="text-[0.8rem] font-medium">Track Order</p>
-          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
             <Package size={14} strokeWidth={2} />
           </span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* RIGHT — profile / login. min-w fixed rakha hai taaki loading -> loaded
+          switch pe width change na ho aur LEFT wala Track Order shift na kare (CLS fix) */}
+      <div className="flex items-center justify-end min-w-[140px]">
         {isLoading ? (
           <div className="flex items-center gap-2 text-white/60">
-            <div className="w-7 h-7 rounded-full bg-white/10 animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-white/10 animate-pulse shrink-0" />
             <div className="flex flex-col gap-1">
               <div className="w-14 h-2 rounded bg-white/10 animate-pulse" />
               <div className="w-20 h-2.5 rounded bg-white/10 animate-pulse" />
@@ -107,7 +106,7 @@ const PhoneHeader = () => {
               <ChevronDown
                 size={14}
                 strokeWidth={2.25}
-                className={`text-white/50 transition-transform duration-300 ease-out ${
+                className={`text-white/50 transition-transform duration-300 ease-out shrink-0 ${
                   isProfileOpen ? "rotate-180 text-white/80" : ""
                 }`}
               />
@@ -120,7 +119,7 @@ const PhoneHeader = () => {
                   className="fixed inset-0 z-50"
                   onClick={() => setIsProfileOpen(false)}
                 />
-                <div className="absolute top-full left-0 mt-3 w-42 bg-white border z-[60] rounded-xl overflow-hidden shadow-2xl shadow-black/30 origin-top-left animate-in fade-in slide-in-from-top-1 duration-150 shadow-[0px_4px_52px_18px_rgba(0,_0,_0,_0.1)] border-2 border-black/15">
+                <div className="absolute top-full right-0 mt-3 w-42 bg-white z-[60] rounded-xl overflow-hidden shadow-2xl shadow-black/30 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150 shadow-[0px_4px_52px_18px_rgba(0,_0,_0,_0.1)] border-2 border-black/15">
                   <Link
                     href="/account"
                     onClick={() => setIsProfileOpen(false)}
@@ -149,7 +148,7 @@ const PhoneHeader = () => {
             href="/account/login"
             className="flex items-center gap-1.5 text-white/85 hover:text-white transition-colors duration-200 group"
           >
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors">
+            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
               <User size={14} strokeWidth={2} />
             </span>
             <p className="text-[0.8rem] font-medium">Login</p>
