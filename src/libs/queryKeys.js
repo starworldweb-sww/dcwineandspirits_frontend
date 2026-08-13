@@ -102,7 +102,7 @@ export const customerKeys = {
 
   // 8. editAccountInformation ke liye (Maps to: PUT /customer/edit-information)
   editInformation: () => [...customerKeys.all, "edit-information"],
-};
+};  
 
 export const cartKeys = {
   all: ["cart"],
@@ -113,4 +113,21 @@ export const cartKeys = {
 export const mobileCategoryKeys = {
   all: ["mobileCategory"],
   list: () => [...mobileCategoryKeys.all, "list"],
+};
+
+export const customerAddressKeys = {
+  all: ["customerAddress"],
+  list: () => [...customerAddressKeys.all, "list"],
+  getCountryList: () => [...customerAddressKeys.all, "country"],
+  getZoneList: () => [...customerAddressKeys.all, "zone"],
+};
+
+export const checkoutKeys = {
+  all: ["checkout"],
+  placeOrder: () => [...checkoutKeys.all, "place-order"],
+  createPaymentIntent: () => [...checkoutKeys.all, "create-payment-intent"],
+};
+export const shippingRateKeys = {
+  all: ["shipping-rate"],
+  getShippingRate: (countryId, zoneId, quantity) => [...shippingRateKeys.all, "get-shipping-rate", countryId, zoneId, quantity],
 };

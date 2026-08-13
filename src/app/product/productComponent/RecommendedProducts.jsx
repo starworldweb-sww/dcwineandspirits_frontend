@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { Sumana } from "next/font/google";
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { toast } from "sonner";
 
 // -----------------------------------------------------------------
 // FONT
@@ -51,6 +53,7 @@ const TABS = [
 export default function RecommendedProducts() {
   const [activeTab, setActiveTab] = useState("related");
   const sliderRef = useRef(null);
+  const addToCartMut = useAddtoCart();
 
   const activeProducts =
     TABS.find((tab) => tab.key === activeTab)?.products || [];
@@ -65,6 +68,16 @@ export default function RecommendedProducts() {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: 280, behavior: "smooth" });
     }
+  };
+
+  const handleAddToCart = async (e, product) => {
+    e.stopPropagation();
+    const productId = product?.product_id || product?.id;
+    if (!productId || addToCartMut.isPending) return;
+    try {
+      const res = await addToCartMut.mutateAsync({ product_id: productId, quantity: 1 });
+      if (res?.success) toast.success(res.message || "Added to cart!");
+    } catch (e) {}
   };
 
   return (
@@ -166,6 +179,15 @@ export default function RecommendedProducts() {
                     </span>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => handleAddToCart(e, product)}
+                  disabled={addToCartMut.isPending}
+                  className="mt-3 w-full bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-bold uppercase tracking-wide py-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {addToCartMut.isPending ? "ADDING..." : "ADD TO CART"}
+                </button>
               </div>
             </div>
           ))}

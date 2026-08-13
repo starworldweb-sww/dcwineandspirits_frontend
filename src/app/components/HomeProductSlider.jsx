@@ -3,15 +3,16 @@
 import { useRouter } from "next/navigation";
 import React, { useRef, useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Award, ShoppingCart, Percent, Loader2 } from "lucide-react";
-import { useHomePageProducts } from "@/app/api/Hooks/category/useHomePageProducts"; // apna actual path check kar lena
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { useHomePageProducts } from "../api/hooks/category/useHomePageProducts";
 
 const IMAGE_BASE_URL =
   process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ||
-  "https://www.admin.dcwineandspirits.com/image/"; // apne project ke actual base URL se replace karo
+  "https://www.admin.dcwineandspirits.com/image/";
 
-// Backend title jaisa "Bestsellers" / "New Arrivals" / "Special Deals" milta hai,
-// isse hum icon assign kar rahe hain (tab id ke liye title hi use kar rahe hain)
+
 const TAB_ICONS = {
   "Bestsellers": Award,
   "New Arrivals": ShoppingCart,
@@ -24,7 +25,8 @@ const TAB_ICONS = {
 const HomeProductSlider = () => {
   const router = useRouter();
   const scrollRef = useRef(null);
-
+  const addToCartMut = useAddtoCart();
+  const [addingProductId, setAddingProductId] = useState(null);
   const { data, isLoading, isError } = useHomePageProducts();
 
   // API se items (tabs) nikalna: data.sections[0].items[]
@@ -48,13 +50,32 @@ const HomeProductSlider = () => {
       scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
     }
   };
-
-  const handleAddToCart = (e, product) => {
+  const handleAddToCart = async (e, product) => {
     e.stopPropagation();
-    alert(`Added ${decodeHtml(product.name)} to cart!`);
-    // TODO: yahan apna actual add-to-cart mutation call karo
-  };
 
+    const productId = product?.product_id || product?.id;
+
+    if (!productId || addToCartMut.isPending) return;
+
+    try {
+      setAddingProductId(productId);
+
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: 1,
+      });
+
+      if (res?.success) {
+        toast.success(
+          res.message || `${decodeHtml(product.name)} added to cart!`
+        );
+      }
+    } catch (error) {
+      toast.error("Failed to add product to cart");
+    } finally {
+      setAddingProductId(null);
+    }
+  };
   if (isLoading) {
     return (
       <div className="w-full bg-[#fcfcfc] py-16 flex justify-center">
@@ -64,17 +85,12 @@ const HomeProductSlider = () => {
   }
 
   if (isError || items.length === 0) {
-    return null; // ya koi fallback UI dikha sakte ho
+    return null;
   }
 
   return (
     <div className="w-full bg-[#fcfcfc] py-8 md:py-10 font-sans">
 
-      {/* -------------------------------------------------------------------
-          TABS
-          MOBILE: ab ek proper horizontal slider hai - justify-start + scroll,
-          taaki jo tab fit na ho wo swipe se dikhe, cramped centered na lage
-      ------------------------------------------------------------------- */}
       <div className="w-full mb-6 md:mb-8">
         <div className="flex justify-start sm:justify-center px-3 md:px-12 lg:px-16 2xl:px-32">
           <div className="flex gap-6 md:gap-14 items-center overflow-x-auto no-scrollbar w-full sm:w-auto sm:min-w-max border-b-1 border-gray-200">
@@ -85,9 +101,8 @@ const HomeProductSlider = () => {
                 <button
                   key={item.title}
                   onClick={() => setActiveTab(item.title)}
-                  className={`relative flex items-center gap-2 pb-3 shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer rounded-none ${
-                    isActive ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-                  }`}
+                  className={`relative flex items-center gap-2 pb-3 shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer rounded-none ${isActive ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+                    }`}
                   style={{
                     fontFamily: "'Sumana', serif",
                     fontSize: "16px",
@@ -107,15 +122,9 @@ const HomeProductSlider = () => {
         </div>
       </div>
 
-      {/* -------------------------------------------------------------------
-          PRODUCTS CAROUSEL
-          MOBILE: har card full-width (container padding minus) - isse ek
-          time pe sirf ek hi product dikhega, snap-mandatory se swipe karte
-          hi agla product clean center/start pe aa jayega
-      ------------------------------------------------------------------- */}
       <div className="max-w-screen-2xl mx-auto px-3 md:px-12 lg:px-16 2xl:px-32 relative group">
 
-        {/* LEFT ARROW - mobile pe hidden hi rahega, swipe se hi chalega */}
+
         <button
           onClick={() => scrollByAmount(-300)}
           className="hidden md:flex absolute left-2 lg:left-4 2xl:left-16 top-1/2 -translate-y-1/2 w-9 h-10 bg-[#343a40] text-white items-center justify-center z-10 cursor-pointer shadow-md rounded-none hover:bg-black transition-colors"
@@ -179,9 +188,12 @@ const HomeProductSlider = () => {
                   {/* ADD TO CART BUTTON */}
                   <button
                     onClick={(e) => handleAddToCart(e, item)}
-                    className="w-4/5 mt-4 bg-black text-white py-2.5 text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer"
+                    disabled={addToCartMut.isPending && addingProductId === (item?.product_id || item?.id)}
+                    className="w-4/5 mt-4 bg-black text-white py-2.5 text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    ADD TO CART
+                    {addingProductId === (item.product_id || item.id)
+                      ? "ADDING..."
+                      : "ADD TO CART"}
                   </button>
                 </div>
               </div>
