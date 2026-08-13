@@ -24,6 +24,7 @@ import PrivacyPolicyContent from "@/app/components/ui/PrivacyPolicyContent";
 import TermsAndConditions from "@/app/components/ui/TermsAndConditions";
 import { useCountryget } from "../api/hooks/customerAddress/useCountryget";
 import { useZoneget } from "../api/hooks/customerAddress/useZoneget";
+import { useGetAddresses } from "../api/hooks/customerAddress/useGetAddresses";
 import { useGetCartList } from "../api/hooks/cart/useGetCartList";
 import { useClearCart } from "../api/hooks/cart/useClearCart";
 import { useUser } from "../api/hooks/useAuth";
@@ -173,6 +174,10 @@ const CheckoutClient = () => {
   const { data: cartRaw, isLoading: cartLoading } = useGetCartList();
   const stripeCtxRef = useRef({ stripe: null, elements: null });
 
+  const isLoggedIn = !!user?.customer_id;
+
+  const { data: addresses = [], refetch: refetchAddresses } = useGetAddresses(isLoggedIn);
+  console.log("address",addresses)
   const getZones = useZoneget();
   const placeOrderMut = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
@@ -183,11 +188,15 @@ const CheckoutClient = () => {
 
   const [billing, setBilling] = useState(EMPTY_BILLING);
   const [billingZones, setBillingZones] = useState([]);
+  const [billingAddressMode, setBillingAddressMode] = useState("existing");
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState("");
 
   const [shippingSameAsBilling, setShippingSameAsBilling] = useState(false);
   const [shipping, setShipping] = useState(EMPTY_SHIPPING);
 
   const [shippingZones, setShippingZones] = useState([]);
+  const [shippingAddressMode, setShippingAddressMode] = useState("existing");
+  const [selectedShippingAddressId, setSelectedShippingAddressId] = useState("");
 
   const [shippingMethodId, setShippingMethodId] = useState(
     SHIPPING_METHODS_FALLBACK[0].id
@@ -217,7 +226,6 @@ const CheckoutClient = () => {
 
   const [missingOrderId, setMissingOrderId] = useState(null);
 
-  const isLoggedIn = !!user?.data?.customer_id;
 
 
   useEffect(() => {
@@ -270,7 +278,7 @@ const CheckoutClient = () => {
 
   useEffect(() => {
     if (isLoggedIn && !userLoading) {
-      const u = user.data;
+      const u = user;
       setBilling((prev) => ({
         ...prev,
         firstname: u.firstname || prev.firstname,
@@ -289,6 +297,98 @@ const CheckoutClient = () => {
       setCheckoutType("login");
     }
   }, [isLoggedIn, userLoading, user]);
+
+  const formatAddressLabel = (addr) => {
+    if (!addr) return "";
+    const parts = [];
+    if (addr.firstname) parts.push(addr.firstname);
+    if (addr.lastname) parts.push(addr.lastname);
+    if (addr.address_1) parts.push(addr.address_1);
+    if (addr.address_2) parts.push(addr.address_2);
+    if (addr.city) parts.push(addr.city);
+    if (addr.zone_name) parts.push(addr.zone_name);
+    if (addr.country_name) parts.push(addr.country_name);
+    return parts.filter(Boolean).join(" ");
+  };
+
+  const populateAddressToBilling = (addr) => {
+    if (!addr) return;
+    setBilling((prev) => ({
+      ...prev,
+      firstname: addr.firstname || prev.firstname,
+      lastname: addr.lastname || prev.lastname,
+      company: addr.company || "",
+      address_1: addr.address_1 || "",
+      address_2: addr.address_2 || "",
+      city: addr.city || "",
+      postcode: addr.postcode || "",
+      country_id: String(addr.country_id || prev.country_id),
+      zone_id: String(addr.zone_id || ""),
+    }));
+    if (addr.country_id) {
+      loadZones(String(addr.country_id), setBillingZones, (firstZoneId) => {
+        if (!addr.zone_id) {
+          setBilling((prev) => ({ ...prev, zone_id: firstZoneId }));
+        }
+      });
+    }
+  };
+
+  const populateAddressToShipping = (addr) => {
+    if (!addr) return;
+    setShipping((prev) => ({
+      ...prev,
+      firstname: addr.firstname || prev.firstname,
+      lastname: addr.lastname || prev.lastname,
+      company: addr.company || "",
+      address_1: addr.address_1 || "",
+      address_2: addr.address_2 || "",
+      city: addr.city || "",
+      postcode: addr.postcode || "",
+      country_id: String(addr.country_id || prev.country_id),
+      zone_id: String(addr.zone_id || ""),
+      telephone: prev.telephone || "",
+    }));
+    if (addr.country_id) {
+      loadZones(String(addr.country_id), setShippingZones, (firstZoneId) => {
+        if (!addr.zone_id) {
+          setShipping((prev) => ({ ...prev, zone_id: firstZoneId }));
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn || addresses.length === 0) return;
+    const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+    if (defaultAddr) {
+      setSelectedBillingAddressId(String(defaultAddr.address_id));
+      setSelectedShippingAddressId(String(defaultAddr.address_id));
+      setBillingAddressMode("existing");
+      setShippingAddressMode("existing");
+      populateAddressToBilling(defaultAddr);
+      populateAddressToShipping(defaultAddr);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, addresses]);
+
+  useEffect(() => {
+    if (!isLoggedIn || billingAddressMode !== "existing" || !selectedBillingAddressId) return;
+    const addr = addresses.find((a) => String(a.address_id) === String(selectedBillingAddressId));
+    if (addr) {
+      populateAddressToBilling(addr);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBillingAddressId, billingAddressMode]);
+
+  useEffect(() => {
+    if (!isLoggedIn || shippingAddressMode !== "existing" || !selectedShippingAddressId || shippingSameAsBilling) return;
+    const addr = addresses.find((a) => String(a.address_id) === String(selectedShippingAddressId));
+    if (addr) {
+      populateAddressToShipping(addr);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedShippingAddressId, shippingAddressMode, shippingSameAsBilling]);
 
   const cartItems = useMemo(() => {
     if (!cartRaw?.items) return [];
@@ -657,7 +757,7 @@ const CheckoutClient = () => {
         checkoutType === "register"
           ? { ...registerData, group_id: 1 }
           : isLoggedIn
-            ? user.data
+            ? use
             : null,
 
       billing: billingPayload,
@@ -1276,7 +1376,63 @@ const CheckoutClient = () => {
                     className="h-[2px] w-14 mb-6"
                     style={{ backgroundColor: ACCENT }}
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {isLoggedIn && addresses && addresses.length > 0 && (
+                    <div className="mb-5 space-y-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingAddressMode"
+                          value="existing"
+                          checked={billingAddressMode === "existing"}
+                          onChange={() => setBillingAddressMode("existing")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use an existing address
+                        </span>
+                      </label>
+
+                      {billingAddressMode === "existing" && (
+                        <div className="ml-6">
+                          <select
+                            value={selectedBillingAddressId}
+                            onChange={(e) => setSelectedBillingAddressId(e.target.value)}
+                            className={`${inputClass} cursor-pointer max-w-xl`}
+                          >
+                            <option value="">--- Select an address ---</option>
+                            {addresses.map((addr) => (
+                              <option
+                                key={addr.address_id}
+                                value={addr.address_id}
+                              >
+                                {formatAddressLabel(addr)}
+                                {addr.is_default ? " (Default)" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingAddressMode"
+                          value="new"
+                          checked={billingAddressMode === "new"}
+                          onChange={() => setBillingAddressMode("new")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use a new address
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isLoggedIn && addresses.length > 0 && billingAddressMode === "existing" ? "opacity-60" : ""}`}>
                     <div>
                       <label className={labelClass}>
                         First Name {requiredStar}
@@ -1458,8 +1614,65 @@ const CheckoutClient = () => {
                       My billing and shipping address are the same
                     </span>
                   </label>
+
+                  {isLoggedIn && addresses && addresses.length > 0 && !shippingSameAsBilling && (
+                    <div className="mb-5 space-y-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="shippingAddressMode"
+                          value="existing"
+                          checked={shippingAddressMode === "existing"}
+                          onChange={() => setShippingAddressMode("existing")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use an existing address
+                        </span>
+                      </label>
+
+                      {shippingAddressMode === "existing" && (
+                        <div className="ml-6">
+                          <select
+                            value={selectedShippingAddressId}
+                            onChange={(e) => setSelectedShippingAddressId(e.target.value)}
+                            className={`${inputClass} cursor-pointer max-w-xl`}
+                          >
+                            <option value="">--- Select an address ---</option>
+                            {addresses.map((addr) => (
+                              <option
+                                key={addr.address_id}
+                                value={addr.address_id}
+                              >
+                                {formatAddressLabel(addr)}
+                                {addr.is_default ? " (Default)" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="shippingAddressMode"
+                          value="new"
+                          checked={shippingAddressMode === "new"}
+                          onChange={() => setShippingAddressMode("new")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use a new address
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
                   <div
                     className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${shippingSameAsBilling ? "opacity-40 pointer-events-none" : ""
+                      } ${isLoggedIn && addresses.length > 0 && !shippingSameAsBilling && shippingAddressMode === "existing" ? "opacity-60" : ""
                       }`}
                   >
                     <div>

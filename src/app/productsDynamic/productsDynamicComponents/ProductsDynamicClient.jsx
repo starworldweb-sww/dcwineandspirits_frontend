@@ -14,11 +14,6 @@ const ProductsDynamicClient = ({ slug }) => {
     isError,
   } = useGetProductBySlugOrId(slug);
 
-  // ============================================================
-  // Drawer state — sirf mobile/tablet ke liye. Desktop pe Filters
-  // hamesha static sidebar ki tarah dikhta hai, is state se koi
-  // matlab nahi.
-  // ============================================================
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   if (isLoading) {
@@ -44,8 +39,8 @@ const ProductsDynamicClient = ({ slug }) => {
       />
 
       <div className="2xl:px-32 flex items-start justify-between gap-6">
-        {/* ---------- DESKTOP: static sidebar — untouched, always visible ---------- */}
-        <div className="hidden md:block">
+        {/* ---------- DESKTOP ONLY: static sidebar. lg (1024px) se dikhega ---------- */}
+        <div className="hidden lg:block">
           <Filters data={dynamicData} />
         </div>
 
@@ -53,38 +48,34 @@ const ProductsDynamicClient = ({ slug }) => {
       </div>
 
       {/* ============================================================
-          MOBILE/TABLET: Floating Filter Button
-          `md:hidden` — desktop pe kabhi nahi dikhega, wahan sidebar
-          already visible hai.
+          MOBILE + TABLET: Floating Filter Button
+          `lg:hidden` — 1024px se neeche dikhega, desktop pe hidden.
       ============================================================ */}
       <button
         onClick={() => setIsFilterDrawerOpen(true)}
-        className="md:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 bg-[#98022e] text-white px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform font-hind-madurai"
+        className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-[#98022e] bg-[#f3f3f3] px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
       >
         <SlidersHorizontal size={16} className="text-[#c99000]" />
-        <span className="text-sm font-semibold tracking-wide">Filters</span>
+        <span className="text-sm font-semibold tracking-wide font-sarabun">Filters</span>
       </button>
 
       {/* ============================================================
-          MOBILE/TABLET: Drawer
-          Sirf isFilterDrawerOpen true hone par mount hota hai —
-          backdrop click ya X button se close hota hai.
+          MOBILE + TABLET: Drawer
+          `lg:hidden` — button ke saath match, 1024px se neeche.
       ============================================================ */}
       {isFilterDrawerOpen && (
-        <div className="md:hidden fixed inset-0 z-100">
-          {/* Backdrop */}
+        <div className="lg:hidden fixed inset-0 z-100">
           <div
             onClick={() => setIsFilterDrawerOpen(false)}
             className="absolute inset-0 bg-black/50"
           />
 
-          {/* Slide-in panel */}
           <div className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col animate-[slideIn_0.25s_ease-out]">
             <div className="flex items-center justify-end px-4 py-4 border-b border-gray-200 shrink-0">
               <button
                 onClick={() => setIsFilterDrawerOpen(false)}
                 aria-label="Close filters"
-                className="p-1 text-[#98022e] hover:text-black "
+                className="p-1 text-[#98022e] hover:text-black"
               >
                 <X size={22} />
               </button>
