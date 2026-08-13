@@ -7,11 +7,12 @@ import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import { useHomePageProducts } from "../api/hooks/category/useHomePageProducts";
+import AddToCartPopup from "./popups/AddToCartPopUp";
+
 
 const IMAGE_BASE_URL =
   process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ||
   "https://www.admin.dcwineandspirits.com/image/";
-
 
 const TAB_ICONS = {
   "Bestsellers": Award,
@@ -28,6 +29,14 @@ const HomeProductSlider = () => {
   const addToCartMut = useAddtoCart();
   const [addingProductId, setAddingProductId] = useState(null);
   const { data, isLoading, isError } = useHomePageProducts();
+
+  // ============================================================
+  // NEW: AddToCartPopup ke liye state — kaunsa product abhi add
+  // hua hai wo store karte hain, taaki popup usi ka image/name/price
+  // dikha sake.
+  // ============================================================
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupProduct, setPopupProduct] = useState(null);
 
   // API se items (tabs) nikalna: data.sections[0].items[]
   const items = data?.sections?.[0]?.items || [];
@@ -50,6 +59,7 @@ const HomeProductSlider = () => {
       scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
     }
   };
+
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
 
@@ -66,9 +76,9 @@ const HomeProductSlider = () => {
       });
 
       if (res?.success) {
-        toast.success(
-          res.message || `${decodeHtml(product.name)} added to cart!`
-        );
+        // NEW: toast ki jagah / saath AddToCartPopup dikhao
+        setPopupProduct(product);
+        setPopupOpen(true);
       }
     } catch (error) {
       toast.error("Failed to add product to cart");
@@ -76,6 +86,7 @@ const HomeProductSlider = () => {
       setAddingProductId(null);
     }
   };
+
   if (isLoading) {
     return (
       <div className="w-full bg-[#fcfcfc] py-16 flex justify-center">
@@ -124,7 +135,6 @@ const HomeProductSlider = () => {
 
       <div className="max-w-screen-2xl mx-auto px-3 md:px-12 lg:px-16 2xl:px-32 relative group">
 
-
         <button
           onClick={() => scrollByAmount(-300)}
           className="hidden md:flex absolute left-2 lg:left-4 2xl:left-16 top-1/2 -translate-y-1/2 w-9 h-10 bg-[#343a40] text-white items-center justify-center z-10 cursor-pointer shadow-md rounded-none hover:bg-black transition-colors"
@@ -143,8 +153,6 @@ const HomeProductSlider = () => {
               <div
                 key={item.id}
                 onClick={() => router.push(`/${item.seo_url}`)}
-                // MOBILE: w-full (container ka poora width le lega, minus padding)
-                // isse exactly ek product frame me fit hoga. md aur upar fixed 243px.
                 className="w-full sm:w-[243px] flex-shrink-0 flex flex-col bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer snap-center sm:snap-start relative rounded-none"
               >
                 {/* IMAGE */}
@@ -215,6 +223,16 @@ const HomeProductSlider = () => {
         </button>
 
       </div>
+
+      {/* ============================================================
+          NEW: Add to Cart success popup — top-right corner mein
+          2.5 second ke liye dikhta hai, phir auto-close ho jaata hai.
+      ============================================================ */}
+      <AddToCartPopup
+        isOpen={popupOpen}
+        onClose={() => setPopupOpen(false)}
+        product={popupProduct}
+      />
     </div>
   );
 };
