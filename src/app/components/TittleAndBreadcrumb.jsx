@@ -1,6 +1,7 @@
 import { Sumana } from "next/font/google";
 import React from "react";
 import Breadcrumbs from "./navcomponents/Breadcrumbs";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // Sumana font - sirf category/product title heading ke liye
 const sumana = Sumana({
@@ -20,7 +21,7 @@ const ProductsHeader = ({ categoryName, breadcrumbs }) => {
           className={`${sumana.className} block w-full max-w-[1400px] text-black text-[22px] md:text-[26px] leading-[31.2px] tracking-[1px] text-center capitalize transition-all duration-300 mb-2`}
         >
           {/* Yahan 'categoryName' ka use karein hardcoded "Product" ki jagah */}
-          {categoryName}
+          {decodeHtml(categoryName)}
         </h1>
 
         {/* Gold/Wine divider centered */}
