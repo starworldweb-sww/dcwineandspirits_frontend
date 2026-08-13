@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import React from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 const Breadcrumbs = ({ breadcrumbs }) => {
   const pathname = usePathname();
@@ -10,23 +10,23 @@ const Breadcrumbs = ({ breadcrumbs }) => {
   // ── Shared wrapper — same height har jagah, isliye jab breadcrumb
   //     khaali ho (jaise homepage pe) tab bhi page ka layout shift nahi hota ──
   const wrapperClass =
-    'w-full px-4 xl:px-20 py-3 select-none flex flex-col justify-center items-center min-h-[44px]';
+    "w-full px-4 xl:px-20 py-3 select-none flex flex-col justify-center items-center min-h-[44px]";
 
   // ── Homepage pe: empty wrapper (same height, no content) ──
-  if (pathname === '/' && (!breadcrumbs || breadcrumbs.length === 0)) {
+  if (pathname === "/" && (!breadcrumbs || breadcrumbs.length === 0)) {
     return <div className={wrapperClass} />;
   }
 
   // ── Logic: Prop vs Pathname ──
   let segmentsToRender = [];
 
-  if (breadcrumbs && breadcrumbs.length > 0) {
+  if (Array.isArray(breadcrumbs) && breadcrumbs.length > 0) {
     segmentsToRender = breadcrumbs;
   } else {
-    const pathSegments = pathname.split('/').filter((item) => item !== '');
+    const pathSegments = pathname.split("/").filter((item) => item !== "");
     segmentsToRender = pathSegments.map((segment) => {
       return {
-        label: segment.replace(/-/g, ' '),
+        label: segment.replace(/-/g, " "),
         href: `/${segment}`,
       };
     });
@@ -38,7 +38,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
         aria-label="breadcrumb"
         className="max-w-screen-2xl mx-auto flex justify-center"
       >
-        <ul className="flex items-center m-0 p-0 list-none gap-2 text-[13px] md:text-[14px] font-[Cambria,Georgia,serif]">
+        <ul aria-label="Breadcrumbs" className="flex items-center m-0 p-0 list-none gap-2 text-[13px] md:text-[14px] font-[Cambria,Georgia,serif]">
           {/* ── Home Icon ── */}
           <li className="flex items-center">
             <Link
@@ -67,17 +67,22 @@ const Breadcrumbs = ({ breadcrumbs }) => {
           {segmentsToRender.map((segment, index) => {
             const isLast = index === segmentsToRender.length - 1;
 
-            let labelToDisplay = segment.label || segment.name || segment.title || 'Unknown';
-            let linkToUse = segment.href || segment.url || segment.path || (segment.slug ? `/${segment.slug}` : '#');
+            let labelToDisplay =
+              segment.label || segment.name || segment.title || "Unknown";
+            let linkToUse =
+              segment.href ||
+              segment.url ||
+              segment.path ||
+              (segment.slug ? `/${segment.slug}` : "#");
 
             // ── "Brand" / "Brands" aaye toh "Brands" dikhao aur /brands pe link karo ──
             if (
-              typeof labelToDisplay === 'string' &&
-              (labelToDisplay.toLowerCase() === 'brand' ||
-                labelToDisplay.toLowerCase() === 'brands')
+              typeof labelToDisplay === "string" &&
+              (labelToDisplay.toLowerCase() === "brand" ||
+                labelToDisplay.toLowerCase() === "brands")
             ) {
-              labelToDisplay = 'Brands';
-              linkToUse = '/brands';
+              labelToDisplay = "Brands";
+              linkToUse = "/brands";
             }
 
             return (
@@ -86,8 +91,11 @@ const Breadcrumbs = ({ breadcrumbs }) => {
                 <span className="text-[#d1d1d1] font-sans text-[15px]">/</span>
 
                 {/* Agar last item hai YA fir link valid nahi hai, toh as a text render karo */}
-                {isLast || linkToUse === '#' ? (
-                  <span className="text-[#444] capitalize font-medium" style={{ userSelect: "text" }}>
+                {isLast || linkToUse === "#" ? (
+                  <span
+                    className="text-[#444] capitalize font-medium"
+                    style={{ userSelect: "text" }}
+                  >
                     {labelToDisplay}
                   </span>
                 ) : (

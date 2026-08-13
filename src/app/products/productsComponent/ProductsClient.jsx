@@ -17,20 +17,22 @@ const ProductsClient = () => {
   
   const allProducts = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.allproducts || []);
+    return data.pages.flatMap((page) => page.allproducts || []);
   }, [data]);
-  
- 
+
   const allbrand = data?.pages[0]?.allbrand || [];
   const allparentCategory = data?.pages[0]?.allparentCategory || [];
 
   return (
     <div>
-      <ProductsHeader/>
-      
-      <ProductsMain 
-        products={allProducts} 
-        isLoading={isLoading} 
+      <ProductsHeader
+        categoryName="Products"
+        breadcrumbs={[{ label: "All Products", href: "/All-Products" }]}
+      />
+
+      <ProductsMain
+        products={allProducts}
+        isLoading={isLoading}
         isError={isError}
         layout={layout}
         setLayout={setLayout}
@@ -39,12 +41,14 @@ const ProductsClient = () => {
         showNum={showNum}
         setShowNum={setShowNum}
       />
-      
+
       {/* Load More Button (only clickable, no auto-load) */}
       {hasNextPage && (
         <div className="w-full py-10 flex justify-center">
           {isFetchingNextPage ? (
-            <div className="text-gray-500 font-semibold">Loading more products...</div>
+            <div className="text-gray-500 font-semibold">
+              Loading more products...
+            </div>
           ) : (
             <button
               onClick={() => fetchNextPage()}
@@ -55,11 +59,8 @@ const ProductsClient = () => {
           )}
         </div>
       )}
-      
-      <ProductViewTabs 
-        products={allProducts}
-      />
-    
+
+      <ProductViewTabs products={allProducts} />
     </div>
   );
 };

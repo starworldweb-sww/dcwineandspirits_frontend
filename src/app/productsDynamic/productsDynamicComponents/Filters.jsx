@@ -6,33 +6,22 @@ import { CircleX, Minus, Plus } from "lucide-react";
 import { Box, Slider, Input, Typography, Stack } from "@mui/material";
 import { decodeHtml } from "@/libs/decodeHtml";
 
-// STEP 1: Design tokens for DC Wine's filter look (from the reference
-// screenshot) — a dark navy for the price slider, and a maroon/pink accent
-// for the underline + section toggle squares.
 const NAVY = "#14213d";
 const ACCENT = "#98022e";
-
-// STEP 2: Static sample data (no props/API needed — this is a standalone
-// demo). Swap these arrays/images for real data whenever you wire this up.
-
 
 const STATIC_AVAILABILITY = [
   { id: "in_stock", label: "In Stock" },
   { id: "out_of_stock", label: "Out of Stock" },
 ];
 
-const STATIC_BRANDS = [
-  { id: 1, name: "La Marca", image: "/brands/la-marca.png" },
-  { id: 2, name: "Lamberti", image: "/brands/lamberti.png" },
-  { id: 3, name: "Maschio", image: "/brands/maschio.png" },
-  { id: 4, name: "Mionetto", image: "/brands/mionetto.png" },
-];
-
 const PriceSlider = (priceData) => {
-
-  const STATIC_PRICE = { min: priceData?.priceData?.min, max: priceData?.priceData?.max, value: [priceData?.priceData?.min, priceData?.priceData?.max] };
+  const STATIC_PRICE = {
+    min: priceData?.priceData?.min,
+    max: priceData?.priceData?.max,
+    value: [priceData?.priceData?.min, priceData?.priceData?.max],
+  };
   const [localValue, setLocalValue] = useState(STATIC_PRICE.value);
- 
+
   return (
     <Box sx={{ width: "100%", px: 1, pb: 2 }}>
       <Slider
@@ -59,10 +48,7 @@ const PriceSlider = (priceData) => {
         {[0, 1].map((idx) => (
           <React.Fragment key={idx}>
             {idx === 1 && (
-              <Typography
-                variant="caption"
-                sx={{ color: "#999", fontFamily: "Sarabun, sans-serif" }}
-              >
+              <Typography variant="caption" sx={{ color: "#999", fontFamily: "Sarabun, sans-serif" }}>
                 —
               </Typography>
             )}
@@ -77,10 +63,7 @@ const PriceSlider = (priceData) => {
                 flex: 1,
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{ color: "#666", mr: 0.5, fontFamily: "Sarabun, sans-serif" }}
-              >
+              <Typography variant="caption" sx={{ color: "#666", mr: 0.5, fontFamily: "Sarabun, sans-serif" }}>
                 $
               </Typography>
               <Input
@@ -132,10 +115,7 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
     <p className="font-['Sarabun',sans-serif] font-bold text-sm tracking-widest text-black uppercase">
       {label}
     </p>
-    <span
-      className="w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 bg-white border-1 border-[#9c1750]"
-
-    >
+    <span className="w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 bg-white border-1 border-[#9c1750]">
       {isOpen ? (
         <Minus size={12} className="text-[#98022e]" />
       ) : (
@@ -145,14 +125,18 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
+// ============================================================
+// Filters — ab ye SIRF content render karta hai (price, availability,
+// brands). Drawer/backdrop/trigger button ka koi kaam iska nahi —
+// wo parent (ProductsDynamicClient) control karta hai. Isse ye
+// component desktop sidebar mein AND mobile drawer ke andar, dono
+// jagah reusable ban gaya bina duplicate logic ke.
+// ============================================================
 const Filters = ({ data }) => {
-   
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
 
-  // Static local selection state (no external onChange callbacks — this
-  // is a self-contained demo, not wired to real filtering logic yet).
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
 
@@ -174,17 +158,14 @@ const Filters = ({ data }) => {
   };
 
   return (
-    <div className="w-full max-w-[280px]  font-['Sarabun',sans-serif]">
+    <div className="w-full max-w-[280px] font-['Sarabun',sans-serif]">
       {/* Header */}
       <div className="flex justify-between items-center px-1 py-4">
         <div>
           <h2 className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none">
             Filter
           </h2>
-          <div
-            className="h-[2px] w-10 mt-1 rounded-full bg-[#98022e]"
-
-          />
+          <div className="h-[2px] w-10 mt-1 rounded-full bg-[#98022e]" />
         </div>
         <button
           type="button"
@@ -213,10 +194,7 @@ const Filters = ({ data }) => {
       {availabilityOpen && (
         <div className="flex flex-col px-4 py-2">
           {STATIC_AVAILABILITY.map((option) => (
-            <label
-              key={option.id}
-              className="flex items-center gap-3 py-2 cursor-pointer"
-            >
+            <label key={option.id} className="flex items-center gap-3 py-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={selectedAvailability.includes(option.id)}
@@ -237,10 +215,7 @@ const Filters = ({ data }) => {
       {brandsOpen && (
         <div className="flex flex-col px-4 py-2 h-64 overflow-scroll overflow-x-hidden">
           {data?.brands?.map((brand) => (
-            <label
-              key={brand?.manufacturer_id}
-              className="flex items-center gap-3 py-2.5 cursor-pointer"
-            >
+            <label key={brand?.manufacturer_id} className="flex items-center gap-3 py-2.5 cursor-pointer">
               <input
                 type="checkbox"
                 checked={selectedBrandIds.includes(brand?.manufacturer_id)}
@@ -249,7 +224,6 @@ const Filters = ({ data }) => {
                 style={{ accentColor: ACCENT }}
               />
               <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative">
-                
                 <Image
                   fill
                   loading="lazy"

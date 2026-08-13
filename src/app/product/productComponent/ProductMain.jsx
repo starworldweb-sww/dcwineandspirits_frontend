@@ -229,9 +229,9 @@ export default function ProductMain({ product }) {
 
                   {brandName && (
                     <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
-                      <img href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
+                      <a href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
                         {brandName}
-                      </img>
+                      </a>
                     </div>
                   )}
                 </div>
