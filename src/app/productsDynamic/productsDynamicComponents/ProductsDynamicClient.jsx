@@ -59,10 +59,10 @@ const ProductsDynamicClient = ({ slug }) => {
       ============================================================ */}
       <button
         onClick={() => setIsFilterDrawerOpen(true)}
-        className="md:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 bg-[#98022e] text-white px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform font-hind-madurai"
+        className="md:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-[#98022e] bg-[#f3f3f3] px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)] "
       >
         <SlidersHorizontal size={16} className="text-[#c99000]" />
-        <span className="text-sm font-semibold tracking-wide">Filters</span>
+        <span className="text-sm font-semibold tracking-wide font-sarabun">Filters</span>
       </button>
 
       {/* ============================================================

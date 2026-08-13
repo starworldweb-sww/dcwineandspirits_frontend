@@ -54,8 +54,9 @@ const PhoneHeader = () => {
   } = getGreeting();
 
   return (
+    // HEIGHT FIX: py-2 -> py-1.5 taaki overall bar thodi compact ho
     <div
-      className={`${hind.className} w-full bg-black flex items-center justify-between py-2 px-4 md:flex lg:hidden relative border-b border-white/10`}
+      className={`${hind.className} w-full bg-black flex items-center justify-between py-1.5 px-4 md:flex lg:hidden relative border-b border-white/10`}
     >
       {/* LEFT — Track Order */}
       <div>
@@ -64,8 +65,9 @@ const PhoneHeader = () => {
           className="flex items-center gap-1.5 text-white/85 hover:text-white transition-colors duration-200 group"
         >
           <p className="text-[0.8rem] font-medium">Track Order</p>
-          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
-            <Package size={14} strokeWidth={2} />
+          {/* HEIGHT FIX: w-7 h-7 -> w-6 h-6 */}
+          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
+            <Package size={13} strokeWidth={2} />
           </span>
         </Link>
       </div>
@@ -75,7 +77,7 @@ const PhoneHeader = () => {
       <div className="flex items-center justify-end min-w-[140px]">
         {isLoading ? (
           <div className="flex items-center gap-2 text-white/60">
-            <div className="w-7 h-7 rounded-full bg-white/10 animate-pulse shrink-0" />
+            <div className="w-6 h-6 rounded-full bg-white/10 animate-pulse shrink-0" />
             <div className="flex flex-col gap-1">
               <div className="w-14 h-2 rounded bg-white/10 animate-pulse" />
               <div className="w-20 h-2.5 rounded bg-white/10 animate-pulse" />
@@ -85,10 +87,11 @@ const PhoneHeader = () => {
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen((prev) => !prev)}
-              className="flex items-center gap-2.5 rounded-full pl-1 pr-3 py-1 bg-white/[0.07] active:bg-white/10 transition-colors duration-200"
+              className="flex items-center gap-2.5 rounded-full pl-1 pr-3 py-0.5 bg-white/[0.07] active:bg-white/10 transition-colors duration-200"
             >
-              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#8c1a3c] to-[#5e0f28] text-white shrink-0 ring-1 ring-white/10">
-                <WavingEmoji isLoggedIn={isLoggedIn} size={13} />
+              {/* HEIGHT FIX: w-7 h-7 -> w-6 h-6 */}
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-[#8c1a3c] to-[#5e0f28] text-white shrink-0 ring-1 ring-white/10">
+                <WavingEmoji isLoggedIn={isLoggedIn} size={12} />
               </div>
               <div className="flex flex-col items-start leading-none gap-1">
                 <span className="flex items-center gap-1 text-[0.6rem] text-white/45 font-medium leading-none tracking-wide uppercase">
@@ -148,8 +151,9 @@ const PhoneHeader = () => {
             href="/account/login"
             className="flex items-center gap-1.5 text-white/85 hover:text-white transition-colors duration-200 group"
           >
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
-              <User size={14} strokeWidth={2} />
+            {/* HEIGHT FIX: w-7 h-7 -> w-6 h-6 */}
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-white/[0.07] group-hover:bg-white/[0.12] transition-colors shrink-0">
+              <User size={13} strokeWidth={2} />
             </span>
             <p className="text-[0.8rem] font-medium">Login</p>
           </Link>
