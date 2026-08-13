@@ -15,12 +15,14 @@ const publicAccountRoutes = [
     '/account/forgotten',
     '/account/reset',
     '/account/cart',
+    '/account/login'
 ];
-const authRoutes = ['/login', '/register'];
+const authRoutes = ['/account/login', '/register'];
 
 export async function proxy(request) {
     const { pathname } = request.nextUrl;
     const hasToken = Boolean(request.cookies.get('token')?.value?.length);
+    
     const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
     if (isAuthRoute && hasToken) {
         return NextResponse.redirect(new URL('/', request.nextUrl.origin));
@@ -39,7 +41,7 @@ export async function proxy(request) {
         (route) => pathname === route || pathname.startsWith(`${route}/`)
     );
     if (isProtected && !hasToken) {
-        const loginUrl = new URL('/login', request.nextUrl.origin);
+        const loginUrl = new URL('/account/login', request.nextUrl.origin);
         return NextResponse.redirect(loginUrl);
     }
 

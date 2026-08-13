@@ -29,7 +29,7 @@ const ProductsDynamicClient = ({ slug }) => {
     );
   }
 
-  if (isError || !dynamicData || dynamicData.type === "not_found") {
+  if (isError || !dynamicData || dynamicData?.type === "not_found") {
     return (
       <div className="w-full py-20 text-center text-[#98022e] font-bold text-lg">
         Not found.

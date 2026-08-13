@@ -4,7 +4,6 @@ export const customerAddressService = {
 
     getCountryList: async () => {
         const res = await axiosInstance.get(`/customer-address/countries`)
-        console.log("ress",res)
         return  res?.data?.data || []
     },
     getZoneList: async (countryId) => {
