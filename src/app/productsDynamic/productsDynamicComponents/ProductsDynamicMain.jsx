@@ -204,7 +204,7 @@ const ProductGridCard = ({ product }) => {
       <button
         type="button"
         onClick={()=>handleAddtoCart(product?.product_id)}
-        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-colors cursor-pointer hover:rounded-xl`}
+        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
       </button>
