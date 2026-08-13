@@ -757,7 +757,7 @@ const CheckoutClient = () => {
         checkoutType === "register"
           ? { ...registerData, group_id: 1 }
           : isLoggedIn
-            ? use
+            ? user
             : null,
 
       billing: billingPayload,
