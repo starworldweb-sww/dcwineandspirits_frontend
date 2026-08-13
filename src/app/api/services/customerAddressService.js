@@ -9,6 +9,11 @@ export const customerAddressService = {
     getZoneList: async (countryId) => {
         const res = await axiosInstance.get(`/customer-address/zones/${countryId}`)
         return  res?.data?.data || []
+    },
+    getAddresses: async () => {
+        const res = await axiosInstance.get(`/customer-address/`)
+        console.log("res",res)
+        return res?.data?.data || []
     }
 
 }

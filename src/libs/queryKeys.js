@@ -120,6 +120,7 @@ export const customerAddressKeys = {
   list: () => [...customerAddressKeys.all, "list"],
   getCountryList: () => [...customerAddressKeys.all, "country"],
   getZoneList: () => [...customerAddressKeys.all, "zone"],
+  getAddressesList: () => [...customerAddressKeys.all, "addresses-list"],
 };
 
 export const checkoutKeys = {
