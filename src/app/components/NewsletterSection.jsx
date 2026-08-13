@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import Modal from "@/app/components/ui/Modal";
@@ -12,9 +12,13 @@ export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-
+  const [isClient, setIsClient] = useState(false);
   const newsletterMutation = useNewsletterSubscribe();
 
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -53,7 +57,7 @@ export default function NewsletterSection() {
           newsletter. Get a $10 discount on your first order.
         </p>
 
-        <form
+        {isClient && <form
           onSubmit={handleSubmit}
           className="mx-auto mt-6 flex w-full max-w-md flex-col gap-3 sm:flex-row"
         >
@@ -76,7 +80,7 @@ export default function NewsletterSection() {
             {newsletterMutation.isPending ? "Sending..." : "Send"}
           </button>
         </form>
-
+        }
         <label className="mx-auto mt-4 flex max-w-md items-center justify-center gap-2 text-sm text-gray-700">
           <input
             type="checkbox"

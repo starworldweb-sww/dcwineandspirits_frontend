@@ -78,13 +78,13 @@ const SHIPPING_METHODS_FALLBACK = [
 
 const PAYMENT_METHODS = [
   {
-    code: "pp_standard",
-    method: "Credit / Debit Card (Stripe)",
+    code: "stripe",
+    method: "Credit / Debit Card",
   },
-  {
-    code: "cod",
-    method: "Cash On Delivery",
-  },
+  // {
+  //   code: "cod",
+  //   method: "Cash On Delivery",
+  // },
 ];
 
 const EMPTY_BILLING = {
@@ -341,11 +341,11 @@ const CheckoutClient = () => {
   const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
     countryId: effectiveCountryId,
     zoneId: effectiveZoneId,
-    quantity: cartTotalQty || 1,
+    // quantity: cartTotalQty || 1,
   });
 
   const SHIPPING_METHODS = useMemo(() => {
-    if (shippingRate?.allMatches && shippingRate.allMatches.length > 0) {
+    if (shippingRate?.allMatches && shippingRate?.allMatches.length > 0) {
       return shippingRate.allMatches.map((match, idx) => ({
         id: `dynamic_${match.chargeNum ?? idx}`,
         code: `multi_flat_rate.multi_flat_rate_0`,
@@ -356,7 +356,7 @@ const CheckoutClient = () => {
     }
     return SHIPPING_METHODS_FALLBACK;
   }, [shippingRate]);
-
+  
   const subTotal = useMemo(
     () => cartItems.reduce((acc, it) => acc + it.total, 0),
     [cartItems]
@@ -365,7 +365,7 @@ const CheckoutClient = () => {
   const selectedShipping = SHIPPING_METHODS.find(
     (r) => r.id === shippingMethodId
   ) || SHIPPING_METHODS[0];
-  const shippingCost = selectedShipping ? selectedShipping.cost : 0;
+  const shippingCost = selectedShipping ? selectedShipping.cost*cartTotalQty : 0;
   const total = subTotal + shippingCost;
 
   useEffect(() => {
@@ -1396,7 +1396,6 @@ const CheckoutClient = () => {
                         name="country_id"
                         value={billing.country_id}
                         onChange={handleBillingCountryChange}
-                        defaultValue={223}
                         className={`${inputClass} cursor-pointer`}
                       >
                         <option value="">--- Please Select ---</option>
@@ -1995,22 +1994,22 @@ const CheckoutClient = () => {
                                 throw new Error(orderResult?.message || "Failed to initialize order");
                               }
 
-                              const ordId = orderResult.data.order_id;
-                              let secret = orderResult.data.stripe_client_secret;
-                              let piId = orderResult.data.stripe_payment_intent_id || null;
+                              const ordId = orderResult?.data?.order_id;
+                              let secret = orderResult?.data?.stripe_client_secret;
+                              let piId = orderResult?.data?.stripe_payment_intent_id || null;
 
                               if (!secret) {
                                 const piResult = await createPIMut.mutateAsync({
                                   amount: total,
                                   currency: "usd",
-                                  customer_email: billing.email,
-                                  customer_name: `${billing.firstname} ${billing.lastname}`.trim(),
+                                  customer_email: billing?.email,
+                                  customer_name: `${billing?.firstname} ${billing?.lastname}`.trim(),
                                 });
                                 if (!piResult?.success || !piResult.clientSecret) {
                                   throw new Error(piResult?.message || "Failed to initialize payment form");
                                 }
-                                secret = piResult.clientSecret;
-                                piId = piResult.paymentIntentId || null;
+                                secret = piResult?.clientSecret;
+                                piId = piResult?.paymentIntentId || null;
                               }
 
                               saveMissingOrder(ordId, piId, secret);
@@ -2043,7 +2042,7 @@ const CheckoutClient = () => {
                     </div>
                   )}
 
-                  {paymentCode === "cod" && (
+                  {/* {paymentCode === "cod" && (
                     <div
                       className="p-4 rounded-[3px] text-[13px]"
                       style={{ background: "#fff4e6" }}
@@ -2054,7 +2053,7 @@ const CheckoutClient = () => {
                         only in select areas.)
                       </p>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 {/* ORDER NOTE + CHECKOUT BUTTON */}

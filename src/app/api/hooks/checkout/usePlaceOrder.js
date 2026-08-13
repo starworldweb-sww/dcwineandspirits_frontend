@@ -8,13 +8,13 @@ export const usePlaceOrder = () => {
 
   return useMutation({
     mutationFn: checkoutService.placeOrder,
-    onSuccess: (data) => {
-      if (data?.success) {
-        toast.success(data?.message || "Order placed successfully");
-      }
-    },
-    onError: (error) => {
-      toast.error(error?.message || "Failed to place order");
-    },
+    // onSuccess: (data) => {
+    //   if (data?.success) {
+    //     toast.success(data?.message || "Order placed successfully");
+    //   }
+    // },
+    // onError: (error) => {
+    //   toast.error(error?.message || "Failed to place order");
+    // },
   });
 };

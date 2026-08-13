@@ -17,7 +17,7 @@ const ProductsDynamicClient = ({ slug }) => {
     );
   }
 
-  if (isError || !dynamicData || dynamicData.type === "not_found") {
+  if (isError || !dynamicData || dynamicData?.type === "not_found") {
     return (
       <div className="w-full py-20 text-center text-[#98022e] font-bold text-lg">
         Not found.
@@ -27,7 +27,7 @@ const ProductsDynamicClient = ({ slug }) => {
 
   return (
     <>
-    <ProductsHeader categoryName={dynamicData.product.name}/>
+    <ProductsHeader categoryName={dynamicData?.product?.name}/>
     <div className='2xl:px-32 flex items-start justify-between gap-6'>
       <Filters data={dynamicData} />
       <ProductsDynamicMain data={dynamicData} />

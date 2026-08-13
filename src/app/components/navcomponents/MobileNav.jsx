@@ -9,9 +9,13 @@ import PhoneLeftMenu from '../phone-components/PhoneLeftMenu';
 
 const MobileNavbar = () => {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   const cartCount = 0;
 
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   // -------------------------------------------------------------
   // SEARCH TOGGLE STATE
   // Ye state sirf PHONE width (md se neeche) pe matter karta hai.
@@ -35,8 +39,8 @@ const MobileNavbar = () => {
 
   const filteredSuggestions = searchQuery.trim()
     ? MOCK_SUGGESTIONS.filter((item) =>
-        item.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      item.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : [];
 
   // Suggestions dropdown ko bahar click karne pe band karna
@@ -90,9 +94,8 @@ const MobileNavbar = () => {
       <Link
         href="/"
         title="DC Wine & Spirits"
-        className={`shrink-0 items-center ${
-          isSearchOpen ? "hidden md:flex" : "flex"
-        }`}
+        className={`shrink-0 items-center ${isSearchOpen ? "hidden md:flex" : "flex"
+          }`}
       >
         <Image
           src="/dc-wine_logo-360x90.webp"
@@ -107,9 +110,8 @@ const MobileNavbar = () => {
       <Link
         href="/"
         title="DC Wine & Spirits"
-        className={`shrink-0 items-center md:hidden ${
-          isSearchOpen ? "flex" : "hidden"
-        }`}
+        className={`shrink-0 items-center md:hidden ${isSearchOpen ? "flex" : "hidden"
+          }`}
       >
         <Image
           src="/dc-wine_logo_mobile.jpg"
@@ -129,9 +131,8 @@ const MobileNavbar = () => {
       ============================================================= */}
       <div
         ref={searchWrapperRef}
-        className={`flex-1 min-w-0 relative ${
-          isSearchOpen ? "flex" : "hidden md:flex"
-        }`}
+        className={`flex-1 min-w-0 relative ${isSearchOpen ? "flex" : "hidden md:flex"
+          }`}
       >
         <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-2">
           <div className="flex-1 min-w-0 flex items-center border border-gray-300 focus-within:border-[#98022e] rounded px-3 py-2 bg-white h-[40px]">
@@ -190,13 +191,12 @@ const MobileNavbar = () => {
             search-toggle icon ki zaroorat nahi (md:hidden)
       ============================================================= */}
       <div
-        className={`items-center gap-2 shrink-0 h-[40px] ${
-          isSearchOpen ? "hidden md:flex" : "flex"
-        }`}
+        className={`items-center gap-2 shrink-0 h-[40px] ${isSearchOpen ? "hidden md:flex" : "flex"
+          }`}
       >
 
         {/* Search toggle icon - sirf phone ke liye */}
-        <button
+        {isClient && <button
           type="button"
           onClick={handleOpenSearch}
           aria-label="Open search"
@@ -204,7 +204,7 @@ const MobileNavbar = () => {
         >
           <Search size={22} strokeWidth={1.5} />
         </button>
-
+        }
         {/* Cart Icon with badge */}
         <Link
           href="/cart"
