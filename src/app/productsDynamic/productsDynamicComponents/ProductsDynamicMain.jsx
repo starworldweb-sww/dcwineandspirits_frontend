@@ -192,7 +192,7 @@ const ProductGridCard = ({ product }) => {
       </Link>
 
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-lg text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
+        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
           {decodeHtml(product.name)}
         </h2>
       </Link>
@@ -248,6 +248,7 @@ const ProductsDynamicMain = ({ data }) => {
       <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
         <div className="flex items-center gap-3">
           <button
+           title="Grid View"
             type="button"
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
@@ -258,6 +259,7 @@ const ProductsDynamicMain = ({ data }) => {
             <RiGridFill size={20} />
           </button>
           <button
+            title="List View"
             type="button"
             onClick={() => setLayout("list")}
             aria-label="List view"

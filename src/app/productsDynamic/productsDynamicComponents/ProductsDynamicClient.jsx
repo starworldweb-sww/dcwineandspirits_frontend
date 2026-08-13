@@ -3,6 +3,8 @@ import React from "react";
 import Filters from "./Filters";
 import ProductsDynamicMain from "./ProductsDynamicMain";
 import { useGetProductBySlugOrId } from "@/app/api/hooks/useAllProducts";
+import PhoneHeader from "@/app/components/navcomponents/Phoneheader";
+import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 
 const ProductsDynamicClient = ({ slug }) => {
   const { data: dynamicData, isLoading, isError } = useGetProductBySlugOrId(slug);
@@ -24,10 +26,13 @@ const ProductsDynamicClient = ({ slug }) => {
   }
 
   return (
+    <>
+    <ProductsHeader categoryName={dynamicData.product.name}/>
     <div className='2xl:px-32 flex items-start justify-between gap-6'>
       <Filters data={dynamicData} />
       <ProductsDynamicMain data={dynamicData} />
     </div>
+    </>
   );
 };
 
