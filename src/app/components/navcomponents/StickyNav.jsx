@@ -92,7 +92,7 @@ const Stickynav = () => {
             >
               <Link
                 href={item.href}
-                className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-colors "
+                className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all "
               >
                 {index === 0 && (
                   <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
@@ -129,7 +129,7 @@ const Stickynav = () => {
 
           {showCart && cartItemCount > 0 && (
             <div className="absolute top-full right-0 w-[380px] bg-white shadow-2xl border border-gray-200 normal-case z-50">
-              <div className="max-h-[220px] overflow-y-auto">
+              <div className="max-h-[210px] overflow-y-auto">
                 {cartItems.map((item, idx) => {
                   const unitPrice = getUnitPrice(item.product);
                   return (

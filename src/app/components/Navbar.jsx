@@ -22,7 +22,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="header hidden lg:flex w-full bg-white flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6 px-3 2xl:px-32 py-2 lg:py-8">
+    <div className="header hidden lg:flex w-full bg-white flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6 px-3 2xl:px-32 py-2 lg:py-6.5">
 
       {/* Logo */}
       <Link href="/" className="shrink-0" title='DC Wine & Spirits'>
