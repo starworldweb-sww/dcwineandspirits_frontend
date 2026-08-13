@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -15,6 +15,8 @@ import {
 import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { toast } from "sonner";
 
 // -----------------------------------------------------------------
 // FONTS
@@ -52,19 +54,38 @@ const ShowOptions = [
 // -----------------------------------------------------------------
 // LIST VIEW ACTIONS (quantity + add to cart + wishlist + compare)
 // -----------------------------------------------------------------
-const ProductListActions = () => {
+const ProductListActions = ({ product }) => {
+  const addToCartMut = useAddtoCart();
+  const [qty, setQty] = useState(1);
+
+  const productId = product?.product_id || product?.id;
+  const isPending = addToCartMut.isPending;
+
+  const handleAddToCart = async () => {
+    if (!productId || isPending) return;
+    try {
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: Math.max(1, Number(qty) || 1),
+      });
+      if (res?.success) toast.success(res.message || "Added to cart!");
+    } catch (e) {}
+  };
+
   return (
     <div className="mt-4 flex items-center gap-2 sm:gap-3 w-full">
       <div className="flex items-center border border-gray-300 bg-white flex-shrink-0">
         <input
           type="number"
           min={1}
-          defaultValue={1}
+          value={qty}
+          onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
           className="w-12 sm:w-14 text-center outline-none py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <div className="flex flex-col border-l border-gray-300">
           <button
             type="button"
+            onClick={() => setQty((q) => q + 1)}
             className="px-2 hover:bg-gray-100 cursor-pointer"
             aria-label="Increase quantity"
           >
@@ -72,6 +93,7 @@ const ProductListActions = () => {
           </button>
           <button
             type="button"
+            onClick={() => setQty((q) => Math.max(1, q - 1))}
             className="px-2 hover:bg-gray-100 border-t border-gray-300 cursor-pointer"
             aria-label="Decrease quantity"
           >
@@ -82,10 +104,12 @@ const ProductListActions = () => {
 
       <button
         type="button"
-        className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer"
+        onClick={handleAddToCart}
+        disabled={isPending || !productId}
+        className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer disabled:opacity-50"
       >
         <ShoppingBag size={16} />
-        Add to Cart
+        {isPending ? "Adding..." : "Add to Cart"}
       </button>
 
       <button
@@ -161,7 +185,7 @@ const ProductListRow = ({ product }) => {
           ${Number(displayPrice || 0).toFixed(2)}
         </p>
 
-        <ProductListActions />
+        <ProductListActions product={product} />
       </div>
     </div>
   );
@@ -171,11 +195,24 @@ const ProductListRow = ({ product }) => {
 // GRID VIEW CARD
 // -----------------------------------------------------------------
 const ProductGridCard = ({ product }) => {
+  const addToCartMut = useAddtoCart();
+  const productId = product?.product_id || product?.id;
+  const isPending = addToCartMut.isPending;
+
   const productLink = `/${product.seo_url || product.custom_url}/`;
   const imageUrl = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
+
+  const handleAddToCart = async (e) => {
+    e?.preventDefault?.();
+    if (!productId || isPending) return;
+    try {
+      const res = await addToCartMut.mutateAsync({ product_id: productId, quantity: 1 });
+      if (res?.success) toast.success(res.message || "Added to cart!");
+    } catch (e) {}
+  };
 
   return (
     // 1. h-full -> card apni grid cell ka pura height le, taaki row ke saare cards match karein
@@ -212,9 +249,11 @@ const ProductGridCard = ({ product }) => {
              cheezein (image, title) fixed height le chuki hain */}
       <button
         type="button"
-        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-colors cursor-pointer hover:rounded-xl`}
+        onClick={handleAddToCart}
+        disabled={isPending || !productId}
+        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50`}
       >
-        Add to Cart
+        {isPending ? "Adding..." : "Add to Cart"}
       </button>
     </div>
   );

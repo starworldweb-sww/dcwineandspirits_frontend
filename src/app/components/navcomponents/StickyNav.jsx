@@ -70,8 +70,7 @@ const Stickynav = () => {
       setCompactLeft(el.offsetLeft);
     }
   };
-   
-  console.log("cartItems",cartItems)
+
 
   const ActiveDropdown = DROPDOWN_COMPONENTS[openMenu];
   const isCompact = COMPACT_DROPDOWNS.includes(openMenu);
@@ -127,10 +126,10 @@ const Stickynav = () => {
             </span>
           </Link>
 
-        
+
           {showCart && cartItemCount > 0 && (
             <div className="absolute top-full right-0 w-[380px] bg-white shadow-2xl border border-gray-200 normal-case z-50">
-              <div className="max-h-[320px] overflow-y-auto">
+              <div className="max-h-[220px] overflow-y-auto">
                 {cartItems.map((item, idx) => {
                   const unitPrice = getUnitPrice(item.product);
                   return (
@@ -140,7 +139,7 @@ const Stickynav = () => {
                     >
                       <div className="w-12 h-12 flex-shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
                         {item?.product?.image ? (
-                         
+
                           <img
                             src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${item?.product?.image}`}
                             alt={item?.product?.name || "Product"}
@@ -149,9 +148,9 @@ const Stickynav = () => {
                         ) : null}
                       </div>
 
-                      <p className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2">
+                      <a href={`/${item?.product?.slug}`} className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2">
                         {item?.product?.name}
-                      </p>
+                      </a>
 
                       <span className="text-[12px] text-gray-500 whitespace-nowrap">
                         x {item?.quantity}
@@ -165,7 +164,7 @@ const Stickynav = () => {
                         type="button"
                         aria-label="Remove item"
                         className="text-gray-400 hover:text-[#98022e] transition-colors"
-                        onClick={() => {}}
+                        onClick={() => { }}
                       >
                         <X size={16} />
                       </button>

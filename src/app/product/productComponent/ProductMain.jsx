@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import ProductsHeader from "../../components/TittleAndBreadcrumb";
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { toast } from "sonner";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -41,7 +43,9 @@ export default function ProductMain({ product }) {
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const [giftMessage, setGiftMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const addToCartMut = useAddtoCart();
+  const isAddingToCart = addToCartMut.isPending;
 
   const reviews = product.reviews || [];
   const reviewCount = reviews.length;
@@ -75,10 +79,20 @@ export default function ProductMain({ product }) {
     setZoomOrigin(`${mouseXPercent}% ${mouseYPercent}%`);
   };
 
-  const handleAddToCartClick = () => {
-    setIsAddingToCart(true);
-    
-    setTimeout(() => setIsAddingToCart(false), 800);
+  const handleAddToCartClick = async () => {
+    const productId = product?.product_id || product?.id;
+    if (!productId || isAddingToCart || !stock) return;
+
+    try {
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: Math.max(1, Number(quantity) || 1),
+      });
+      if (res?.success) {
+        toast.success(res.message || "Added to cart!");
+      }
+    } catch (e) {
+    }
   };
 
   const handleAddToWishlistClick = () => {

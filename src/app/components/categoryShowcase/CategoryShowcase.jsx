@@ -136,7 +136,7 @@ const CategoryShowcase = () => {
         {/* Left arrow button */}
         <button
           onClick={() => scrollSliderByOneCard(-1)}
-          className="absolute -left-4 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
+          className="absolute -left-2 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
         >
           <ChevronLeft size={18} />
         </button>
@@ -144,7 +144,7 @@ const CategoryShowcase = () => {
         {/* Right arrow button */}
         <button
           onClick={() => scrollSliderByOneCard(1)}
-          className="absolute -right-4 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
+          className="absolute -right-2 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
         >
           <ChevronRight size={18} />
         </button>
@@ -184,7 +184,7 @@ const CategoryShowcase = () => {
 
         <a
           href="/products/"
-          className="inline-block mt-6 bg-black hover:bg-[#98022e] text-white text-sm uppercase tracking-wide px-8 py-4 transition-colors active:scale-95 hover:rounded-2xl"
+          className="inline-block mt-6 bg-black hover:bg-[#98022e] text-white text-sm uppercase tracking-wide px-8 py-4 transition-all active:scale-95 hover:rounded-2xl"
         >
           Explore All Products
         </a>

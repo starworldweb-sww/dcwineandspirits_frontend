@@ -45,12 +45,29 @@ const ShowOptions = [
 ];
 
 const ProductListRow = ({ product }) => {
+  const addToCartMut = useAddtoCart();
+  const [qty, setQty] = useState(1);
+  const productId = product?.product_id || product?.id;
+  const isPending = addToCartMut.isPending;
+
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
   const productImage = product.image 
     ? `https://www.dcwineandspirits.com/image/${product.image}` 
     : "/prosecco-gift-800x800.webp";
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
+
+  const handleAddToCart = async (e) => {
+    e?.stopPropagation?.();
+    if (!productId || isPending) return;
+    try {
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: Math.max(1, Number(qty) || 1),
+      });
+      if (res?.success) toast.success(res.message || "Added to cart!");
+    } catch (e) {}
+  };
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200">
@@ -91,6 +108,53 @@ const ProductListRow = ({ product }) => {
         <p className={`${sumana.className} mt-3 text-2xl font-bold text-black`}>
           ${Number(displayPrice).toFixed(2)}
         </p>
+
+        <div className="mt-4 flex items-center gap-2 sm:gap-3 w-full">
+          <div className="flex items-center border border-gray-300 bg-white flex-shrink-0">
+            <input
+              type="number"
+              min={1}
+              value={qty}
+              onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+              className="w-12 sm:w-14 text-center outline-none py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <div className="flex flex-col border-l border-gray-300">
+              <button
+                type="button"
+                onClick={() => setQty((q) => q + 1)}
+                className="px-2 hover:bg-gray-100 cursor-pointer"
+                aria-label="Increase quantity"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                className="px-2 hover:bg-gray-100 border-t border-gray-300 cursor-pointer"
+                aria-label="Decrease quantity"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isPending || !productId}
+            className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <ShoppingBag size={16} />
+            {isPending ? "Adding..." : "Add to Cart"}
+          </button>
+
+          <button type="button" aria-label="Add to wishlist" className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer">
+            <Heart size={16} />
+          </button>
+          <button type="button" aria-label="Compare" className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer">
+            <Repeat size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );

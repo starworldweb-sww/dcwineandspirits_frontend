@@ -12,16 +12,9 @@ const ProductsClient = () => {
   const [showNum, setShowNum] = useState(24);
   const [layout, setLayout] = useState("grid");
 
-  const {
-    data,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useGetAllProducts(showNum);
-  console.log("Fetched Products Data:", data);
-
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllProducts(showNum);
+  
+  
   const allProducts = useMemo(() => {
     if (!data?.pages) return [];
     return data.pages.flatMap((page) => page.allproducts || []);
