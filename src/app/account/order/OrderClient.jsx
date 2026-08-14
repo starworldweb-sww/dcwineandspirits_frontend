@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-import AccountSidebar from "@/app/components/AccountSidebar"; // apna actual path daal dena
+import AccountSidebar from "@/app/components/AccountSidebar"; 
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";

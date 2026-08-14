@@ -1,37 +1,54 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Home, Plus, Minus, RefreshCw, X, ShoppingBag } from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; // agar login page waala component hai to reuse kar lo
+import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const ACCENT = "#98022e";
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""; // 👈 apna actual base URL daal dena
 
 const breadcrumbs = [
   { label: "Home", href: "/" },
   { label: "Shopping Cart", href: "/cart" },
 ];
 
-// --- STATIC CART DATA ---
-const cartItems = [
-  {
-    id: 1,
-    image: "/products/veuve-clicquot-birthday-set.webp", // apna actual path daal dena
-    name: "Veuve Clicquot Birthday Celebration Gift Set",
-    model: "WDG238",
-    qty: 1,
-    unitPrice: 149.0,
-  },
-];
-
 const CartClient = () => {
-  const [items, setItems] = useState(cartItems);
+  const { data, isLoading, isError } = useGetCartList();
+
+  // 👇 API response ka shape yahan map kar rahe hain UI ke expected format me
+  //    Apne actual response ke hisaab se yeh mapping adjust kar lena
+  const [items, setItems] = useState([]);
   const [openSection, setOpenSection] = useState(null); // "coupon" | "shipping" | "gift" | null
+
+  useEffect(() => {
+    const list = data?.items || [];
+    setItems(
+      list.map((item) => {
+        const product = item.product || {};
+        const price = product.special_price ?? product.price ?? 0;
+        return {
+          id: item.cart_id,
+          image: product.image
+            ? `${IMAGE_BASE_URL}/${product.image}` // 👈 apna actual image CDN/base path daal dena
+            : "/products/placeholder.webp",
+          name: product.name,
+          model: product.model ?? product.sku ?? String(product.product_id ?? ""),
+          qty: item.quantity ?? 1,
+          unitPrice: parseFloat(price) || 0,
+        };
+      })
+    );
+  }, [data]);
 
   const toggleSection = (section) =>
     setOpenSection((prev) => (prev === section ? null : section));
 
+  // TODO: local qty change abhi sirf UI state update karta hai —
+  // useUpdateCart hook milte hi yahan mutate() call laga dena
   const updateQty = (id, delta) => {
     setItems((prev) =>
       prev.map((item) =>
@@ -42,6 +59,7 @@ const CartClient = () => {
     );
   };
 
+  // TODO: useRemoveFromCart hook milte hi yahan mutate(id) call laga dena
   const removeItem = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
@@ -72,7 +90,19 @@ const CartClient = () => {
       <div className="flex flex-col lg:flex-row lg:items-start lg:gap-6 2xl:gap-8 w-full px-3 lg:px-3 2xl:px-32 mt-6 lg:mt-10 mb-14">
         {/* LEFT: Cart Items */}
         <div className="flex-1 min-w-0 w-full">
-          {items.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-[#f8f8f8] rounded-[4px]">
+              <p className="text-[15px] font-hind-madurai text-[#666]">
+                Loading your cart...
+              </p>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-[#f8f8f8] rounded-[4px]">
+              <p className="text-[15px] font-hind-madurai text-[#666]">
+                Something went wrong while loading your cart.
+              </p>
+            </div>
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center bg-[#f8f8f8] rounded-[4px]">
               <ShoppingBag size={40} className="text-gray-300 mb-3" />
               <p className="text-[15px] font-hind-madurai text-[#666]">
@@ -124,7 +154,7 @@ const CartClient = () => {
                             className="text-[14px] font-hind-madurai font-medium hover:opacity-80 transition-opacity"
                             style={{ color: ACCENT }}
                           >
-                            {item.name}
+                            {decodeHtml(item.name)}
                           </Link>
                         </td>
                         <td className="px-4 py-4 text-[14px] font-hind-madurai text-[#555]">

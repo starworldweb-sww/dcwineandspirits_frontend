@@ -59,6 +59,12 @@ export default function ProductMain({ product }) {
     ? [productImage, ...productImages]
     : [productImage];
 
+  // 👇 jab sirf ek hi image ho, thumbnail column render nahi hota —
+  // isliye main image ko utni extra width de rahe hain jitni
+  // thumbnail column (w-20 = 80px) + gap (gap-4 = 16px) le raha tha,
+  // taaki total row width same rahe aur right side content shift na ho
+  const hasMultipleImages = allImages.length > 1;
+
   const originalPrice = product.price;
   const specialPrice = product.special_price;
   const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined;
@@ -110,7 +116,7 @@ export default function ProductMain({ product }) {
         <section className="bg-white px-3 2xl:px-32 py-6">
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
             <div className="w-full lg:w-auto flex flex-row gap-3 lg:gap-4">
-              {allImages.length > 1 && (
+              {hasMultipleImages && (
                 <div className="flex flex-col gap-3 w-14 sm:w-16 lg:w-20 flex-shrink-0">
                   {allImages.map((imageUrl, index) => (
                     <div
@@ -139,7 +145,9 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className="w-full min-w-0 lg:w-[486px] lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:h-[486px]"
+                className={`w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:h-[486px] ${
+                  hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
+                }`}
               >
                 <img
                   src={mainImage}
