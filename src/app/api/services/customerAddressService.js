@@ -21,4 +21,24 @@ export const customerAddressService = {
     );
     return res?.data;
   },
+
+  updateAddress: async (addressId, payload) => {
+    const res = await axiosInstance.put(
+      `/customer-address/${addressId}`,
+      payload,
+    );
+    return res?.data;
+  },
+
+  getAddressById: async (addressId) => {
+    const res = await axiosInstance.get(`/customer-address/${addressId}`);
+    return res?.data?.data || null;
+  },
+
+  deleteAddress: async (addressId) => {
+    const res = await axiosInstance.delete(
+      `/customer-address/delete/${addressId}`,
+    );
+    return res?.data;
+  },
 };

@@ -1,12 +1,12 @@
-import React from 'react'
-import AddressCreateForm from './AdressCreateForm'
+// app/account/address/add/page.js
+import { Suspense } from "react";
+import AddressCreateForm from "./AdressCreateForm";
 
-const page = () => {
+
+export default function Page() {
   return (
-    <div>
-      <AddressCreateForm/>
-    </div>
-  )
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddressCreateForm />
+    </Suspense>
+  );
 }
-
-export default page

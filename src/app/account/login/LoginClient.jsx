@@ -105,7 +105,7 @@ const LoginClient = () => {
             date on an order&apos;s status, and keep track of the orders you
             have previously made.
           </p>
-          <Link href="/account/register">
+          <Link href="/register">
             <button className="w-full bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer">
               Continue
             </button>

@@ -1,23 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Asterisk } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Asterisk, Loader2 } from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
 import { useCreateAddress } from "@/app/api/hooks/customerAddress/useCreateAddress";
+import { useUpdateAddress } from "@/app/api/hooks/customerAddress/useUpdateAddress";
+import { useAddressById } from "@/app/api/hooks/customerAddress/useAddressById";
 import { useCountryget } from "@/app/api/hooks/customerAddress/useCountryget";
 import { useZoneget } from "@/app/api/hooks/customerAddress/useZoneget";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
-
-const breadcrumbs = [
-  { label: "Home", href: "/" },
-  { label: "Account", href: "/account" },
-  { label: "Address Book", href: "/account/address" },
-  { label: "Add Address", href: "#" },
-];
 
 const INITIAL_VALUES = {
   firstname: "",
@@ -27,6 +22,7 @@ const INITIAL_VALUES = {
   address_2: "",
   city: "",
   postcode: "",
+  telephone: "",
   country_id: "223", // default US
   zone_id: "",
   default: false,
@@ -54,6 +50,18 @@ const Field = ({ label, required, error, children }) => (
 
 const AddressCreateForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 1. Step: URL se address_id nikalo -> yehi decide karega Add hai ya Edit
+  const addressId = searchParams.get("address_id");
+  const isEditMode = !!addressId;
+
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Account", href: "/account" },
+    { label: "Address Book", href: "/account/address" },
+    { label: isEditMode ? "Edit Address" : "Add Address", href: "#" },
+  ];
 
   const [values, setValues] = useState(INITIAL_VALUES);
   const [errors, setErrors] = useState({});
@@ -66,14 +74,40 @@ const AddressCreateForm = () => {
     isPending: isLoadingZones,
   } = useZoneget();
 
+  // 2. Step: Agar edit mode hai, toh existing address fetch karo
+  const { data: addressData, isLoading: isLoadingAddress } =
+    useAddressById(addressId);
+
   useEffect(() => {
     if (values.country_id) {
       fetchZones(values.country_id);
     }
   }, [values.country_id]);
 
-  // --- Mutation ---
-  const { mutate: createAddress, isPending } = useCreateAddress();
+  // 3. Step: Jaise hi address data aaye, form ko prefill kardo (telephone bhi)
+  useEffect(() => {
+    if (addressData) {
+      setValues({
+        firstname: addressData.firstname || "",
+        lastname: addressData.lastname || "",
+        company: addressData.company || "",
+        address_1: addressData.address_1 || "",
+        address_2: addressData.address_2 || "",
+        city: addressData.city || "",
+        postcode: addressData.postcode || "",
+        telephone: addressData.telephone || "",
+        country_id: String(addressData.country_id || "223"),
+        zone_id: String(addressData.zone_id || ""),
+        default: !!addressData.default,
+      });
+    }
+  }, [addressData]);
+
+  // --- Mutations ---
+  const { mutate: createAddress, isPending: isCreating } = useCreateAddress();
+  const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress();
+
+  const isPending = isCreating || isUpdating;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,12 +129,15 @@ const AddressCreateForm = () => {
     if (!values.address_1.trim()) newErrors.address_1 = "Address is required";
     if (!values.city.trim()) newErrors.city = "City is required";
     if (!values.postcode.trim()) newErrors.postcode = "Postcode is required";
+    if (!values.telephone.trim())
+      newErrors.telephone = "Mobile number is required";
     if (!values.country_id) newErrors.country_id = "Country is required";
     if (!values.zone_id) newErrors.zone_id = "Region / State is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // 4. Step: Submit pe decide karo -> create bhejna hai ya update
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -111,9 +148,16 @@ const AddressCreateForm = () => {
       zone_id: Number(values.zone_id),
     };
 
-    createAddress(payload, {
-      onSuccess: () => router.push("/account/address"),
-    });
+    if (isEditMode) {
+      updateAddress(
+        { addressId, payload },
+        { onSuccess: () => router.push("/account/address") }
+      );
+    } else {
+      createAddress(payload, {
+        onSuccess: () => router.push("/account/address"),
+      });
+    }
   };
 
   const inputClass = (field) =>
@@ -124,7 +168,7 @@ const AddressCreateForm = () => {
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
       <ProductsHeader
-        categoryName="Add New Address"
+        categoryName={isEditMode ? "Edit Address" : "Add New Address"}
         breadcrumbs={breadcrumbs}
       />
 
@@ -216,6 +260,18 @@ const AddressCreateForm = () => {
                 />
               </Field>
 
+              {/* Mobile Number */}
+              <Field label="Mobile Number" required error={errors.telephone}>
+                <input
+                  type="tel"
+                  name="telephone"
+                  value={values.telephone}
+                  onChange={handleChange}
+                  className={inputClass("telephone")}
+                  placeholder="Mobile Number"
+                />
+              </Field>
+
               {/* Country */}
               <Field label="Country" required error={errors.country_id}>
                 <select
@@ -297,10 +353,10 @@ const AddressCreateForm = () => {
             </button>
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isLoadingAddress}
               className="flex-1 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 rounded-[3px] transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? "Saving..." : "Save Address"}
+              {isPending ? "Saving..." : isEditMode ? "Update Address" : "Save Address"}
             </button>
           </div>
         </form>

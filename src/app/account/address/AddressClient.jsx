@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
 import { useGetAddresses } from "@/app/api/hooks/customerAddress/useGetAddresses";
+import { useDeleteAddress } from "@/app/api/hooks/customerAddress/useDeleteAddress";
+
 
 
 // --- BRAND ACCENT ---
@@ -17,6 +19,40 @@ const breadcrumbs = [
   { label: "Account", href: "/account" },
   { label: "Address Book", href: "/account/address" },
 ];
+
+// ============================================================
+// Confirmation popup — dikhta hai jab user delete pe click kare
+// ============================================================
+const DeleteConfirmPopup = ({ onConfirm, onCancel, isDeleting }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white rounded-[6px] w-full max-w-sm p-6 shadow-xl">
+        <h3 className="text-[16px] font-bold font-hind-madurai text-[#333333] mb-2">
+          Delete Address
+        </h3>
+        <p className="text-[13px] font-hind-madurai text-gray-500 mb-6">
+          Are you sure you want to delete this address? This action cannot be undone.
+        </p>
+        <div className="flex items-center justify-end gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="bg-[#d9d9d9] text-[#333333] text-[12px] font-hind-madurai font-semibold tracking-[1px] uppercase px-5 py-2.5 rounded-[3px] hover:bg-[#c9c9c9] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="bg-black text-white text-[12px] font-hind-madurai font-semibold tracking-[1px] uppercase px-5 py-2.5 rounded-[3px] hover:bg-[#1a1a1a] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ============================================================
 // Single address entry row — name + full address text on the
@@ -47,7 +83,7 @@ const AddressRow = ({ address, onDelete, isDeleting }) => {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <Link href={`/account/address/edit/${address.address_id}`}>
+        <Link href={`/account/address/add?address_id=${address.address_id}`}>
           <button className="bg-[#d9d9d9] text-[#333333] text-[12px] font-hind-madurai font-semibold tracking-[1px] uppercase px-5 py-2.5 rounded-[3px] hover:bg-[#c9c9c9] transition-colors cursor-pointer">
             Edit
           </button>
@@ -70,19 +106,31 @@ const AddressClient = () => {
   // Hook se real addresses fetch honge
   const { data: addresses = [], isLoading, isError, error } = useGetAddresses();
 
-  const [deletingId, setDeletingId] = useState(null);
+  // Delete mutation hook
+  const { mutate: deleteAddress, isPending: isDeleting, variables: deletingId } = useDeleteAddress();
+
+  // Popup ke liye state — kaunsa address_id delete ke liye confirm hona hai
+  const [confirmAddressId, setConfirmAddressId] = useState(null);
 
   const handleDelete = (addressId) => {
-    if (!window.confirm("Are you sure you want to delete this address?")) return;
+    setConfirmAddressId(addressId);
+  };
 
-    setDeletingId(addressId);
+  const handleConfirmDelete = () => {
+    deleteAddress(confirmAddressId, {
+      onSuccess: () => {
+        toast.success("Address deleted successfully");
+        setConfirmAddressId(null);
+      },
+      onError: (error) => {
+        toast.error(error?.data?.response?.message || "Failed to delete address");
+        setConfirmAddressId(null);
+      },
+    });
+  };
 
-    // TODO: yahan actual delete mutation call karni hai
-    // (jaise useDeleteAddress hook, jab backend delete API ready ho)
-    setTimeout(() => {
-      toast.success("Address deleted successfully");
-      setDeletingId(null);
-    }, 400);
+  const handleCancelDelete = () => {
+    setConfirmAddressId(null);
   };
 
   return (
@@ -112,7 +160,7 @@ const AddressClient = () => {
                   key={address.address_id}
                   address={address}
                   onDelete={handleDelete}
-                  isDeleting={deletingId === address.address_id}
+                  isDeleting={isDeleting && deletingId === address.address_id}
                 />
               ))}
             </div>
@@ -137,6 +185,15 @@ const AddressClient = () => {
         {/* Right Column: Sidebar */}
         <AccountSidebar />
       </div>
+
+      {/* Delete confirmation popup */}
+      {confirmAddressId && (
+        <DeleteConfirmPopup
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 };

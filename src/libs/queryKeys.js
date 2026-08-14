@@ -122,6 +122,13 @@ export const customerAddressKeys = {
   getZoneList: () => [...customerAddressKeys.all, "zone"],
   getAddressesList: () => [...customerAddressKeys.all, "addresses-list"],
   createAddress: () => ["customer-addresses", "create"],
+  updateAddress: () => ["customer-addresses", "update"],
+  getAddressById: (addressId) => [
+    ...customerAddressKeys.all,
+    "address",
+    addressId,
+  ],
+  deleteAddress: () => ["customer-addresses", "delete"],
 };
 
 export const checkoutKeys = {
