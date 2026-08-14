@@ -160,9 +160,9 @@ const PhoneLeftMenu = () => {
         }`}
       >
         {/* ---- Header bar ---- */}
-        <div className="flex items-center justify-between bg-[#98022e] px-4 py-2 shrink-0">
+        <div className="flex items-center justify-between bg-[#98022e] px-4 py-3 shrink-0">
           <span className="font-bold text-sm tracking-wide uppercase text-white">
-            {heading}
+            MENU
           </span>
           <button type="button" onClick={closeMenu} aria-label="Close menu">
             <X size={22} className="text-white" strokeWidth={2} />
