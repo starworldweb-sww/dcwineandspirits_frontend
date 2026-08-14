@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef } from 'react'
 const ROTATING_WORDS = [
   "wine",
   "champagne",
-  "whiskey",
+  "veuve clicquot",
   "gift baskets",
   "birthday gifts",
 ]
