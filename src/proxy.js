@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 const protectedRoutes = [
     '/account',
     '/account/order',
-    '/account/order-info',
+    '/account/order/info',
     '/account/wishlist',
     '/account/edit',
     '/account/password',

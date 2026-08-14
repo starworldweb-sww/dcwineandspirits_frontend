@@ -339,10 +339,11 @@ const CartClient = () => {
                 </span>
               </div>
             </div>
-
-            <button className="w-full mt-5 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 hover:bg-[#1a1a1a] transition-colors">
-              Proceed to Checkout
-            </button>
+            <a href="/checkout">
+              <button className="w-full cursor-pointer mt-5 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 hover:bg-[#1a1a1a] transition-colors">
+                Proceed to Checkout
+              </button>
+            </a>  
           </div>
         </div>
       </div>

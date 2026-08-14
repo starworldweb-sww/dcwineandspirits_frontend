@@ -4,13 +4,12 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCheckout } from "@/app/api/Hooks/useCheckout";
-import { queryKeys } from "@/libs/queryKeys";
+import { useCheckoutLogin } from "../api/hooks/checkout/useCheckoutLogin";
 
 const OrderConfirmation = () => {
 
   const router = useRouter();
-  const { loginAsync, queryClient } = useCheckout();
+  const { mutateAsync:loginAsync } = useCheckoutLogin();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
@@ -18,13 +17,10 @@ const OrderConfirmation = () => {
       const checkoutType = sessionStorage.getItem('checkoutType');
       const userEmail = sessionStorage.getItem('userEmail');
       const userPassword = sessionStorage.getItem('userPassword');
-      const redirectPath = sessionStorage.getItem('redirectAfterThankYou');
 
       if (checkoutType === 'register' && userEmail && userPassword) {
         setIsLoggingIn(true);
         try {
-          // Try logging in (the user should be created by the webhook by now)
-          // Retry a few times in case the webhook is still processing
           let attempts = 0;
           let loginResult = null;
           while (attempts < 5 && !loginResult) {
@@ -35,43 +31,38 @@ const OrderConfirmation = () => {
               });
             } catch (err) {
               attempts++;
-              // Wait a second before retrying
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise((resolve) => setTimeout(resolve, 1000));
             }
           }
 
-          if (loginResult) {
-            queryClient.setQueryData([queryKeys.PROFILE], loginResult?.data);
-            queryClient.invalidateQueries({ queryKey: [queryKeys.PROFILE] });
-            queryClient.invalidateQueries({ queryKey: [queryKeys.ADDRESSES] });
-            router.refresh();
-          }
-
-          // Clear the checkout data from session storage
-          sessionStorage.removeItem('checkoutType');
-          sessionStorage.removeItem('userEmail');
-          sessionStorage.removeItem('userPassword');
-          sessionStorage.removeItem('orderId');
+          
         } catch (loginErr) {
           console.error("Error logging in after checkout:", loginErr);
         } finally {
           setIsLoggingIn(false);
+         
+          setTimeout(() => {
+            router.push("/account/");
+          }, 1500);
         }
-      }
-
-      if (redirectPath) {
-        const timer = setTimeout(() => {
-          sessionStorage.removeItem('redirectAfterThankYou');
+      } else {
+       
+        const redirectPath = sessionStorage.getItem('redirectAfterThankYou') || '/';
+        setTimeout(() => {
           router.push(redirectPath);
         }, 3000);
-
-        return () => clearTimeout(timer);
       }
+
+      sessionStorage.removeItem('checkoutType');
+      sessionStorage.removeItem('userEmail');
+      sessionStorage.removeItem('userPassword');
+      sessionStorage.removeItem('orderId');
+      sessionStorage.removeItem('redirectAfterThankYou');
     };
 
     handlePostThankYou();
+    
   }, []);
-
   return (
     <div className="py-5 px-5 bg-[#eeeeee] flex items-center justify-center font-['cambriaregular']">
       <div className="bg-white max-w-[600px] w-full mx-auto shadow-md px-10 py-5 flex flex-col items-center text-center">

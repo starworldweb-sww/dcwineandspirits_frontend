@@ -57,7 +57,7 @@ export const useLogout = () => {
       queryClient.setQueryData(customerKeys.profile(), null);
       queryClient.removeQueries({ queryKey: customerKeys.profile() });
       toast.success(data?.message);
-      router.push("/login");
+      router.push("/account/login");
     },
     onError: (error) => {
       toast.error(error?.message || "Logout failed");

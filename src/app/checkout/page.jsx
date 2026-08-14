@@ -1,10 +1,10 @@
 import React from 'react'
-import CheckoutClient from './CheckoutClient'
+import CheckoutPage from './CheckoutClient'
 
 const page = () => {
   return (
     <>
-      <CheckoutClient/>
+      <CheckoutPage/>
     </>
   )
 }
