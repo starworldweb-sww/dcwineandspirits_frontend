@@ -114,7 +114,7 @@ const Stickynav = () => {
           onMouseEnter={() => setShowCart(true)}
           onMouseLeave={() => setShowCart(false)}
         >
-          <Link href="/cart" className="flex items-center gap-3 h-full group">
+          <Link href="/account/cart" className="flex items-center gap-3 h-full group">
             <span className="font-bold text-[12px] text-[rgb(155,0,71)] group-hover:text-[#7e1a3c] transition-colors">
               {cartItemCount} item(s) - ${subTotal.toFixed(2)}
             </span>
