@@ -3,19 +3,21 @@
 import { Search } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 
-// 1. "Search for " fixed rahega, ye words cycle karte rahenge uske baad.
-//    Apni categories/products ke hisaab se change kar lena.
+
 const ROTATING_WORDS = [
   "wine",
   "champagne",
   "veuve clicquot",
   "gift baskets",
+  "caymus",
   "birthday gifts",
+  "dom perignon"
+  
 ]
 
-const STATIC_PREFIX = "Search for "
+const STATIC_PREFIX = "Search for"
 
-// 2. Typewriter timing (ms mein) — chaho to tweak kar sakte ho.
+// 2. Typewriter timing (ms mein) 
 const TYPING_SPEED = 80
 const DELETING_SPEED = 40
 const PAUSE_AFTER_TYPE = 1400
