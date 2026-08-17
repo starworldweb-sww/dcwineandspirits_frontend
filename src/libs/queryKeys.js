@@ -156,3 +156,14 @@ export const wishlistKeys = {
   addToWishlist: () => [...wishlistKeys.all, "add"],
   removeFromWishlist: () => [...wishlistKeys.all, "remove"],
 };
+
+
+
+// queryKeys/order.queryKeys.js
+
+export const orderKeys = {
+  all: ["orders"],
+  history: () => [...orderKeys.all, "history"],
+  detail: (orderId) => [...orderKeys.all, "detail", orderId],
+  track: (payload) => [...orderKeys.all, "track", payload],
+};
