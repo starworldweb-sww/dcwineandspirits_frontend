@@ -10,8 +10,8 @@ import {
   updateAccountInformation,
   forgotPassword,
   resetPassword,
-} from "@/app/api/services/authService"; // apna actual path daal dena
-import { customerKeys } from "@/libs/queryKeys";
+} from "@/app/api/services/authService"; 
+import { cartKeys, customerKeys } from "@/libs/queryKeys";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -22,6 +22,7 @@ export const useLogin = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(customerKeys.profile(), data.data);
       queryClient.invalidateQueries({ queryKey: customerKeys.profile() });
+      queryClient.invalidateQueries({ queryKey: cartKeys.getCartList() });
       toast.success(`Logged in as ${data?.data?.firstname}`);
       router.refresh();
       router.push("/account");
@@ -56,6 +57,7 @@ export const useLogout = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(customerKeys.profile(), null);
       queryClient.removeQueries({ queryKey: customerKeys.profile() });
+      queryClient.invalidateQueries({ queryKey: cartKeys.getCartList() });
       toast.success(data?.message);
       router.push("/account/login");
     },

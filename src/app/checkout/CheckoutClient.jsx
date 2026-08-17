@@ -167,7 +167,7 @@ const CheckoutClient = () => {
   const { data: countryData = [] } = useCountryget();
   const { data: user, isLoading: userLoading } = useUser();
   const { data: cartRaw, isLoading: cartLoading } = useGetCartList();
-  const { mutate: loginId } = useCheckoutLogin();
+  const { mutate: loginId,isPending } = useCheckoutLogin();
 
 
   const isLoggedIn = !!user?.customer_id;
@@ -865,7 +865,7 @@ const CheckoutClient = () => {
 
       const secret = clientSecret || sessionStorage.getItem("stripe_client_secret");
       const intentId = draftIntentId || sessionStorage.getItem("stripe_payment_intent_id");
-      const orderId =   missingOrderId || sessionStorage.getItem("missing_order_id");
+      const orderId = missingOrderId || sessionStorage.getItem("missing_order_id");
 
       if (!secret || !intentId) {
         setOrderError("Payment setup is not ready yet. Please wait a moment and try again.");
@@ -1116,18 +1116,22 @@ const CheckoutClient = () => {
                               e.preventDefault();
                               loginId({ email, password })
                             }}
+                            disabled={isPending}
                             className="w-full sm:w-auto px-7 h-[42px] rounded-[4px] text-white text-[13px] font-bold uppercase transition-opacity hover:opacity-90"
                             style={{ backgroundColor: ACCENT }}
                           >
-                            Login
+                           { isPending ? <Loader2/> :  "Login" }
                           </button>
 
-                          <button
-                            type="button"
-                            className="text-[13px] text-[#555555] underline hover:text-[#222222]"
-                          >
-                            Forgot Password?
-                          </button>
+                          <a href={`/account/forgotten-password/`}>
+
+                            <button
+                              type="button"
+                              className="text-[13px] cursor-pointer text-[#555555] underline hover:text-[#222222]"
+                            >
+                              Forgot Password?
+                            </button>
+                          </a>
                         </div>
                       </div>
                     )}
@@ -1234,74 +1238,75 @@ const CheckoutClient = () => {
                 )}
 
                 {/* BILLING ADDRESS */}
-                <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
-                  <h2
-                    className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
-                  >
-                    Billing Address
-                  </h2>
-                  <div
-                    className="h-[2px] w-14 mb-6"
-                    style={{ backgroundColor: ACCENT }}
-                  />
+                {/* {checkoutType !== "login" && ( */}
+                  <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
+                    <h2
+                      className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
+                    >
+                      Billing Address
+                    </h2>
+                    <div
+                      className="h-[2px] w-14 mb-6"
+                      style={{ backgroundColor: ACCENT }}
+                    />
 
-                  {isLoggedIn && addresses && addresses.length > 0 && (
-                    <div className="mb-5 space-y-3">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="billingAddressMode"
-                          value="existing"
-                          checked={billingAddressMode === "existing"}
-                          onChange={() => setBillingAddressMode("existing")}
-                          className="cursor-pointer"
-                          style={{ accentColor: ACCENT }}
-                        />
-                        <span className="text-[14px] font-medium">
-                          I want to use an existing address
-                        </span>
-                      </label>
+                    {isLoggedIn && addresses && addresses.length > 0 && (
+                      <div className="mb-5 space-y-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="billingAddressMode"
+                            value="existing"
+                            checked={billingAddressMode === "existing"}
+                            onChange={() => setBillingAddressMode("existing")}
+                            className="cursor-pointer"
+                            style={{ accentColor: ACCENT }}
+                          />
+                          <span className="text-[14px] font-medium">
+                            I want to use an existing address
+                          </span>
+                        </label>
 
-                      {billingAddressMode === "existing" && (
-                        <div className="ml-6">
-                          <select
-                            value={selectedBillingAddressId}
-                            onChange={(e) => setSelectedBillingAddressId(e.target.value)}
-                            className={`${inputClass} cursor-pointer max-w-xl`}
-                          >
-                            <option value="">--- Select an address ---</option>
-                            {addresses.map((addr) => (
-                              <option
-                                key={addr.address_id}
-                                value={addr.address_id}
-                              >
-                                {formatAddressLabel(addr)}
-                                {addr.is_default ? " (Default)" : ""}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
+                        {billingAddressMode === "existing" && (
+                          <div className="ml-6">
+                            <select
+                              value={selectedBillingAddressId}
+                              onChange={(e) => setSelectedBillingAddressId(e.target.value)}
+                              className={`${inputClass} cursor-pointer max-w-xl`}
+                            >
+                              <option value="">--- Select an address ---</option>
+                              {addresses.map((addr) => (
+                                <option
+                                  key={addr.address_id}
+                                  value={addr.address_id}
+                                >
+                                  {formatAddressLabel(addr)}
+                                  {addr.is_default ? " (Default)" : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
 
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="billingAddressMode"
-                          value="new"
-                          checked={billingAddressMode === "new"}
-                          onChange={() => setBillingAddressMode("new")}
-                          className="cursor-pointer"
-                          style={{ accentColor: ACCENT }}
-                        />
-                        <span className="text-[14px] font-medium">
-                          I want to use a new address
-                        </span>
-                      </label>
-                    </div>
-                  )}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="billingAddressMode"
+                            value="new"
+                            checked={billingAddressMode === "new"}
+                            onChange={() => setBillingAddressMode("new")}
+                            className="cursor-pointer"
+                            style={{ accentColor: ACCENT }}
+                          />
+                          <span className="text-[14px] font-medium">
+                            I want to use a new address
+                          </span>
+                        </label>
+                      </div>
+                    )}
 
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isLoggedIn && addresses.length > 0 && billingAddressMode === "existing" ? "opacity-60" : ""}`}>
-                    {/* <div>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isLoggedIn && addresses.length > 0 && billingAddressMode === "existing" ? "opacity-60" : ""}`}>
+                      {/* <div>
                       <label className={labelClass}>
                         First Name {requiredStar}
                       </label>
@@ -1351,264 +1356,15 @@ const CheckoutClient = () => {
                         className={inputClass}
                       />
                     </div> */}
-                    <div className="md:col-span-2">
-                      <label className={labelClass}>Company</label>
-                      <input
-                        type="text"
-                        name="company"
-                        placeholder="Company"
-                        value={billing.company}
-                        onChange={handleBillingChange}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className={labelClass}>
-                        Address 1 {requiredStar}
-                      </label>
-                      <input
-                        type="text"
-                        name="address_1"
-                        placeholder="Address 1"
-                        value={billing.address_1}
-                        onChange={handleBillingChange}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className={labelClass}>Address 2</label>
-                      <input
-                        type="text"
-                        name="address_2"
-                        placeholder="Address 2"
-                        value={billing.address_2}
-                        onChange={handleBillingChange}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>
-                        City {requiredStar}
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        placeholder="City"
-                        value={billing.city}
-                        onChange={handleBillingChange}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>
-                        Post Code {requiredStar}
-                      </label>
-                      <input
-                        type="text"
-                        name="postcode"
-                        placeholder="Post Code"
-                        value={billing.postcode}
-                        onChange={handleBillingChange}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>
-                        Country {requiredStar}
-                      </label>
-                      <select
-                        name="country_id"
-                        value={billing.country_id}
-                        onChange={handleBillingCountryChange}
-                        className={`${inputClass} cursor-pointer`}
-                      >
-                        <option value="">--- Please Select ---</option>
-                        {countryData?.map((c) => (
-                          <option
-                            key={renderCountryOptionValue(c)}
-                            value={renderCountryOptionValue(c)}
-                          >
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelClass}>
-                        Region / State {requiredStar}
-                      </label>
-                      <select
-                        name="zone_id"
-                        value={billing.zone_id}
-                        onChange={handleBillingChange}
-                        className={`${inputClass} cursor-pointer`}
-                        disabled={!billing.country_id}
-                      >
-                        <option value="">--- Please Select ---</option>
-                        {(billingZones || []).map((z) => (
-                          <option key={z.zone_id} value={z.zone_id}>
-                            {z.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SHIPPING ADDRESS — LOCKED until billing above is complete */}
-                <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8 relative">
-                  <div className="flex flex-wrap items-center justify-between mb-2 gap-3">
-                    <h2
-                      className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1 flex items-center gap-2`}
-                    >
-                      Where would you like to send this gift?
-                      {!isBillingComplete && (
-                        <Lock size={14} className="text-[#9a3412]" />
-                      )}
-                    </h2>
-                  </div>
-                  <div
-                    className="h-[2px] w-14 mb-4"
-                    style={{ backgroundColor: ACCENT }}
-                  />
-
-                  {!isBillingComplete && (
-                    <div className="mb-5 text-[12px] text-[#9a3412] bg-[#fff7ed] border border-[#fdba74] rounded-[3px] p-3">
-                      Please complete your billing address above (name, address, email &amp; telephone) before entering shipping details.
-                    </div>
-                  )}
-
-                  <div
-                    className={`transition-opacity ${!isBillingComplete ? "opacity-50 pointer-events-none select-none" : ""
-                      }`}
-                  >
-                    <label className="flex items-center gap-2 mb-5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={shippingSameAsBilling}
-                        onChange={(e) =>
-                          toggleShippingSameAsBilling(e.target.checked)
-                        }
-                        disabled={!isBillingComplete}
-                        className="cursor-pointer"
-                        style={{ accentColor: ACCENT }}
-                      />
-                      <span className="text-[13px] font-medium">
-                        My billing and shipping address are the same
-                      </span>
-                    </label>
-
-                    {isLoggedIn && addresses && addresses.length > 0 && !shippingSameAsBilling && (
-                      <div className="mb-5 space-y-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="shippingAddressMode"
-                            value="existing"
-                            checked={shippingAddressMode === "existing"}
-                            onChange={() => setShippingAddressMode("existing")}
-                            disabled={!isBillingComplete}
-                            className="cursor-pointer"
-                            style={{ accentColor: ACCENT }}
-                          />
-                          <span className="text-[14px] font-medium">
-                            I want to use an existing address
-                          </span>
-                        </label>
-
-                        {shippingAddressMode === "existing" && (
-                          <div className="ml-6">
-                            <select
-                              value={selectedShippingAddressId}
-                              onChange={(e) => setSelectedShippingAddressId(e.target.value)}
-                              disabled={!isBillingComplete}
-                              className={`${inputClass} cursor-pointer max-w-xl`}
-                            >
-                              <option value="">--- Select an address ---</option>
-                              {addresses.map((addr) => (
-                                <option
-                                  key={addr.address_id}
-                                  value={addr.address_id}
-                                >
-                                  {formatAddressLabel(addr)}
-                                  {addr.is_default ? " (Default)" : ""}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="shippingAddressMode"
-                            value="new"
-                            checked={shippingAddressMode === "new"}
-                            onChange={() => setShippingAddressMode("new")}
-                            disabled={!isBillingComplete}
-                            className="cursor-pointer"
-                            style={{ accentColor: ACCENT }}
-                          />
-                          <span className="text-[14px] font-medium">
-                            I want to use a new address
-                          </span>
-                        </label>
-                      </div>
-                    )}
-
-                    <div
-                      className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${shippingSameAsBilling ? "opacity-40 pointer-events-none" : ""
-                        } ${isLoggedIn && addresses.length > 0 && !shippingSameAsBilling && shippingAddressMode === "existing" ? "opacity-60" : ""
-                        }`}
-                    >
-                      <div>
-                        <label className={labelClass}>
-                          First Name {requiredStar}
-                        </label>
-                        <input
-                          type="text"
-                          name="firstname"
-                          placeholder="First Name"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.firstname
-                              : shipping.firstname
-                          }
-                          onChange={handleShippingChange}
-                          className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
-                        />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Last Name</label>
-                        <input
-                          type="text"
-                          name="lastname"
-                          placeholder="Last Name"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.lastname
-                              : shipping.lastname
-                          }
-                          onChange={handleShippingChange}
-                          className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
-                        />
-                      </div>
                       <div className="md:col-span-2">
                         <label className={labelClass}>Company</label>
                         <input
                           type="text"
                           name="company"
                           placeholder="Company"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.company
-                              : shipping.company
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.company}
+                          onChange={handleBillingChange}
                           className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -1619,14 +1375,9 @@ const CheckoutClient = () => {
                           type="text"
                           name="address_1"
                           placeholder="Address 1"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.address_1
-                              : shipping.address_1
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.address_1}
+                          onChange={handleBillingChange}
                           className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -1635,14 +1386,9 @@ const CheckoutClient = () => {
                           type="text"
                           name="address_2"
                           placeholder="Address 2"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.address_2
-                              : shipping.address_2
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.address_2}
+                          onChange={handleBillingChange}
                           className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         />
                       </div>
                       <div>
@@ -1653,14 +1399,9 @@ const CheckoutClient = () => {
                           type="text"
                           name="city"
                           placeholder="City"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.city
-                              : shipping.city
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.city}
+                          onChange={handleBillingChange}
                           className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         />
                       </div>
                       <div>
@@ -1671,14 +1412,9 @@ const CheckoutClient = () => {
                           type="text"
                           name="postcode"
                           placeholder="Post Code"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.postcode
-                              : shipping.postcode
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.postcode}
+                          onChange={handleBillingChange}
                           className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         />
                       </div>
                       <div>
@@ -1687,17 +1423,12 @@ const CheckoutClient = () => {
                         </label>
                         <select
                           name="country_id"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.country_id
-                              : shipping.country_id
-                          }
-                          onChange={handleShippingCountryChange}
+                          value={billing.country_id}
+                          onChange={handleBillingCountryChange}
                           className={`${inputClass} cursor-pointer`}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
                         >
                           <option value="">--- Please Select ---</option>
-                          {countryData.map((c) => (
+                          {countryData?.map((c) => (
                             <option
                               key={renderCountryOptionValue(c)}
                               value={renderCountryOptionValue(c)}
@@ -1713,50 +1444,327 @@ const CheckoutClient = () => {
                         </label>
                         <select
                           name="zone_id"
-                          value={
-                            shippingSameAsBilling
-                              ? billing.zone_id
-                              : shipping.zone_id
-                          }
-                          onChange={handleShippingChange}
+                          value={billing.zone_id}
+                          onChange={handleBillingChange}
                           className={`${inputClass} cursor-pointer`}
-                          disabled={
-                            !isBillingComplete ||
-                            shippingSameAsBilling ||
-                            !(shippingSameAsBilling
-                              ? billing.country_id
-                              : shipping.country_id)
-                          }
+                          disabled={!billing.country_id}
                         >
                           <option value="">--- Please Select ---</option>
-                          {(shippingZones || []).map((z) => (
+                          {(billingZones || []).map((z) => (
                             <option key={z.zone_id} value={z.zone_id}>
                               {z.name}
                             </option>
                           ))}
                         </select>
                       </div>
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>
-                          Recipients Mobile No.
-                        </label>
+                    </div>
+                  </div>
+                {/* )} */}
+
+                {/* SHIPPING ADDRESS — LOCKED until billing above is complete */}
+                {/* {checkoutType !== "login" && ( */}
+                  <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8 relative">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-3">
+                      <h2
+                        className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1 flex items-center gap-2`}
+                      >
+                        Where would you like to send this gift?
+                        {!isBillingComplete && (
+                          <Lock size={14} className="text-[#9a3412]" />
+                        )}
+                      </h2>
+                    </div>
+                    <div
+                      className="h-[2px] w-14 mb-4"
+                      style={{ backgroundColor: ACCENT }}
+                    />
+
+                    {/* {!isBillingComplete && (
+                    <div className="mb-5 text-[12px] text-[#9a3412] bg-[#fff7ed] border border-[#fdba74] rounded-[3px] p-3">
+                      Please complete your billing address above (name, address, email &amp; telephone) before entering shipping details.
+                    </div>
+                  )} */}
+
+                    <div
+                      className={`transition-opacity ${!isBillingComplete ? "opacity-50 pointer-events-none select-none" : ""
+                        }`}
+                    >
+                      <label className="flex items-center gap-2 mb-5 cursor-pointer">
                         <input
-                          type="tel"
-                          name="telephone"
-                          placeholder="Recipients Mobile No."
-                          value={
-                            shippingSameAsBilling
-                              ? billing.telephone
-                              : shipping.telephone
+                          type="checkbox"
+                          checked={shippingSameAsBilling}
+                          onChange={(e) =>
+                            toggleShippingSameAsBilling(e.target.checked)
                           }
-                          onChange={handleShippingChange}
-                          className={inputClass}
-                          disabled={shippingSameAsBilling || !isBillingComplete}
+                          disabled={!isBillingComplete}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
                         />
+                        <span className="text-[13px] font-medium">
+                          My billing and shipping address are the same
+                        </span>
+                      </label>
+
+                      {isLoggedIn && addresses && addresses.length > 0 && !shippingSameAsBilling && (
+                        <div className="mb-5 space-y-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="shippingAddressMode"
+                              value="existing"
+                              checked={shippingAddressMode === "existing"}
+                              onChange={() => setShippingAddressMode("existing")}
+                              disabled={!isBillingComplete}
+                              className="cursor-pointer"
+                              style={{ accentColor: ACCENT }}
+                            />
+                            <span className="text-[14px] font-medium">
+                              I want to use an existing address
+                            </span>
+                          </label>
+
+                          {shippingAddressMode === "existing" && (
+                            <div className="ml-6">
+                              <select
+                                value={selectedShippingAddressId}
+                                onChange={(e) => setSelectedShippingAddressId(e.target.value)}
+                                disabled={!isBillingComplete}
+                                className={`${inputClass} cursor-pointer max-w-xl`}
+                              >
+                                <option value="">--- Select an address ---</option>
+                                {addresses.map((addr) => (
+                                  <option
+                                    key={addr.address_id}
+                                    value={addr.address_id}
+                                  >
+                                    {formatAddressLabel(addr)}
+                                    {addr.is_default ? " (Default)" : ""}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="shippingAddressMode"
+                              value="new"
+                              checked={shippingAddressMode === "new"}
+                              onChange={() => setShippingAddressMode("new")}
+                              disabled={!isBillingComplete}
+                              className="cursor-pointer"
+                              style={{ accentColor: ACCENT }}
+                            />
+                            <span className="text-[14px] font-medium">
+                              I want to use a new address
+                            </span>
+                          </label>
+                        </div>
+                      )}
+
+                      <div
+                        className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${shippingSameAsBilling ? "opacity-40 pointer-events-none" : ""
+                          } ${isLoggedIn && addresses.length > 0 && !shippingSameAsBilling && shippingAddressMode === "existing" ? "opacity-60" : ""
+                          }`}
+                      >
+                        <div>
+                          <label className={labelClass}>
+                            First Name {requiredStar}
+                          </label>
+                          <input
+                            type="text"
+                            name="firstname"
+                            placeholder="First Name"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.firstname
+                                : shipping.firstname
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Last Name</label>
+                          <input
+                            type="text"
+                            name="lastname"
+                            placeholder="Last Name"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.lastname
+                                : shipping.lastname
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className={labelClass}>Company</label>
+                          <input
+                            type="text"
+                            name="company"
+                            placeholder="Company"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.company
+                                : shipping.company
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className={labelClass}>
+                            Address 1 {requiredStar}
+                          </label>
+                          <input
+                            type="text"
+                            name="address_1"
+                            placeholder="Address 1"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.address_1
+                                : shipping.address_1
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className={labelClass}>Address 2</label>
+                          <input
+                            type="text"
+                            name="address_2"
+                            placeholder="Address 2"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.address_2
+                                : shipping.address_2
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>
+                            City {requiredStar}
+                          </label>
+                          <input
+                            type="text"
+                            name="city"
+                            placeholder="City"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.city
+                                : shipping.city
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>
+                            Post Code {requiredStar}
+                          </label>
+                          <input
+                            type="text"
+                            name="postcode"
+                            placeholder="Post Code"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.postcode
+                                : shipping.postcode
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>
+                            Country {requiredStar}
+                          </label>
+                          <select
+                            name="country_id"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.country_id
+                                : shipping.country_id
+                            }
+                            onChange={handleShippingCountryChange}
+                            className={`${inputClass} cursor-pointer`}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          >
+                            <option value="">--- Please Select ---</option>
+                            {countryData.map((c) => (
+                              <option
+                                key={renderCountryOptionValue(c)}
+                                value={renderCountryOptionValue(c)}
+                              >
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelClass}>
+                            Region / State {requiredStar}
+                          </label>
+                          <select
+                            name="zone_id"
+                            value={
+                              shippingSameAsBilling
+                                ? billing.zone_id
+                                : shipping.zone_id
+                            }
+                            onChange={handleShippingChange}
+                            className={`${inputClass} cursor-pointer`}
+                            disabled={
+                              !isBillingComplete ||
+                              shippingSameAsBilling ||
+                              !(shippingSameAsBilling
+                                ? billing.country_id
+                                : shipping.country_id)
+                            }
+                          >
+                            <option value="">--- Please Select ---</option>
+                            {(shippingZones || []).map((z) => (
+                              <option key={z.zone_id} value={z.zone_id}>
+                                {z.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className={labelClass}>
+                            Recipients Mobile No.
+                          </label>
+                          <input
+                            type="tel"
+                            name="telephone"
+                            placeholder="Recipients Mobile No."
+                            value={
+                              shippingSameAsBilling
+                                ? billing.telephone
+                                : shipping.telephone
+                            }
+                            onChange={handleShippingChange}
+                            className={inputClass}
+                            disabled={shippingSameAsBilling || !isBillingComplete}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                {/* )} */}
               </div>
 
               {/* RIGHT COLUMN */}
