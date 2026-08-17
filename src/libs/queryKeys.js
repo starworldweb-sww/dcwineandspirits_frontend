@@ -146,3 +146,13 @@ export const shippingRateKeys = {
     quantity,
   ],
 };
+
+
+
+export const wishlistKeys = {
+  all: ["wishlist"],
+  list: () => [...wishlistKeys.all, "list"],
+  check: (product_id) => [...wishlistKeys.all, "check", product_id],
+  addToWishlist: () => [...wishlistKeys.all, "add"],
+  removeFromWishlist: () => [...wishlistKeys.all, "remove"],
+};

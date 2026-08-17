@@ -11,6 +11,7 @@ import PersonalizedDropDown from "../DropdownComponent/PersonalizedDropDown";
 import WineGiftsDropdown from "../DropdownComponent/WineGiftsDropdown";
 import OcassionsDropDown from "../DropdownComponent/OcassionsDropDown";
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const toSlug = (title) =>
   title
@@ -148,9 +149,9 @@ const Stickynav = () => {
                         ) : null}
                       </div>
 
-                      <a href={`/${item?.product?.slug}`} className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2">
-                        {item?.product?.name}
-                      </a>
+                      <Link href={`/${item?.product?.slug}`} className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2">
+                        {decodeHtml(item?.product?.name)}
+                      </Link>
 
                       <span className="text-[12px] text-gray-500 whitespace-nowrap">
                         x {item?.quantity}
@@ -188,7 +189,7 @@ const Stickynav = () => {
                 </div>
               </div>
 
-              <div className="p-3 space-y-2 bg-[#2b3440]">
+              <div className="p-3 space-y-2 bg-[#eeeeee]">
                 <Link
                   href="/cart"
                   className="block w-full text-center py-3 bg-white text-gray-700 font-semibold text-[13px] tracking-wide hover:bg-gray-100 transition-colors"
