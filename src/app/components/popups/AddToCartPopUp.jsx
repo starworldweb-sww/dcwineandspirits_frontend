@@ -107,7 +107,7 @@ const AddToCartPopup = ({ isOpen, onClose, product, cardPrice = 0 }) => {
               View Cart
             </Link>
             <Link
-              href="/account/checkout/"
+              href="/checkout"
               className="flex-1 py-2.5 text-center text-[10px] tracking-[0.14em] font-bold uppercase text-white bg-[#98022e] hover:bg-[#7a0225] transition-colors duration-200"
             >
               Checkout

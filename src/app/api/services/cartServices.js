@@ -70,10 +70,15 @@ export const cartServices = {
         return res?.data?.data || []
     },
 
-    clearCart: async () => {
-        const res = await axiosInstance.delete(`/cart/clear`)
+    clearCart: async (cartId) => {
+        const res = await axiosInstance.delete(`/cart/delete/${cartId}`)
         return res?.data || [];
+    },
+
+    updatedCart:async(cart_id,quantity)=>{
+     const res  = await axiosInstance.put(`/cart/update`,{
+        cart_id,quantity
+     })
+     return res?.data || [];
     }
-
-
 }

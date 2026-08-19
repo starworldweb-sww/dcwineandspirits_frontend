@@ -6,7 +6,8 @@ export const useClearCart = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: cartServices.clearCart,
+    mutationKey:cartKeys.deleteCart(),
+    mutationFn: (cartId)=> cartServices.clearCart(cartId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.all });
     },
