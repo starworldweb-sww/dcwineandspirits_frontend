@@ -16,6 +16,8 @@ import { Sumana, Hind_Madurai } from "next/font/google";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
+import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
+
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -94,14 +96,14 @@ const ProductListRow = ({ product }) => {
               href={`/${brandName.toLowerCase().replace(/\s+/g, "-")}`}
               className="text-[#98022e] font-semibold hover:underline"
             >
-              {brandName}
+              {decodeHtml(brandName)}
             </Link>
           </p>
         )}
 
         <Link href={productLink}>
           <h2 className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors">
-            {product.name}
+            {decodeHtml(product.name)}
           </h2>
         </Link>
 
@@ -242,9 +244,17 @@ const ProductsDynamicMain = ({ data }) => {
   }, [products, sortOption]);
 
   const displayedProducts = sortedProducts.slice(0, showNum);
+  console.log("des small:", data.smalldesc)
 
   return (
     <section className="w-full bg-white flex-1">
+      {/* small description + subcategories pill*/}
+      <SmallDescAndSubcategory
+  smalldesc={data.smalldesc}
+  subCategories={data.subCategories}
+/>
+
+
       <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
         <div className="flex items-center gap-3">
           <button

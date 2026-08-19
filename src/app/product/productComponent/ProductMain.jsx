@@ -26,7 +26,6 @@ import Link from "next/link";
 import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 
-
 const sumana = Sumana({
   weight: ["400", "700"],
   subsets: ["latin"],
@@ -64,7 +63,7 @@ export default function ProductMain({ product }) {
   // agar product already wishlist mein hai toh poora button pink dikhega
   const { data: wishlistCheckData } = useCheckWishlist(productId);
   const isInWishlist = Boolean(
-    wishlistCheckData?.data?.isInWishlist ?? wishlistCheckData?.isInWishlist
+    wishlistCheckData?.data?.isInWishlist ?? wishlistCheckData?.isInWishlist,
   );
 
   const reviews = product.reviews || [];
@@ -76,7 +75,7 @@ export default function ProductMain({ product }) {
       ?.map((img) =>
         img.image
           ? `https://www.dcwineandspirits.com/image/${img.image}`
-          : null
+          : null,
       )
       .filter(Boolean) || [];
 
@@ -90,12 +89,16 @@ export default function ProductMain({ product }) {
   const specialPrice = product.special_price;
   const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined;
 
+  // discount % badge ke liye
+  const discountPercent = hasSpecialPrice
+    ? Math.round(((originalPrice - specialPrice) / originalPrice) * 100)
+    : 0;
+
   const brandName = product.manufacturer?.name || "";
   const brandurl = product.manufacturer?.manufacturer_seo_url || "";
   const brandImage = product.manufacturer?.image
-  ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.manufacturer.image}`
-  : "";
-
+    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.manufacturer.image}`
+    : "";
 
   const handleImageChange = (clickedImage) => {
     setMainImage(clickedImage);
@@ -152,7 +155,7 @@ export default function ProductMain({ product }) {
 
       <main className={`min-h-screen w-full bg-white ${hindMadurai.className}`}>
         <section className="bg-white px-3 2xl:px-32 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-stretch gap-8">
             <div className="w-full lg:w-auto flex flex-row gap-3 lg:gap-4">
               {hasMultipleImages && (
                 <div className="flex flex-col gap-3 w-14 sm:w-16 lg:w-20 flex-shrink-0">
@@ -183,10 +186,37 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:h-[486px] ${
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${
                   hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
                 }`}
               >
+                {hasSpecialPrice && discountPercent > 0 && (
+                  <>
+                    <style jsx>{`
+                      @keyframes discountPopIn {
+                        0% {
+                          opacity: 0;
+                          transform: scale(0.3) rotate(-8deg);
+                        }
+                        60% {
+                          opacity: 1;
+                          transform: scale(1.15) rotate(2deg);
+                        }
+                        100% {
+                          opacity: 1;
+                          transform: scale(1) rotate(0deg);
+                        }
+                      }
+                      .discount-badge {
+                        animation: discountPopIn 0.5s ease-out;
+                      }
+                    `}</style>
+                    <span className="discount-badge absolute top-2 right-2 z-10 bg-[#98022e] text-white text-xs sm:text-sm font-bold px-2 py-1 rounded-sm shadow-md">
+                      {discountPercent}% OFF
+                    </span>
+                  </>
+                )}
+
                 <img
                   src={mainImage}
                   alt={product.name}
@@ -212,7 +242,7 @@ export default function ProductMain({ product }) {
                     >
                       {hasSpecialPrice ? (
                         <div className="flex flex-col">
-                          <span className="font-semibold text-lg text-gray-400 line-through">
+                          <span className="font-semibold text-lg text-[#98022e] [text-decoration-line:line-through]">
                             ${Number(originalPrice).toFixed(2)}
                           </span>
                           <h1 className="font-bold text-2xl lg:text-3xl text-black">
@@ -275,26 +305,26 @@ export default function ProductMain({ product }) {
                     </div>
                   </div>
 
-                {brandName && (
-  <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
-    <Link
-      href={`/${brandurl}`}
-      className="w-full h-full flex items-center justify-center p-2"
-    >
-      {brandImage ? (
-        <img
-          src={brandImage}
-          alt={brandName}
-          className="max-w-full max-h-full object-contain"
-        />
-      ) : (
-        <span className="text-xs tracking-widest text-gray-700 text-center px-2">
-          {brandName}
-        </span>
-      )}
-    </Link>
-  </div>
-)}
+                  {brandName && (
+                    <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                      <Link
+                        href={`/${brandurl}`}
+                        className="w-full h-full flex items-center justify-center p-2"
+                      >
+                        {brandImage ? (
+                          <img
+                            src={brandImage}
+                            alt={brandName}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs tracking-widest text-gray-700 text-center px-2">
+                            {brandName}
+                          </span>
+                        )}
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full mt-5 mb-5">
@@ -342,7 +372,7 @@ export default function ProductMain({ product }) {
                           type="button"
                           onClick={() =>
                             setQuantity((currentQty) =>
-                              Math.max(1, currentQty - 1)
+                              Math.max(1, currentQty - 1),
                             )
                           }
                           className="px-2 hover:bg-gray-100 border-t border-gray-300 cursor-pointer"

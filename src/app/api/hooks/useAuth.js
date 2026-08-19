@@ -95,10 +95,13 @@ export const useUpdateAccountInfo = () => {
 };
 
 export const useForgotPassword = () => {
+  const router = useRouter();
+
   return useMutation({
     mutationFn: forgotPassword,
     onSuccess: (data) => {
       toast.success(data?.message || "Reset link sent");
+      router.push("/account/login");
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to send reset link");
