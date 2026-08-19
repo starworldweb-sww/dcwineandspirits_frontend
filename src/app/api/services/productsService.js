@@ -32,4 +32,28 @@ export const productsService = {
 
     throw new Error(res.data?.message || "Product not found");
   },
+
+  //  search products
+  searchAllProducts: async (params) => {
+    const res = await axiosInstance.get("/products/search", { params });
+
+    if (res.data?.success) {
+      return res.data.data;
+    }
+
+    throw new Error(res.data?.message || "Failed to search products");
+  },
+
+getSearchResults: async (params) => {
+    const res = await axiosInstance.get("/products/search-results", { params });
+
+    if (res.data?.success) {
+      return res.data.data;
+    }
+
+    throw new Error(res.data?.message || "Failed to fetch search results");
+  },
+
+
+  
 };

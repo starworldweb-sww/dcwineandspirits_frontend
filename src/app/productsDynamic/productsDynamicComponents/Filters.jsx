@@ -140,6 +140,17 @@ const Filters = ({ data }) => {
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
 
+  // 1. API se data hai ya nahi, uske hisaab se har section ka existence check
+  //    - Price: min/max dono valid numbers hone chahiye (0 bhi valid hai, isliye undefined/null check)
+  //    - Brands: array hona chahiye aur usme kam se kam 1 item hona chahiye
+  const hasPriceRange =
+    data?.priceRange?.min !== undefined &&
+    data?.priceRange?.min !== null &&
+    data?.priceRange?.max !== undefined &&
+    data?.priceRange?.max !== null;
+
+  const hasBrands = Array.isArray(data?.brands) && data.brands.length > 0;
+
   const toggleAvailability = (id) => {
     setSelectedAvailability((prev) =>
       prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
@@ -177,12 +188,16 @@ const Filters = ({ data }) => {
         </button>
       </div>
 
-      {/* PRICE */}
-      <SectionHeader label="Price" isOpen={priceOpen} onToggle={() => setPriceOpen((p) => !p)} />
-      {priceOpen && (
-        <div className="px-1 pt-4 pb-2">
-          <PriceSlider priceData={data?.priceRange} />
-        </div>
+      {/* PRICE — sirf tab dikhega jab API se valid min/max mila ho */}
+      {hasPriceRange && (
+        <>
+          <SectionHeader label="Price" isOpen={priceOpen} onToggle={() => setPriceOpen((p) => !p)} />
+          {priceOpen && (
+            <div className="px-1 pt-4 pb-2">
+              <PriceSlider priceData={data?.priceRange} />
+            </div>
+          )}
+        </>
       )}
 
       {/* AVAILABILITY */}
@@ -210,34 +225,38 @@ const Filters = ({ data }) => {
         </div>
       )}
 
-      {/* BRANDS */}
-      <SectionHeader label="Brands" isOpen={brandsOpen} onToggle={() => setBrandsOpen((p) => !p)} />
-      {brandsOpen && (
-        <div className="flex flex-col px-4 py-2 h-64 overflow-scroll overflow-x-hidden">
-          {data?.brands?.map((brand) => (
-            <label key={brand?.manufacturer_id} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedBrandIds.includes(brand?.manufacturer_id)}
-                onChange={() => toggleBrand(brand?.manufacturer_id)}
-                className="w-4 h-4 flex-shrink-0"
-                style={{ accentColor: ACCENT }}
-              />
-              <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative">
-                <Image
-                  fill
-                  loading="lazy"
-                  src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${brand?.image}`}
-                  alt={brand?.name}
-                  className="object-contain"
-                />
-              </div>
-              <span className="font-['Sarabun',sans-serif] text-sm text-[#374254]">
-                {decodeHtml(brand?.name)}
-              </span>
-            </label>
-          ))}
-        </div>
+      {/* BRANDS — sirf tab dikhega jab API se brands array mein kuch data ho */}
+      {hasBrands && (
+        <>
+          <SectionHeader label="Brands" isOpen={brandsOpen} onToggle={() => setBrandsOpen((p) => !p)} />
+          {brandsOpen && (
+            <div className="flex flex-col px-4 py-2 h-64 overflow-scroll overflow-x-hidden">
+              {data.brands.map((brand) => (
+                <label key={brand?.manufacturer_id} className="flex items-center gap-3 py-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrandIds.includes(brand?.manufacturer_id)}
+                    onChange={() => toggleBrand(brand?.manufacturer_id)}
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ accentColor: ACCENT }}
+                  />
+                  <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative">
+                    <Image
+                      fill
+                      loading="lazy"
+                      src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${brand?.image}`}
+                      alt={brand?.name}
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className="font-['Sarabun',sans-serif] text-sm text-[#374254]">
+                    {decodeHtml(brand?.name)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

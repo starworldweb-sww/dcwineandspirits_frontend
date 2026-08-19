@@ -72,6 +72,13 @@ export const productKeys = {
 
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
+
+
+  // search
+   searchAllProducts: (params = {}) => [...productKeys.lists(), "search", params],
+
+
+   searchResults: (params) => [...productKeys.all, "search-results", params],
 };
 export const customerKeys = {
   // Base keys
