@@ -4,49 +4,19 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCheckoutLogin } from "../api/hooks/checkout/useCheckoutLogin";
 
 const OrderConfirmation = () => {
 
   const router = useRouter();
-  const { mutateAsync:loginAsync } = useCheckoutLogin();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     const handlePostThankYou = async () => {
       const checkoutType = sessionStorage.getItem('checkoutType');
-      const userEmail = sessionStorage.getItem('userEmail');
-      const userPassword = sessionStorage.getItem('userPassword');
+    
 
-      if (checkoutType === 'register' && userEmail && userPassword) {
+      if (checkoutType === 'register' ) {
         setIsLoggingIn(true);
-        try {
-          let attempts = 0;
-          let loginResult = null;
-          while (attempts < 5 && !loginResult) {
-            try {
-              loginResult = await loginAsync({
-                email: userEmail,
-                password: userPassword,
-              });
-            } catch (err) {
-              attempts++;
-              await new Promise((resolve) => setTimeout(resolve, 1000));
-            }
-          }
-
-          
-        } catch (loginErr) {
-          console.error("Error logging in after checkout:", loginErr);
-        } finally {
-          setIsLoggingIn(false);
-         
-          setTimeout(() => {
-            router.push("/account/");
-          }, 1500);
-        }
-      } else {
-       
         const redirectPath = sessionStorage.getItem('redirectAfterThankYou') || '/';
         setTimeout(() => {
           router.push(redirectPath);
@@ -54,9 +24,6 @@ const OrderConfirmation = () => {
       }
 
       sessionStorage.removeItem('checkoutType');
-      sessionStorage.removeItem('userEmail');
-      sessionStorage.removeItem('userPassword');
-      sessionStorage.removeItem('orderId');
       sessionStorage.removeItem('redirectAfterThankYou');
     };
 

@@ -108,6 +108,7 @@ export const cartKeys = {
   all: ["cart"],
   getCartList: () => [...cartKeys.all, "cartList"],
   addtoCart: () => [...cartKeys.getCartList()],
+  deleteCart: () => ["cart-delete", "delete"],
 };
 
 export const mobileCategoryKeys = {

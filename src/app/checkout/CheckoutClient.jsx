@@ -10,6 +10,9 @@ import {
   Loader2,
   CheckCircle2,
   Lock,
+  ChevronUp,
+  ChevronDown,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
@@ -35,6 +38,8 @@ import { useCreatePaymentIntent } from "../api/hooks/checkout/useCreatePaymentIn
 import { useshippingRate } from "../api/hooks/useShippingRate";
 import { useCheckoutLogin } from "../api/hooks/checkout/useCheckoutLogin";
 import { useFormik } from "formik";
+import { useCoupon } from "../api/hooks/coupon/useCoupon";
+import { useupdatedCart } from "../api/hooks/cart/useUpdated";
 
 const ACCENT = "#8c1a3c";
 const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -68,7 +73,7 @@ const SHIPPING_METHODS_FALLBACK = [
     code: "flat.flat",
     name: "Flat Shipping Rate",
     label: "Standard Delivery (Delivery may take 2 to 3 days)",
-    cost: 20.0,
+    price: 20.0,
   },
   {
     id: "same_day",
@@ -76,7 +81,7 @@ const SHIPPING_METHODS_FALLBACK = [
     name: "Same Day Delivery",
     label:
       "Same Day Delivery (Only in DC and Northern VA, order must be before 2:00PM)",
-    cost: 100.0,
+    price: 100.0,
   },
 ];
 
@@ -167,7 +172,7 @@ const CheckoutClient = () => {
   const { data: countryData = [] } = useCountryget();
   const { data: user, isLoading: userLoading } = useUser();
   const { data: cartRaw, isLoading: cartLoading } = useGetCartList();
-  const { mutate: loginId,isPending } = useCheckoutLogin();
+  const { mutate: loginId, isPending } = useCheckoutLogin();
 
 
   const isLoggedIn = !!user?.customer_id;
@@ -176,8 +181,9 @@ const CheckoutClient = () => {
   const getZones = useZoneget();
   const { mutateAsync: placeOrderMut } = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
-  const clearCartMut = useClearCart();
-
+  const { mutate: clearCartMut } = useClearCart();
+  const { data: couponData, mutate } = useCoupon();
+  const { mutate: updateCart } = useupdatedCart();
   const [checkoutType, setCheckoutType] = useState("guest");
   const [registerData, setRegisterData] = useState(EMPTY_REGISTER);
   const [billing, setBilling] = useState(EMPTY_BILLING);
@@ -189,13 +195,10 @@ const CheckoutClient = () => {
   const [shippingZones, setShippingZones] = useState([]);
   const [shippingAddressMode, setShippingAddressMode] = useState("existing");
   const [selectedShippingAddressId, setSelectedShippingAddressId] = useState("");
-  const [shippingMethodId, setShippingMethodId] = useState(
-    SHIPPING_METHODS_FALLBACK[0].id
-  );
+  const [shippingMethod, setShippingMethod] = useState(null);
   const [paymentCode, setPaymentCode] = useState("stripe");
   const [coupon, setCoupon] = useState("");
   const [giftCert, setGiftCert] = useState("");
-  const [supportTeam, setSupportTeam] = useState("no");
   const [orderNote, setOrderNote] = useState("");
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -210,17 +213,24 @@ const CheckoutClient = () => {
   const [orderError, setOrderError] = useState("");
 
   const autoUpdateTimerRef = useRef(null);
-
+  const isCouponActive = useRef(false);
   const [email, setEmail] = useState(null)
   const [password, setPassword] = useState(null)
 
+  // ── Tips ──
+  const [supportTeam, setSupportTeam] = useState("no");
+  const [selectedTip, setSelectedTip] = useState("");
+  const [customTipValue, setCustomTipValue] = useState("");
+
+  // --- discount ---------------
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
   // ── Load any pending draft order from a previous session ──
   useEffect(() => {
     setMissingOrderId(sessionStorage.getItem("missing_order_id"));
     setDraftIntentId(sessionStorage.getItem("stripe_payment_intent_id"));
     setClientSecret(sessionStorage.getItem("stripe_client_secret"));
   }, []);
-
+  const isUSAddress = (countryId) => String(countryId) === "223";
   const clearMissingOrder = () => {
     setMissingOrderId(null);
     setDraftIntentId(null);
@@ -237,7 +247,7 @@ const CheckoutClient = () => {
         const billingZoneList = bZones || [];
         setBillingZones(billingZoneList);
         if (!billing.zone_id && billingZoneList.length > 0) {
-          const defaultBillingZone = billingZoneList?.zone_id;
+          const defaultBillingZone = billingZoneList?.[0]?.zone_id;
           setBilling((prev) => ({ ...prev, zone_id: defaultBillingZone }));
           if (shippingSameAsBilling) {
             setShipping((prev) => ({ ...prev, zone_id: defaultBillingZone }));
@@ -322,6 +332,10 @@ const CheckoutClient = () => {
 
   const populateAddressToShipping = (addr) => {
     if (!addr) return;
+    if (!isUSAddress(addr.country_id)) {
+      toast.error("We currently only deliver within the United States. Please select or add a US shipping address.");
+      return;
+    }
     setShipping((prev) => ({
       ...prev,
       firstname: addr.firstname || prev.firstname,
@@ -349,23 +363,44 @@ const CheckoutClient = () => {
     const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
     if (defaultAddr) {
       setSelectedBillingAddressId(String(defaultAddr.address_id));
-      setSelectedShippingAddressId(String(defaultAddr.address_id));
       setBillingAddressMode("existing");
-      setShippingAddressMode("existing");
       populateAddressToBilling(defaultAddr);
-      populateAddressToShipping(defaultAddr);
-    }
 
+
+      if (isUSAddress(defaultAddr.country_id)) {
+        setSelectedShippingAddressId(String(defaultAddr.address_id));
+        setShippingAddressMode("existing");
+        populateAddressToShipping(defaultAddr);
+      } else {
+        toast.error("We only deliver within the US. Please add or select a US shipping address.");
+        setSelectedShippingAddressId("");
+        setShippingAddressMode("new");
+        setShipping((prev) => ({ ...EMPTY_SHIPPING, country_id: "223" }));
+      }
+    }
   }, [isLoggedIn, addresses]);
 
   useEffect(() => {
-    if (!isLoggedIn || billingAddressMode !== "existing" || !selectedBillingAddressId) return;
-    const addr = addresses.find((a) => String(a.address_id) === String(selectedBillingAddressId));
-    if (addr) {
-      populateAddressToBilling(addr);
-    }
+    if (!isLoggedIn || addresses.length === 0) return;
+    const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+    if (defaultAddr) {
+      setSelectedBillingAddressId(String(defaultAddr.address_id));
+      setBillingAddressMode("existing");
+      populateAddressToBilling(defaultAddr);
 
-  }, [selectedBillingAddressId, billingAddressMode]);
+
+      if (isUSAddress(defaultAddr.country_id)) {
+        setSelectedShippingAddressId(String(defaultAddr.address_id));
+        setShippingAddressMode("existing");
+        populateAddressToShipping(defaultAddr);
+      } else {
+        toast.error("We only deliver within the US. Please add or select a US shipping address.");
+        setSelectedShippingAddressId("");
+        setShippingAddressMode("new");
+        setShipping((prev) => ({ ...EMPTY_SHIPPING, country_id: "223" }));
+      }
+    }
+  }, [isLoggedIn, addresses]);
 
   useEffect(() => {
     if (!isLoggedIn || shippingAddressMode !== "existing" || !selectedShippingAddressId || shippingSameAsBilling) return;
@@ -438,31 +473,47 @@ const CheckoutClient = () => {
         code: `multi_flat_rate.multi_flat_rate_0`,
         name: match.title || "Shipping Rate",
         label: match.title || "Shipping",
-        cost: Number(match.price || 0),
+        price: Number(match.price || 0),
       }));
     }
     return SHIPPING_METHODS_FALLBACK;
   }, [shippingRate]);
+  useEffect(() => {
+    if (!SHIPPING_METHODS.length) return;
+    const stillValid = SHIPPING_METHODS.some((r) => r.name === shippingMethod);
+    if (!stillValid) {
+      setShippingMethod(SHIPPING_METHODS[0].name);
+    }
+  }, [SHIPPING_METHODS]);
+
+
 
   const subTotal = useMemo(
     () => cartItems.reduce((acc, it) => acc + it.total, 0),
     [cartItems]
   );
+  const tipAmount = (() => {
+    if (supportTeam === "no" || !selectedTip) return 0;
+    if (selectedTip === "5%") return parseFloat((subTotal * 0.05).toFixed(2));
+    if (selectedTip === "10%") return parseFloat((subTotal * 0.10).toFixed(2));
+    if (selectedTip === "15%") return parseFloat((subTotal * 0.15).toFixed(2));
+    if (selectedTip === "$5") return 5;
+    if (selectedTip === "$10") return 10;
+    if (selectedTip === "$15") return 15;
+    if (selectedTip === "custom") return parseFloat(customTipValue) || 0;
+    return 0;
+  })();
 
-  const selectedShipping = SHIPPING_METHODS.find(
-    (r) => r.id === shippingMethodId
-  ) || SHIPPING_METHODS[0];
-  const shippingCost = selectedShipping ? selectedShipping.cost * cartTotalQty : 0;
-  const total = subTotal + shippingCost;
+  const selectedShipping = SHIPPING_METHODS.find((r) => r.name === shippingMethod);
+  const shippingCost = selectedShipping ? selectedShipping?.price * cartTotalQty : 0;
+  const taxRate = 0.0625;
+  const tax = subTotal * taxRate;
 
-  useEffect(() => {
-    if (SHIPPING_METHODS.length > 0) {
-      const hasCurrent = SHIPPING_METHODS.some((r) => r.id === shippingMethodId);
-      if (!hasCurrent) {
-        setShippingMethodId(SHIPPING_METHODS[0].id);
-      }
-    }
-  }, [SHIPPING_METHODS, shippingMethodId]);
+
+  const discountAmount = coupon.trim().length === 0 ? 0 : appliedDiscount;
+  const total = discountAmount ? (subTotal + shippingCost + tipAmount + tax) - discountAmount : subTotal + shippingCost + tipAmount + tax;
+
+
 
   const loadZones = async (countryId, setZones, onLoaded) => {
     if (!countryId) {
@@ -529,6 +580,10 @@ const CheckoutClient = () => {
   };
 
   const toggleShippingSameAsBilling = async (checked) => {
+    if (checked && !isUSAddress(billing.country_id)) {
+      toast.error("We only deliver within the United States. Please enter a separate US shipping address.");
+      return;
+    }
     setShippingSameAsBilling(checked);
     if (checked) {
       const bCountry = billing.country_id;
@@ -717,7 +772,7 @@ const CheckoutClient = () => {
 
         shipping_firstname: resolvedShipping.firstname ?? "",
         shipping_lastname: resolvedShipping.lastname ?? "",
-        shipping_telephone: resolvedShipping.telephone ?? "",
+        // shipping_telephone: resolvedShipping.telephone ?? "",
         shipping_company: resolvedShipping.company ?? "",
         shipping_address_1: resolvedShipping.address_1 ?? "",
         shipping_address_2: resolvedShipping.address_2 ?? "",
@@ -728,7 +783,7 @@ const CheckoutClient = () => {
         shipping_country: shippingCountry?.name ?? "",
         shipping_country_id: Number(resolvedShipping.country_id) ?? 0,
         shipping_address_format: "",
-        shipping_custom_field: {},
+        shipping_custom_field: { "1": resolvedShipping?.telephone },
         shipping_method: selectedShipping?.name || "Standard Shipping",
         shipping_code: selectedShipping?.code || "flat.flat",
         shipping_cost: shippingCost,
@@ -748,6 +803,9 @@ const CheckoutClient = () => {
         totals: [
           { code: "sub_total", title: "Sub-Total", value: subTotal, sort_order: 1 },
           { code: "shipping", title: selectedShipping?.name || "Shipping", value: shippingCost, sort_order: 3 },
+          ...(tipAmount > 0 ? [{ code: "tip", title: "Tip", value: tipAmount, sort_order: 5 }] : []),
+          { code: "tax", title: "Tax", value: tax, sort_order: 6 },
+          ...(discountAmount ? [{ code: "coupon", title: `Coupon (${coupon})`, value: -discountAmount, sort_order: 4 }] : []),
           { code: "total", title: "Total", value: total, sort_order: 9 },
         ],
 
@@ -763,12 +821,15 @@ const CheckoutClient = () => {
               telephone: registerData.telephone,
             }
             : null,
+        coupon_id: discountAmount > 0 ? couponData?.coupon?.coupon_id : null,
+        discountAmount: -discountAmount
       };
     },
     [
       billing, shipping, shippingSameAsBilling, billingZones, shippingZones, countryData,
       registerData, checkoutType, paymentCode, cartItems, subTotal, shippingCost, total,
       selectedShipping, orderNote, missingOrderId, draftIntentId, clientSecret, user,
+      tipAmount, tax, discountAmount, coupon, couponData,
     ]
   );
 
@@ -817,6 +878,7 @@ const CheckoutClient = () => {
   // FINAL "Place Order" — confirms Stripe payment against the draft order
   // ══════════════════════════════════════════════════════════════════════
   const handleConfirmOrder = async () => {
+    console.log("hyeeee confrm order")
     setOrderError("");
 
     if (!validateBilling()) return;
@@ -900,13 +962,14 @@ const CheckoutClient = () => {
       if (checkoutType === "register") {
         try {
           loginId({ email: registerData.email, password: registerData.password });
+          sessionStorage.setItem("checkoutType", "register");
         } catch (e) {
           console.warn("Auto-login after register failed:", e?.message);
         }
       }
 
       clearMissingOrder();
-
+      setCoupon("")
       const redirect =
         isLoggedIn || checkoutType === "register"
           ? `/account/order/info?order_id=${orderId}`
@@ -914,7 +977,7 @@ const CheckoutClient = () => {
       sessionStorage.setItem("redirectAfterThankYou", redirect);
 
       router.push("/thank-you");
-      cartItems.forEach((item) => clearCartMut.mutate(item.cart_id));
+      cartItems.forEach((item) => clearCartMut(item.cart_id));
     } catch (err) {
       setOrderError(err?.message || "Something went wrong.");
     } finally {
@@ -922,6 +985,59 @@ const CheckoutClient = () => {
     }
   };
 
+
+  const handleApplingCoupon = () => {
+    mutate({ code: coupon, cartTotal: subTotal }, {
+      onSuccess: (data) => {
+        if (!data?.success) {
+          toast.error(data?.message);
+          setAppliedDiscount(0);
+          isCouponActive.current = false;
+        } else {
+          toast.success(data?.message);
+          setAppliedDiscount(Number(data?.discountAmount || 0));
+          isCouponActive.current = true;
+        }
+      },
+      onError: () => {
+        setAppliedDiscount(0);
+        isCouponActive.current = false;
+      }
+    });
+  };
+
+  const handleCouponChange = (e) => {
+    const value = e.target.value;
+    setCoupon(value);
+    if (value.trim().length === 0) {
+      setAppliedDiscount(0);
+      isCouponActive.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (!isCouponActive.current || !coupon.trim()) return;
+
+    const timer = setTimeout(() => {
+      mutate({ code: coupon, cartTotal: subTotal }, {
+        onSuccess: (data) => {
+          if (!data?.success) {
+            toast.error(data?.message);
+            setAppliedDiscount(0);
+            isCouponActive.current = false;
+          } else {
+            setAppliedDiscount(Number(data?.discountAmount || 0));
+          }
+        },
+        onError: () => {
+          setAppliedDiscount(0);
+          isCouponActive.current = false;
+        }
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [subTotal]);
   return (
     <main className="font-hind-madurai text-[#333333] mb-10">
       <div className="flex flex-col w-full">
@@ -1099,8 +1215,8 @@ const CheckoutClient = () => {
                             <input
                               id="checkout-password"
                               value={password}
-                              type="pasword"
-                              name="pasword"
+                              type="password"
+                              name="password"
                               onChange={(e) => setPassword(e.target.value)}
                               placeholder="Enter your password"
                               className="w-full h-[44px] px-3 rounded-[4px] border border-[#cccccc] bg-white text-[14px] text-[#333333] outline-none transition-all focus:border-[#999999] focus:ring-1 focus:ring-[#dddddd]"
@@ -1120,7 +1236,7 @@ const CheckoutClient = () => {
                             className="w-full sm:w-auto px-7 h-[42px] rounded-[4px] text-white text-[13px] font-bold uppercase transition-opacity hover:opacity-90"
                             style={{ backgroundColor: ACCENT }}
                           >
-                           { isPending ? <Loader2/> :  "Login" }
+                            {isPending ? <Loader2 /> : "Login"}
                           </button>
 
                           <a href={`/account/forgotten-password/`}>
@@ -1239,74 +1355,74 @@ const CheckoutClient = () => {
 
                 {/* BILLING ADDRESS */}
                 {/* {checkoutType !== "login" && ( */}
-                  <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
-                    <h2
-                      className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
-                    >
-                      Billing Address
-                    </h2>
-                    <div
-                      className="h-[2px] w-14 mb-6"
-                      style={{ backgroundColor: ACCENT }}
-                    />
+                <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
+                  <h2
+                    className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
+                  >
+                    Billing Address
+                  </h2>
+                  <div
+                    className="h-[2px] w-14 mb-6"
+                    style={{ backgroundColor: ACCENT }}
+                  />
 
-                    {isLoggedIn && addresses && addresses.length > 0 && (
-                      <div className="mb-5 space-y-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="billingAddressMode"
-                            value="existing"
-                            checked={billingAddressMode === "existing"}
-                            onChange={() => setBillingAddressMode("existing")}
-                            className="cursor-pointer"
-                            style={{ accentColor: ACCENT }}
-                          />
-                          <span className="text-[14px] font-medium">
-                            I want to use an existing address
-                          </span>
-                        </label>
+                  {isLoggedIn && addresses && addresses.length > 0 && (
+                    <div className="mb-5 space-y-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingAddressMode"
+                          value="existing"
+                          checked={billingAddressMode === "existing"}
+                          onChange={() => setBillingAddressMode("existing")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use an existing address
+                        </span>
+                      </label>
 
-                        {billingAddressMode === "existing" && (
-                          <div className="ml-6">
-                            <select
-                              value={selectedBillingAddressId}
-                              onChange={(e) => setSelectedBillingAddressId(e.target.value)}
-                              className={`${inputClass} cursor-pointer max-w-xl`}
-                            >
-                              <option value="">--- Select an address ---</option>
-                              {addresses.map((addr) => (
-                                <option
-                                  key={addr.address_id}
-                                  value={addr.address_id}
-                                >
-                                  {formatAddressLabel(addr)}
-                                  {addr.is_default ? " (Default)" : ""}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
+                      {billingAddressMode === "existing" && (
+                        <div className="ml-6">
+                          <select
+                            value={selectedBillingAddressId}
+                            onChange={(e) => setSelectedBillingAddressId(e.target.value)}
+                            className={`${inputClass} cursor-pointer max-w-xl`}
+                          >
+                            <option value="">--- Select an address ---</option>
+                            {addresses.map((addr) => (
+                              <option
+                                key={addr.address_id}
+                                value={addr.address_id}
+                              >
+                                {formatAddressLabel(addr)}
+                                {addr.is_default ? " (Default)" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="billingAddressMode"
-                            value="new"
-                            checked={billingAddressMode === "new"}
-                            onChange={() => setBillingAddressMode("new")}
-                            className="cursor-pointer"
-                            style={{ accentColor: ACCENT }}
-                          />
-                          <span className="text-[14px] font-medium">
-                            I want to use a new address
-                          </span>
-                        </label>
-                      </div>
-                    )}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingAddressMode"
+                          value="new"
+                          checked={billingAddressMode === "new"}
+                          onChange={() => setBillingAddressMode("new")}
+                          className="cursor-pointer"
+                          style={{ accentColor: ACCENT }}
+                        />
+                        <span className="text-[14px] font-medium">
+                          I want to use a new address
+                        </span>
+                      </label>
+                    </div>
+                  )}
 
-                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isLoggedIn && addresses.length > 0 && billingAddressMode === "existing" ? "opacity-60" : ""}`}>
-                      {/* <div>
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isLoggedIn && addresses.length > 0 && billingAddressMode === "existing" ? "opacity-60" : ""}`}>
+                    {/* <div>
                       <label className={labelClass}>
                         First Name {requiredStar}
                       </label>
@@ -1356,15 +1472,263 @@ const CheckoutClient = () => {
                         className={inputClass}
                       />
                     </div> */}
+                    <div className="md:col-span-2">
+                      <label className={labelClass}>Company</label>
+                      <input
+                        type="text"
+                        name="company"
+                        placeholder="Company"
+                        value={billing.company}
+                        onChange={handleBillingChange}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className={labelClass}>
+                        Address 1 {requiredStar}
+                      </label>
+                      <input
+                        type="text"
+                        name="address_1"
+                        placeholder="Address 1"
+                        value={billing.address_1}
+                        onChange={handleBillingChange}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className={labelClass}>Address 2</label>
+                      <input
+                        type="text"
+                        name="address_2"
+                        placeholder="Address 2"
+                        value={billing.address_2}
+                        onChange={handleBillingChange}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>
+                        City {requiredStar}
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        placeholder="City"
+                        value={billing.city}
+                        onChange={handleBillingChange}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>
+                        Post Code {requiredStar}
+                      </label>
+                      <input
+                        type="text"
+                        name="postcode"
+                        placeholder="Post Code"
+                        value={billing.postcode}
+                        onChange={handleBillingChange}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>
+                        Country {requiredStar}
+                      </label>
+                      <select
+                        name="country_id"
+                        value={billing.country_id}
+                        onChange={handleBillingCountryChange}
+                        className={`${inputClass} cursor-pointer`}
+                      >
+                        <option value="">--- Please Select ---</option>
+                        {countryData.map((c) => (
+                          <option
+                            key={renderCountryOptionValue(c)}
+                            value={renderCountryOptionValue(c)}
+                          >
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>
+                        Region / State {requiredStar}
+                      </label>
+                      <select
+                        name="zone_id"
+                        value={billing.zone_id}
+                        onChange={handleBillingChange}
+                        className={`${inputClass} cursor-pointer`}
+                        disabled={!billing.country_id}
+                      >
+                        <option value="">--- Please Select ---</option>
+                        {(billingZones || []).map((z) => (
+                          <option key={z.zone_id} value={z.zone_id}>
+                            {z.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                {/* )} */}
+
+                {/* SHIPPING ADDRESS — LOCKED until billing above is complete */}
+                {/* {checkoutType !== "login" && ( */}
+                <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8 relative">
+                  <div className="flex flex-wrap items-center justify-between mb-2 gap-3">
+                    <h2
+                      className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1 flex items-center gap-2`}
+                    >
+                      Where would you like to send this gift?
+
+                    </h2>
+                  </div>
+                  <div
+                    className="h-[2px] w-14 mb-4"
+                    style={{ backgroundColor: ACCENT }}
+                  />
+
+                  {/* {!isBillingComplete && (
+                    <div className="mb-5 text-[12px] text-[#9a3412] bg-[#fff7ed] border border-[#fdba74] rounded-[3px] p-3">
+                      Please complete your billing address above (name, address, email &amp; telephone) before entering shipping details.
+                    </div>
+                  )} */}
+
+                  <div
+                    className={`transition-opacity`}
+                  >
+                    <label className="flex items-center gap-2 mb-5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={shippingSameAsBilling}
+                        onChange={(e) =>
+                          toggleShippingSameAsBilling(e.target.checked)
+                        }
+                        // disabled={!isBillingComplete}
+                        className="cursor-pointer"
+                        style={{ accentColor: ACCENT }}
+                      />
+                      <span className="text-[13px] font-medium">
+                        My billing and shipping address are the same
+                      </span>
+                    </label>
+
+                    {isLoggedIn && addresses && addresses.length > 0 && !shippingSameAsBilling && (
+                      <div className="mb-5 space-y-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="shippingAddressMode"
+                            value="existing"
+                            checked={shippingAddressMode === "existing"}
+                            onChange={() => setShippingAddressMode("existing")}
+                            // disabled={!isBillingComplete}
+                            className="cursor-pointer"
+                            style={{ accentColor: ACCENT }}
+                          />
+                          <span className="text-[14px] font-medium">
+                            I want to use an existing address
+                          </span>
+                        </label>
+
+                        {shippingAddressMode === "existing" && (
+                          <div className="ml-6">
+                            <select
+                              value={selectedShippingAddressId}
+                              onChange={(e) => setSelectedShippingAddressId(e.target.value)}
+                              // disabled={!isBillingComplete}
+                              className={`${inputClass} cursor-pointer max-w-xl`}
+                            >
+                              <option value="">--- Select an address ---</option>
+                              {addresses.map((addr) => (
+                                <option
+                                  key={addr.address_id}
+                                  value={addr.address_id}
+                                >
+                                  {formatAddressLabel(addr)}
+                                  {addr.is_default ? " (Default)" : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="shippingAddressMode"
+                            value="new"
+                            checked={shippingAddressMode === "new"}
+                            onChange={() => setShippingAddressMode("new")}
+                            // disabled={!isBillingComplete}
+                            className="cursor-pointer"
+                            style={{ accentColor: ACCENT }}
+                          />
+                          <span className="text-[14px] font-medium">
+                            I want to use a new address
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
+                    <div
+                      className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${shippingSameAsBilling ? "opacity-40 pointer-events-none" : ""
+                        } ${isLoggedIn && addresses.length > 0 && !shippingSameAsBilling && shippingAddressMode === "existing" ? "opacity-60" : ""
+                        }`}
+                    >
+                      <div>
+                        <label className={labelClass}>
+                          First Name {requiredStar}
+                        </label>
+                        <input
+                          type="text"
+                          name="firstname"
+                          placeholder="First Name"
+                          value={
+                            shippingSameAsBilling
+                              ? billing.firstname
+                              : shipping.firstname
+                          }
+                          onChange={handleShippingChange}
+                          className={inputClass}
+                          disabled={shippingSameAsBilling}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Last Name</label>
+                        <input
+                          type="text"
+                          name="lastname"
+                          placeholder="Last Name"
+                          value={
+                            shippingSameAsBilling
+                              ? billing.lastname
+                              : shipping.lastname
+                          }
+                          onChange={handleShippingChange}
+                          className={inputClass}
+                          disabled={shippingSameAsBilling}
+                        />
+                      </div>
                       <div className="md:col-span-2">
                         <label className={labelClass}>Company</label>
                         <input
                           type="text"
                           name="company"
                           placeholder="Company"
-                          value={billing.company}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.company
+                              : shipping.company
+                          }
+                          onChange={handleShippingChange}
                           className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -1375,9 +1739,14 @@ const CheckoutClient = () => {
                           type="text"
                           name="address_1"
                           placeholder="Address 1"
-                          value={billing.address_1}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.address_1
+                              : shipping.address_1
+                          }
+                          onChange={handleShippingChange}
                           className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -1386,9 +1755,14 @@ const CheckoutClient = () => {
                           type="text"
                           name="address_2"
                           placeholder="Address 2"
-                          value={billing.address_2}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.address_2
+                              : shipping.address_2
+                          }
+                          onChange={handleShippingChange}
                           className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
                       </div>
                       <div>
@@ -1399,9 +1773,14 @@ const CheckoutClient = () => {
                           type="text"
                           name="city"
                           placeholder="City"
-                          value={billing.city}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.city
+                              : shipping.city
+                          }
+                          onChange={handleShippingChange}
                           className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
                       </div>
                       <div>
@@ -1412,9 +1791,14 @@ const CheckoutClient = () => {
                           type="text"
                           name="postcode"
                           placeholder="Post Code"
-                          value={billing.postcode}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.postcode
+                              : shipping.postcode
+                          }
+                          onChange={handleShippingChange}
                           className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
                       </div>
                       <div>
@@ -1423,19 +1807,11 @@ const CheckoutClient = () => {
                         </label>
                         <select
                           name="country_id"
-                          value={billing.country_id}
-                          onChange={handleBillingCountryChange}
-                          className={`${inputClass} cursor-pointer`}
+                          value="223"
+                          disabled
+                          className={`${inputClass} cursor-not-allowed opacity-70`}
                         >
-                          <option value="">--- Please Select ---</option>
-                          {countryData?.map((c) => (
-                            <option
-                              key={renderCountryOptionValue(c)}
-                              value={renderCountryOptionValue(c)}
-                            >
-                              {c.name}
-                            </option>
-                          ))}
+                          <option value="223">United States</option>
                         </select>
                       </div>
                       <div>
@@ -1444,326 +1820,50 @@ const CheckoutClient = () => {
                         </label>
                         <select
                           name="zone_id"
-                          value={billing.zone_id}
-                          onChange={handleBillingChange}
+                          value={
+                            shippingSameAsBilling
+                              ? billing.zone_id
+                              : shipping.zone_id
+                          }
+                          onChange={handleShippingChange}
                           className={`${inputClass} cursor-pointer`}
-                          disabled={!billing.country_id}
+                          disabled={
+
+                            shippingSameAsBilling ||
+                            !(shippingSameAsBilling
+                              ? billing.country_id
+                              : shipping.country_id)
+                          }
                         >
                           <option value="">--- Please Select ---</option>
-                          {(billingZones || []).map((z) => (
+                          {(shippingZones || []).map((z) => (
                             <option key={z.zone_id} value={z.zone_id}>
                               {z.name}
                             </option>
                           ))}
                         </select>
                       </div>
-                    </div>
-                  </div>
-                {/* )} */}
-
-                {/* SHIPPING ADDRESS — LOCKED until billing above is complete */}
-                {/* {checkoutType !== "login" && ( */}
-                  <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8 relative">
-                    <div className="flex flex-wrap items-center justify-between mb-2 gap-3">
-                      <h2
-                        className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1 flex items-center gap-2`}
-                      >
-                        Where would you like to send this gift?
-                        {!isBillingComplete && (
-                          <Lock size={14} className="text-[#9a3412]" />
-                        )}
-                      </h2>
-                    </div>
-                    <div
-                      className="h-[2px] w-14 mb-4"
-                      style={{ backgroundColor: ACCENT }}
-                    />
-
-                    {/* {!isBillingComplete && (
-                    <div className="mb-5 text-[12px] text-[#9a3412] bg-[#fff7ed] border border-[#fdba74] rounded-[3px] p-3">
-                      Please complete your billing address above (name, address, email &amp; telephone) before entering shipping details.
-                    </div>
-                  )} */}
-
-                    <div
-                      className={`transition-opacity ${!isBillingComplete ? "opacity-50 pointer-events-none select-none" : ""
-                        }`}
-                    >
-                      <label className="flex items-center gap-2 mb-5 cursor-pointer">
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>
+                          Recipients Mobile No.
+                        </label>
                         <input
-                          type="checkbox"
-                          checked={shippingSameAsBilling}
-                          onChange={(e) =>
-                            toggleShippingSameAsBilling(e.target.checked)
+                          type="tel"
+                          name="telephone"
+                          placeholder="Recipients Mobile No."
+                          value={
+                            shippingSameAsBilling
+                              ? billing.telephone
+                              : shipping.telephone
                           }
-                          disabled={!isBillingComplete}
-                          className="cursor-pointer"
-                          style={{ accentColor: ACCENT }}
+                          onChange={handleShippingChange}
+                          className={inputClass}
+                          disabled={shippingSameAsBilling}
                         />
-                        <span className="text-[13px] font-medium">
-                          My billing and shipping address are the same
-                        </span>
-                      </label>
-
-                      {isLoggedIn && addresses && addresses.length > 0 && !shippingSameAsBilling && (
-                        <div className="mb-5 space-y-3">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="shippingAddressMode"
-                              value="existing"
-                              checked={shippingAddressMode === "existing"}
-                              onChange={() => setShippingAddressMode("existing")}
-                              disabled={!isBillingComplete}
-                              className="cursor-pointer"
-                              style={{ accentColor: ACCENT }}
-                            />
-                            <span className="text-[14px] font-medium">
-                              I want to use an existing address
-                            </span>
-                          </label>
-
-                          {shippingAddressMode === "existing" && (
-                            <div className="ml-6">
-                              <select
-                                value={selectedShippingAddressId}
-                                onChange={(e) => setSelectedShippingAddressId(e.target.value)}
-                                disabled={!isBillingComplete}
-                                className={`${inputClass} cursor-pointer max-w-xl`}
-                              >
-                                <option value="">--- Select an address ---</option>
-                                {addresses.map((addr) => (
-                                  <option
-                                    key={addr.address_id}
-                                    value={addr.address_id}
-                                  >
-                                    {formatAddressLabel(addr)}
-                                    {addr.is_default ? " (Default)" : ""}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
-
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="shippingAddressMode"
-                              value="new"
-                              checked={shippingAddressMode === "new"}
-                              onChange={() => setShippingAddressMode("new")}
-                              disabled={!isBillingComplete}
-                              className="cursor-pointer"
-                              style={{ accentColor: ACCENT }}
-                            />
-                            <span className="text-[14px] font-medium">
-                              I want to use a new address
-                            </span>
-                          </label>
-                        </div>
-                      )}
-
-                      <div
-                        className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${shippingSameAsBilling ? "opacity-40 pointer-events-none" : ""
-                          } ${isLoggedIn && addresses.length > 0 && !shippingSameAsBilling && shippingAddressMode === "existing" ? "opacity-60" : ""
-                          }`}
-                      >
-                        <div>
-                          <label className={labelClass}>
-                            First Name {requiredStar}
-                          </label>
-                          <input
-                            type="text"
-                            name="firstname"
-                            placeholder="First Name"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.firstname
-                                : shipping.firstname
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Last Name</label>
-                          <input
-                            type="text"
-                            name="lastname"
-                            placeholder="Last Name"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.lastname
-                                : shipping.lastname
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className={labelClass}>Company</label>
-                          <input
-                            type="text"
-                            name="company"
-                            placeholder="Company"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.company
-                                : shipping.company
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className={labelClass}>
-                            Address 1 {requiredStar}
-                          </label>
-                          <input
-                            type="text"
-                            name="address_1"
-                            placeholder="Address 1"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.address_1
-                                : shipping.address_1
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className={labelClass}>Address 2</label>
-                          <input
-                            type="text"
-                            name="address_2"
-                            placeholder="Address 2"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.address_2
-                                : shipping.address_2
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>
-                            City {requiredStar}
-                          </label>
-                          <input
-                            type="text"
-                            name="city"
-                            placeholder="City"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.city
-                                : shipping.city
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>
-                            Post Code {requiredStar}
-                          </label>
-                          <input
-                            type="text"
-                            name="postcode"
-                            placeholder="Post Code"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.postcode
-                                : shipping.postcode
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>
-                            Country {requiredStar}
-                          </label>
-                          <select
-                            name="country_id"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.country_id
-                                : shipping.country_id
-                            }
-                            onChange={handleShippingCountryChange}
-                            className={`${inputClass} cursor-pointer`}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          >
-                            <option value="">--- Please Select ---</option>
-                            {countryData.map((c) => (
-                              <option
-                                key={renderCountryOptionValue(c)}
-                                value={renderCountryOptionValue(c)}
-                              >
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className={labelClass}>
-                            Region / State {requiredStar}
-                          </label>
-                          <select
-                            name="zone_id"
-                            value={
-                              shippingSameAsBilling
-                                ? billing.zone_id
-                                : shipping.zone_id
-                            }
-                            onChange={handleShippingChange}
-                            className={`${inputClass} cursor-pointer`}
-                            disabled={
-                              !isBillingComplete ||
-                              shippingSameAsBilling ||
-                              !(shippingSameAsBilling
-                                ? billing.country_id
-                                : shipping.country_id)
-                            }
-                          >
-                            <option value="">--- Please Select ---</option>
-                            {(shippingZones || []).map((z) => (
-                              <option key={z.zone_id} value={z.zone_id}>
-                                {z.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className={labelClass}>
-                            Recipients Mobile No.
-                          </label>
-                          <input
-                            type="tel"
-                            name="telephone"
-                            placeholder="Recipients Mobile No."
-                            value={
-                              shippingSameAsBilling
-                                ? billing.telephone
-                                : shipping.telephone
-                            }
-                            onChange={handleShippingChange}
-                            className={inputClass}
-                            disabled={shippingSameAsBilling || !isBillingComplete}
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
                 {/* )} */}
               </div>
 
@@ -1772,8 +1872,9 @@ const CheckoutClient = () => {
                 {/* SHIPPING METHOD */}
                 <div className="bg-[#eeeeee] rounded-[4px] p-6">
                   <SectionHeader title="Shipping Method" />
+
                   <div className="space-y-4">
-                    {!effectiveCountryId || !effectiveZoneId ? (
+                    {!effectiveCountryId ? (
                       <div className="text-[13px] text-[#666] bg-white rounded-[3px] p-4 border border-dashed border-gray-300">
                         <p className="flex items-center gap-2">
                           <Truck size={16} className="text-gray-400" />
@@ -1790,38 +1891,42 @@ const CheckoutClient = () => {
                         {SHIPPING_METHODS.map((rate) => (
                           <label
                             key={rate.id}
-                            className="flex items-start gap-3 text-[14px] cursor-pointer p-3 rounded border border-transparent hover:border-gray-200 transition-colors"
-                            style={{
-                              borderColor:
-                                shippingMethodId === rate.id
-                                  ? "rgba(140,26,60,0.35)"
-                                  : undefined,
-                              background:
-                                shippingMethodId === rate.id ? "#f9f9f9" : undefined,
-                            }}
+                            className="flex items-center gap-3 cursor-pointer"
+                          // style={{
+                          //   borderColor:
+                          //     shippingMethod === rate.name
+                          //       ? "rgba(140,26,60,0.35)"
+                          //       : undefined,
+                          //   background:
+                          //     shippingMethod === rate.name ? "#f9f9f9" : undefined,
+                          // }}
                           >
-                            <Truck size={20} className="text-[#333] shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name="shippingMethod"
-                                  checked={shippingMethodId === rate.id}
-                                  onChange={() => setShippingMethodId(rate.id)}
-                                  className="cursor-pointer"
-                                  style={{ accentColor: ACCENT }}
-                                />
-                                <span className="font-medium">{rate.label}</span>
-                              </div>
-                            </div>
-                            <div className="font-bold">
-                              ${rate.cost.toFixed(2)}
-                            </div>
+                            <Truck size={20} className="text-[#333] shrink-0" />
+
+                            <input
+                              type="radio"
+                              name="shippingMethod"
+                              checked={shippingMethod === rate.name}
+                              onChange={() => setShippingMethod(rate.name)}
+                              className="cursor-pointer"
+                              style={{ accentColor: ACCENT }}
+                            />
+
+                            <span className="font-medium flex-1">
+                              {rate.label}
+                            </span>
+
+                            <span className="font-bold whitespace-nowrap">
+                              ${rate.price.toFixed(2)}
+                            </span>
                           </label>
                         ))}
-                        {!shippingRate?.allMatches || shippingRate.allMatches.length === 0 ? (
+
+                        {!shippingRate?.allMatches ||
+                          shippingRate.allMatches.length === 0 ? (
                           <div className="text-[12px] text-[#888] bg-white rounded-[3px] p-3 border border-gray-200">
-                            Showing default shipping rates. Select a valid address to see location-specific options.
+                            Showing default shipping rates. Select a valid address to see
+                            location-specific options.
                           </div>
                         ) : null}
                       </>
@@ -1840,18 +1945,18 @@ const CheckoutClient = () => {
                         type="text"
                         placeholder="Enter your coupon here"
                         value={coupon}
-                        onChange={(e) => setCoupon(e.target.value)}
+                        onChange={handleCouponChange}
                         className="flex-1 border border-gray-200 py-2 px-3 text-[13px] focus:outline-none bg-white"
                       />
                       <button
-                        // onClick={handleApplyCoupon}
+                        onClick={handleApplingCoupon}
                         className="bg-black text-white px-6 py-2 text-[12px] font-bold uppercase hover:bg-[#98022e] transition-colors cursor-pointer"
                       >
                         Submit
                       </button>
                     </div>
                   </div>
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                  {/* <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                     <label className="text-[14px] font-medium w-56 shrink-0">
                       Enter your gift certificate code here
                     </label>
@@ -1870,38 +1975,50 @@ const CheckoutClient = () => {
                         Submit
                       </button>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* SUPPORT TEAM */}
-                <div className="bg-[#eeeeee] rounded-[4px] p-6">
+                <div className="bg-white border border-gray-200 rounded-[4px] p-6 shadow-sm">
                   <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-[14px] font-bold text-[#333]">
-                      Show your support for the team at DC Wine &amp; Spirits
-                    </span>
+                    <span className="text-[14px] font-bold text-[#333]">Show your support for the team at DC Wine & Spirits</span>
                     <div className="flex gap-4">
                       <label className="flex items-center gap-2 cursor-pointer text-[14px]">
-                        <input
-                          type="radio"
-                          checked={supportTeam === "yes"}
-                          onChange={() => setSupportTeam("yes")}
-                          className="cursor-pointer"
-                          style={{ accentColor: ACCENT }}
-                        />
-                        Yes
+                        <input type="radio" checked={supportTeam === "yes"} onChange={() => setSupportTeam("yes")} className="accent-[#c99000] cursor-pointer" /> Yes
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer text-[14px]">
-                        <input
-                          type="radio"
-                          checked={supportTeam === "no"}
-                          onChange={() => setSupportTeam("no")}
-                          className="cursor-pointer"
-                          style={{ accentColor: ACCENT }}
-                        />
-                        No
+                        <input type="radio" checked={supportTeam === "no"} onChange={() => { setSupportTeam("no"); setSelectedTip(""); }} className="accent-[#c99000] cursor-pointer" /> No
                       </label>
                     </div>
                   </div>
+                  {supportTeam === "yes" && (
+                    <div className="mt-3 space-y-3">
+                      <select
+                        value={selectedTip}
+                        onChange={(e) => { setSelectedTip(e.target.value); setCustomTipValue(""); }}
+                        className="border border-gray-200 py-2 px-3 rounded text-[13px] focus:outline-none focus:ring-1 focus:ring-[#c99000] bg-white w-full md:w-56 cursor-pointer"
+                      >
+                        <option value="">Select tip amount</option>
+                        <option value="5%">5% (+${(subTotal * 0.05).toFixed(2)})</option>
+                        <option value="10%">10% (+${(subTotal * 0.10).toFixed(2)})</option>
+                        <option value="15%">15% (+${(subTotal * 0.15).toFixed(2)})</option>
+                        <option value="$5">$5.00</option>
+                        <option value="$10">$10.00</option>
+                        <option value="$15">$15.00</option>
+                        <option value="custom">Custom amount</option>
+                      </select>
+                      {selectedTip === "custom" && (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number" placeholder="Amount in USD"
+                            value={customTipValue}
+                            onChange={(e) => setCustomTipValue(e.target.value)}
+                            className="border border-gray-200 py-2 px-3 rounded text-[13px] w-36 focus:outline-none focus:ring-1 focus:ring-[#c99000]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* CART DETAILS */}
@@ -1990,8 +2107,19 @@ const CheckoutClient = () => {
                                 <td className="p-3 text-center text-[#444444]">
                                   {item.model}
                                 </td>
-                                <td className="p-3 text-center font-medium">
-                                  {item.quantity}
+                                <td className="py-4 pr-4 border-b border-gray-200">
+                                  <div className="flex items-center gap-1 pl-5">
+                                    <div className="relative border border-gray-200 rounded flex items-center">
+                                      <input type="number" value={item?.quantity} readOnly className="w-10 text-center py-1 text-[13px] focus:outline-none bg-white" />
+                                      <div className="flex flex-col border-l border-gray-200">
+                                        <button onClick={() => updateCart({ cart_id: item.cart_id, quantity: item.quantity + 1 })} className="px-1 py-0.5 hover:bg-gray-100 cursor-pointer"><ChevronUp size={10} /></button>
+                                        <button onClick={() => item.quantity > 1 && updateCart({ cart_id: item.cart_id, quantity: item.quantity - 1 })} className="px-1 py-0.5 hover:bg-gray-100 border-t border-gray-200 cursor-pointer"><ChevronDown size={10} /></button>
+                                      </div>
+                                    </div>
+                                    <button onClick={() => clearCartMut(item.cart_id)} className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer">
+                                      <X size={13} />
+                                    </button>
+                                  </div>
                                 </td>
                                 <td className="p-3 text-right">
                                   ${item.unitPrice.toFixed(2)}
@@ -2014,6 +2142,24 @@ const CheckoutClient = () => {
                             {selectedShipping?.name || "Shipping"}:
                           </span>
                           <span>${shippingCost.toFixed(2)}</span>
+                        </div>
+                        {discountAmount > 0 && <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 border-b-0">
+                          <span className="font-bold">
+                            Discount Applied: {`${couponData?.coupon?.name} (${couponData?.coupon?.code})`}
+                          </span>
+                          <span>${discountAmount.toFixed(2)}</span>
+                        </div>}
+                       { tipAmount > 0 && <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 border-b-0">
+                          <span className="font-bold">
+                            Tip Amount
+                          </span>
+                          <span>${tipAmount.toFixed(2)}</span>
+                        </div>}
+                        <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 border-b-0">
+                          <span className="font-bold">
+                            Tax (6.25%)
+                          </span>
+                          <span>${tax.toFixed(2)}</span>
                         </div>
                         <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 font-bold text-base text-black">
                           <span>Total:</span>
