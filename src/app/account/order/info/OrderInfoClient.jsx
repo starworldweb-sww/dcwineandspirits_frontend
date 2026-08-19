@@ -225,7 +225,7 @@ const OrderInfoClient = () => {
                     <tr key={idx} className={idx % 2 === 1 ? "bg-[#fafafa]" : "bg-white"}>
                       <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{formatDate(entry.date_added)}</td>
                       <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{entry.status}</td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{entry.comment || "-"}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{decodeHtml(entry?.comment)  || "-"}</td>
                     </tr>
                   ))
                 ) : (

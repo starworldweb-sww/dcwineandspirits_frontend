@@ -15,12 +15,12 @@ const OrderConfirmation = () => {
       const checkoutType = sessionStorage.getItem('checkoutType');
     
 
-      if (checkoutType === 'register' ) {
+      if (checkoutType === 'register' ||  checkoutType === 'login') {
         setIsLoggingIn(true);
         const redirectPath = sessionStorage.getItem('redirectAfterThankYou') || '/';
         setTimeout(() => {
           router.push(redirectPath);
-        }, 3000);
+        }, 2000);
       }
 
       sessionStorage.removeItem('checkoutType');

@@ -332,6 +332,8 @@ const CheckoutClient = () => {
 
   const populateAddressToShipping = (addr) => {
     if (!addr) return;
+      console.log("shipping addr country_id:", addr.country_id, typeof addr.country_id); // 👈 temp debug
+
     if (!isUSAddress(addr.country_id)) {
       toast.error("We currently only deliver within the United States. Please select or add a US shipping address.");
       return;
@@ -2038,7 +2040,7 @@ const CheckoutClient = () => {
                       Your cart is empty.
                       <div className="mt-4">
                         <Link
-                          href="/"
+                          href="/products"
                           className="inline-block px-6 py-2 text-[12px] font-bold uppercase text-white bg-black hover:bg-[#98022e] transition-colors"
                         >
                           Start Shopping
