@@ -19,7 +19,13 @@ import {
 import { Sumana, Hind_Madurai } from "next/font/google";
 import ProductsHeader from "../../components/TittleAndBreadcrumb";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+
+import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 import { toast } from "sonner";
+import Link from "next/link";
+import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
+import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
+
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -35,8 +41,8 @@ const hindMadurai = Hind_Madurai({
 
 export default function ProductMain({ product }) {
   const [stock] = useState(product.quantity > 0);
-  const productImage = product.image 
-    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+  const productImage = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const [mainImage, setMainImage] = useState(productImage);
   const [isImageHovered, setIsImageHovered] = useState(false);
@@ -44,25 +50,40 @@ export default function ProductMain({ product }) {
   const [giftMessage, setGiftMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
 
+  // wishlist popup ke liye state
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
+
   const addToCartMut = useAddtoCart();
   const isAddingToCart = addToCartMut.isPending;
+
+  const productId = product?.product_id || product?.id;
+
+  const addToWishlistMut = useAddToWishlist();
+  const isAddingToWishlist = addToWishlistMut.isPending;
+
+  // agar product already wishlist mein hai toh poora button pink dikhega
+  const { data: wishlistCheckData } = useCheckWishlist(productId);
+  const isInWishlist = Boolean(
+    wishlistCheckData?.data?.isInWishlist ?? wishlistCheckData?.isInWishlist
+  );
 
   const reviews = product.reviews || [];
   const reviewCount = reviews.length;
   const averageRating = product.average_rating || 0;
 
-  const productImages = product.images?.map(img => 
-    img.image ? `https://www.dcwineandspirits.com/image/${img.image}` : null
-  ).filter(Boolean) || [];
-  
+  const productImages =
+    product.images
+      ?.map((img) =>
+        img.image
+          ? `https://www.dcwineandspirits.com/image/${img.image}`
+          : null
+      )
+      .filter(Boolean) || [];
+
   const allImages = productImages.length
     ? [productImage, ...productImages]
     : [productImage];
 
-  // 👇 jab sirf ek hi image ho, thumbnail column render nahi hota —
-  // isliye main image ko utni extra width de rahe hain jitni
-  // thumbnail column (w-20 = 80px) + gap (gap-4 = 16px) le raha tha,
-  // taaki total row width same rahe aur right side content shift na ho
   const hasMultipleImages = allImages.length > 1;
 
   const originalPrice = product.price;
@@ -71,7 +92,11 @@ export default function ProductMain({ product }) {
 
   const brandName = product.manufacturer?.name || "";
   const brandurl = product.manufacturer?.manufacturer_seo_url || "";
- 
+  const brandImage = product.manufacturer?.image
+  ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.manufacturer.image}`
+  : "";
+
+
   const handleImageChange = (clickedImage) => {
     setMainImage(clickedImage);
     setIsImageHovered(false);
@@ -86,7 +111,6 @@ export default function ProductMain({ product }) {
   };
 
   const handleAddToCartClick = async () => {
-    const productId = product?.product_id || product?.id;
     if (!productId || isAddingToCart || !stock) return;
 
     try {
@@ -97,12 +121,18 @@ export default function ProductMain({ product }) {
       if (res?.success) {
         toast.success(res.message || "Added to cart!");
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   };
 
-  const handleAddToWishlistClick = () => {
-    console.log("Add to wishlist", product.product_id);
+  const handleAddToWishlistClick = async () => {
+    if (!productId || isAddingToWishlist || isInWishlist) return;
+
+    try {
+      await addToWishlistMut.mutateAsync(productId);
+      setShowWishlistPopup(true);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to add to wishlist");
+    }
   };
 
   const handleWriteReviewClick = () => {
@@ -112,6 +142,14 @@ export default function ProductMain({ product }) {
   return (
     <>
       <ProductsHeader categoryName={product.name} />
+
+      {/* Add to Wishlist popup */}
+      <AddToWishlistPopup
+        isOpen={showWishlistPopup}
+        onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: productImage }}
+      />
+
       <main className={`min-h-screen w-full bg-white ${hindMadurai.className}`}>
         <section className="bg-white px-3 2xl:px-32 py-6">
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
@@ -169,7 +207,9 @@ export default function ProductMain({ product }) {
               <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:h-[486px] lg:overflow-y-auto">
                 <div className="flex items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
                   <div className="flex items-stretch gap-4">
-                    <div className={`${sumana.className} flex flex-col justify-center`}>
+                    <div
+                      className={`${sumana.className} flex flex-col justify-center`}
+                    >
                       {hasSpecialPrice ? (
                         <div className="flex flex-col">
                           <span className="font-semibold text-lg text-gray-400 line-through">
@@ -235,13 +275,26 @@ export default function ProductMain({ product }) {
                     </div>
                   </div>
 
-                  {brandName && (
-                    <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
-                      <a href={`/${brandurl}`} className="text-xs tracking-widest text-gray-700 text-center px-2">
-                        {brandName}
-                      </a>
-                    </div>
-                  )}
+                {brandName && (
+  <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+    <Link
+      href={`/${brandurl}`}
+      className="w-full h-full flex items-center justify-center p-2"
+    >
+      {brandImage ? (
+        <img
+          src={brandImage}
+          alt={brandName}
+          className="max-w-full max-h-full object-contain"
+        />
+      ) : (
+        <span className="text-xs tracking-widest text-gray-700 text-center px-2">
+          {brandName}
+        </span>
+      )}
+    </Link>
+  </div>
+)}
                 </div>
 
                 <div className="w-full mt-5 mb-5">
@@ -315,10 +368,24 @@ export default function ProductMain({ product }) {
                     <button
                       type="button"
                       onClick={handleAddToWishlistClick}
-                      className="flex items-center gap-2 text-gray-700 hover:text-[#98022e] transition-colors cursor-pointer"
+                      disabled={isAddingToWishlist || isInWishlist}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${
+                        isInWishlist
+                          ? "text-[#98022e]"
+                          : "text-gray-700 hover:text-[#98022e]"
+                      }`}
                     >
-                      <Heart size={16} />
-                      Add to Wish List
+                      <Heart
+                        size={16}
+                        className={
+                          isInWishlist ? "fill-[#98022e] text-[#98022e]" : ""
+                        }
+                      />
+                      {isInWishlist
+                        ? "Added to Wish List"
+                        : isAddingToWishlist
+                          ? "Adding..."
+                          : "Add to Wish List"}
                     </button>
 
                     <button
@@ -374,7 +441,6 @@ export default function ProductMain({ product }) {
                     <Gift size={18} className="text-[#98022e]" />
                     Free Gift Card
                   </a>
-
                   <a
                     href="/shipping-delivery"
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors "

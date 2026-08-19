@@ -2,59 +2,24 @@
 
 import React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ShoppingBag, RotateCcw } from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-import AccountSidebar from "@/app/components/AccountSidebar"; // apna actual path daal dena
+import AccountSidebar from "@/app/components/AccountSidebar";
+import { useOrderInfo } from "@/app/api/hooks/order/useGetOrderInfo";
+import { decodeHtml } from "@/libs/decodeHtml";
 
-// --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
 
-const breadcrumbs = [
-  { label: "Home", href: "/" },
-  { label: "Account", href: "/account" },
-  { label: "Order History", href: "/account/order" },
-  { label: "Order Details", href: "/account/order/18537" },
-];
-
-// --- STATIC ORDER DATA ---
-const order = {
-  id: "18537",
-  dateAdded: "04/05/2026",
-  paymentMethod: "Credit / Debit Card",
-  shippingMethod: "Standard Delivery $20/item (Delivery may take 2 to 3 days)",
-  paymentAddress: {
-    name: "Sunil Kumar",
-    line1: "wrewr",
-    line2: "ewrewr, Virginia 234234",
-    country: "United States",
-  },
-  shippingAddress: {
-    name: "Sunil Kumar",
-    line1: "wrewr",
-    line2: "ewrewr, Virginia 234234",
-    country: "United States",
-  },
-  products: [
-    {
-      name: "Moet & Chandon Brut Imperial Champagne And Flutes Gift Set",
-      model: "dcgb391",
-      quantity: 1,
-      price: 129.0,
-      total: 129.0,
-    },
-  ],
-  subTotal: 129.0,
-  shippingCost: 20.0,
-  tax: 9.31,
-  taxRate: "6.25%",
-  grandTotal: 158.31,
-  history: [
-    { date: "04/05/2026", status: "Processed", comment: "" },
-    { date: "04/05/2026", status: "Processed", comment: "" },
-  ],
+const formatDate = (isoString) => {
+  if (!isoString) return "-";
+  const d = new Date(isoString);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 };
 
-// --- SECTION HEADER ---
 const SectionHeader = ({ children }) => (
   <div className="bg-[#eeeeee] px-5 py-3.5">
     <h3 className="text-[14px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333]">
@@ -64,55 +29,101 @@ const SectionHeader = ({ children }) => (
 );
 
 const OrderInfoClient = () => {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("order_id");
+
+  // Extra safety: if orderId is missing, show error (no UI change)
+  if (!orderId) {
+    return (
+      <div className="font-['cambriaregular'] text-[#333333] w-full">
+        <ProductsHeader categoryName="Order Details" />
+        <div className="px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
+          <p className="text-[14px] font-hind-madurai text-red-600">
+            Order ID is missing.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { data, isLoading, isError, error } = useOrderInfo(orderId);
+  console.log(data)
+  const order = data?.data;
+
+  if (isLoading) {
+    return (
+      <div className="font-['cambriaregular'] text-[#333333] w-full">
+        <ProductsHeader categoryName="Order Details" />
+        <div className="px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
+          <p className="text-[14px] font-hind-madurai text-[#333333]">
+            Loading order details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !order) {
+    return (
+      <div className="font-['cambriaregular'] text-[#333333] w-full">
+        <ProductsHeader categoryName="Order Details" />
+        <div className="px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
+          <p className="text-[14px] font-hind-madurai text-red-600">
+            {error?.response?.data?.message || "Failed to load order details."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { order_details, payment_address, shipping_address, products, totals, order_history } = order;
+
+  // Dummy handlers (you can replace with actual logic later)
+  const handleAddToCart = (product) => {
+    console.log("Add to cart:", product);
+  };
+
+  const handleReorder = (product) => {
+    console.log("Reorder:", product);
+  };
+
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
-      <ProductsHeader categoryName="Order Details"  />
+      <ProductsHeader categoryName="Order Details" />
 
       <div className="flex flex-col lg:flex-row lg:items-start lg:gap-6 2xl:gap-8 w-full px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
-        {/* Order Details */}
         <div className="flex-1 min-w-0 w-full">
           <div className="border border-[#e5e5e5] rounded-[4px] overflow-hidden">
-            {/* Order Details */}
             <SectionHeader>Order Details</SectionHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 py-6">
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1.5">
-                <p>
-                  <span className="font-bold text-[16px]">Order ID: </span>#{order.id}
-                </p>
-                <p>
-                  <span className="font-bold text-[16px]">Date Added: </span>
-                  {order.dateAdded}
-                </p>
+                <p><span className="font-bold text-[16px]">Order ID: </span>#{order_details.order_id}</p>
+                <p><span className="font-bold text-[16px]">Date Added: </span>{formatDate(order_details.date_added)}</p>
               </div>
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1.5">
-                <p>
-                  <span className="font-bold text-[16px]">Payment Method: </span>
-                  {order.paymentMethod}
-                </p>
-                <p>
-                  <span className="font-bold text-[16px]">Shipping Method: </span>
-                  {order.shippingMethod}
-                </p>
+                <p><span className="font-bold text-[16px]">Payment Method: </span>{order_details.payment_method}</p>
+                <p><span className="font-bold text-[16px]">Shipping Method: </span>{order_details.shipping_method}</p>
               </div>
             </div>
 
-            {/* Payment / Shipping Address */}
             <div className="grid grid-cols-1 md:grid-cols-2">
               <SectionHeader>Payment Address</SectionHeader>
               <SectionHeader>Shipping Address</SectionHeader>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 py-6">
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1">
-                <p>{order.paymentAddress.name}</p>
-                <p>{order.paymentAddress.line1}</p>
-                <p>{order.paymentAddress.line2}</p>
-                <p>{order.paymentAddress.country}</p>
+                <p>{payment_address.firstname} {payment_address.lastname}</p>
+                <p>{payment_address.address_1}</p>
+                {payment_address.address_2 && <p>{payment_address.address_2}</p>}
+                <p>{payment_address.city}, {payment_address.zone} {payment_address.postcode}</p>
+                <p>{payment_address.country}</p>
               </div>
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1">
-                <p>{order.shippingAddress.name}</p>
-                <p>{order.shippingAddress.line1}</p>
-                <p>{order.shippingAddress.line2}</p>
-                <p>{order.shippingAddress.country}</p>
+                <p>{shipping_address.firstname} {shipping_address.lastname}</p>
+                <p>{shipping_address.address_1}</p>
+                {shipping_address.address_2 && <p>{shipping_address.address_2}</p>}
+                <p>{shipping_address.city}, {shipping_address.zone} {shipping_address.postcode}</p>
+                <p>{shipping_address.country}</p>
               </div>
             </div>
 
@@ -121,46 +132,42 @@ const OrderInfoClient = () => {
               <table className="w-full border-collapse min-w-[640px]">
                 <thead>
                   <tr className="bg-[#eeeeee]">
-                    <th className="text-left text-[14px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                      Product Name
-                    </th>
-                    <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                      Model
-                    </th>
-                    <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                      Quantity
-                    </th>
-                    <th className="text-right text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                      Price
-                    </th>
-                    <th className="text-right text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                      Total
-                    </th>
+                    <th className="text-left text-[14px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Product Name</th>
+                    <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Model</th>
+                    <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Quantity</th>
+                    <th className="text-right text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Price</th>
+                    <th className="text-right text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Total</th>
                     <th className="px-5 py-3.5 w-[100px]" />
                   </tr>
                 </thead>
                 <tbody>
-                  {order.products.map((product, idx) => (
-                    <tr key={idx} className="border-t border-[#eeeeee]">
+                  {products.map((product) => (
+                    <tr key={product.order_product_id} className="border-t border-[#eeeeee]">
                       <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">
-                        {product.name}
+                        {product.slug ? (
+                          <Link href={`/${product.slug}`} style={{ color: ACCENT }}>
+                            {decodeHtml(product.name)}
+                          </Link>
+                        ) : (
+                          product.name
+                        )}
+                        {product.options?.length > 0 && (
+                          <div className="text-[12px] text-[#666666] mt-1">
+                            {product.options.map((opt, i) => (
+                              <div key={i}>{opt.name}: {opt.value}</div>
+                            ))}
+                          </div>
+                        )}
                       </td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">
-                        {product.model}
-                      </td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">
-                        {product.quantity}
-                      </td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333] text-right">
-                        ${product.price.toFixed(2)}
-                      </td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333] text-right">
-                        ${product.total.toFixed(2)}
-                      </td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{product.model}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{product.quantity}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333] text-right">${Number(product.price).toFixed(2)}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333] text-right">${Number(product.total).toFixed(2)}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
+                            onClick={() => handleAddToCart(product)}
                             className="w-8 h-8 flex items-center justify-center rounded-[3px] bg-black text-white hover:bg-[#1a1a1a] transition-colors duration-300 cursor-pointer"
                             aria-label="Add to cart"
                           >
@@ -168,6 +175,7 @@ const OrderInfoClient = () => {
                           </button>
                           <button
                             type="button"
+                            onClick={() => handleReorder(product)}
                             className="w-8 h-8 flex items-center justify-center rounded-[3px] bg-black text-white hover:bg-[#1a1a1a] transition-colors duration-300 cursor-pointer"
                             aria-label="Reorder"
                           >
@@ -183,22 +191,17 @@ const OrderInfoClient = () => {
 
             {/* Totals */}
             <div className="bg-[#f5f5f6]">
-              <div className="flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333]">
-                <span>Sub-Total</span>
-                <span>${order.subTotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333]">
-                <span>Standard Delivery $20/item (Delivery may take 2 to 3 days)</span>
-                <span>${order.shippingCost.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333]">
-                <span>Tax ({order.taxRate})</span>
-                <span>${order.tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333] border-t border-[#e5e5e5]">
-                <span>Total</span>
-                <span>${order.grandTotal.toFixed(2)}</span>
-              </div>
+              {totals.map((t, idx) => (
+                <div
+                  key={idx}
+                  className={`flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333] ${
+                    idx === totals.length - 1 ? "border-t border-[#e5e5e5]" : ""
+                  }`}
+                >
+                  <span>{t.title}</span>
+                  <span>${Number(t.value).toFixed(2)}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -211,34 +214,25 @@ const OrderInfoClient = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#eeeeee]">
-                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                    Date Added
-                  </th>
-                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                    Status
-                  </th>
-                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">
-                    Comment
-                  </th>
+                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Date Added</th>
+                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Status</th>
+                  <th className="text-left text-[13px] font-hind-madurai font-bold uppercase tracking-[0.5px] text-[#333333] px-5 py-3.5">Comment</th>
                 </tr>
               </thead>
               <tbody>
-                {order.history.map((entry, idx) => (
-                  <tr
-                    key={idx}
-                    className={idx % 2 === 1 ? "bg-[#fafafa]" : "bg-white"}
-                  >
-                    <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">
-                      {entry.date}
-                    </td>
-                    <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">
-                      {entry.status}
-                    </td>
-                    <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">
-                      {entry.comment || "-"}
-                    </td>
+                {order_history?.length > 0 ? (
+                  order_history.map((entry, idx) => (
+                    <tr key={idx} className={idx % 2 === 1 ? "bg-[#fafafa]" : "bg-white"}>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{formatDate(entry.date_added)}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{entry.status}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{entry.comment || "-"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666] text-center">No history available.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -253,7 +247,6 @@ const OrderInfoClient = () => {
           </Link>
         </div>
 
-        {/* Right Column: Sidebar */}
         <AccountSidebar />
       </div>
     </div>

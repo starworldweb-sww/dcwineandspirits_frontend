@@ -3,57 +3,73 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, ShoppingBag, X } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
-// import { useGetWishlist, useRemoveFromWishlist } from "@/app/api/hooks/useWishlist"; // apna actual path daal dena
+import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { useGetWishlist } from "@/app/api/hooks/wishlist/useGetWishlist";
+import { useRemoveFromWishlist } from "@/app/api/hooks/wishlist/useRemoveFromWishlist";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
 
-const sidebarLinks = [
-  { href: "/account", label: "My Account" },
-  { href: "/account/address", label: "Address Book" },
-  { href: "/account/wishlist", label: "Wishlist" },
-  { href: "/account/order", label: "Order History" },
-  { href: "/account/transactions", label: "Transactions" },
-];
-
 const breadcrumbs = [
-  { label: "Home", href: "/" },
   { label: "Account", href: "/account" },
   { label: "My Wish List", href: "/account/wishlist" },
 ];
 
-const WishlistClient = () => {
-  // const { data: wishlistItems = [], isLoading } = useGetWishlist();
-  // const removeMutation = useRemoveFromWishlist();
+const getImageUrl = (path) =>
+  path
+    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${path}`
+    : "/prosecco-gift-800x800.webp";
 
-  // Placeholder data — swap with real hook above
-  const isLoading = false;
-  const wishlistItems = [
-    // {
-    //   id: 1,
-    //   image: "/placeholder.png",
-    //   name: "La Marca Prosecco And Flutes Gift Set",
-    //   slug: "la-marca-prosecco-and-flutes-gift-set",
-    //   model: "dcgb390",
-    //   inStock: true,
-    //   price: "$99.00",
-    // },
-  ];
+const WishlistClient = () => {
+  const { data, isLoading, isError, error } = useGetWishlist();
+
+console.log({ data, isLoading, isError, error });
+  const removeMutation = useRemoveFromWishlist();
+  const addToCartMut = useAddtoCart();
+
+
+
+  // backend response shape: { success, message, data: { items: { total, page, limit, items: [...], totalPages } } }
+  const rawItems = data?.data?.items?.items || [];
+  console.log("raw items", rawItems)
+
+  const wishlistItems = rawItems.map((item) => ({
+    id: item.product_id,
+    image: getImageUrl(item.image),
+    name: item.name,
+    slug: item.slug,
+    model: item.model,
+    inStock: item.in_stock,
+    price: item.spacial_price
+      ? `$${Number(item.spacial_price).toFixed(2)}`
+      : `$${Number(item.price).toFixed(2)}`,
+  }));
 
   const handleRemove = (id) => {
-    // removeMutation.mutate(id, {
-    //   onSuccess: () => toast.success("Removed from wishlist"),
-    //   onError: (err) => toast.error(err?.message || "Failed to remove item"),
-    // });
-    toast.success("Removed from wishlist");
+    removeMutation.mutate(id, {
+      onSuccess: () => toast.success("Removed from wishlist"),
+      onError: (err) =>
+        toast.error(err?.response?.data?.message || "Failed to remove item"),
+    });
   };
 
-  const handleAddToCart = (item) => {
-    toast.success(`${item.name} added to cart`);
+  const handleAddToCart = async (item) => {
+    try {
+      const res = await addToCartMut.mutateAsync({
+        product_id: item.id,
+        quantity: 1,
+      });
+      if (res?.success) {
+        toast.success(res.message || `${item.name} added to cart`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to add to cart");
+    }
   };
 
   return (
@@ -114,7 +130,7 @@ const WishlistClient = () => {
                         className="text-[14px] font-hind-madurai transition-opacity duration-200 hover:opacity-80"
                         style={{ color: ACCENT }}
                       >
-                        {item.name}
+                        {decodeHtml(item.name)}
                       </Link>
 
                       <span className="text-[14px] font-hind-madurai text-[#444444]">
@@ -137,16 +153,18 @@ const WishlistClient = () => {
                         <button
                           type="button"
                           onClick={() => handleAddToCart(item)}
+                          disabled={!item.inStock || addToCartMut.isPending}
                           aria-label="Add to cart"
-                          className="w-9 h-9 flex items-center justify-center bg-black text-white transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer"
+                          className="w-9 h-9 flex items-center justify-center bg-black text-white transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <ShoppingBag size={15} />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemove(item.id)}
+                          disabled={removeMutation.isPending}
                           aria-label="Remove from wishlist"
-                          className="w-9 h-9 flex items-center justify-center bg-black text-white transition-colors duration-300 hover:bg-[#8c1a3c] cursor-pointer"
+                          className="w-9 h-9 flex items-center justify-center bg-black text-white transition-colors duration-300 hover:bg-[#8c1a3c] cursor-pointer disabled:opacity-50"
                         >
                           <X size={15} />
                         </button>

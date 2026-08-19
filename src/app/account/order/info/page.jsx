@@ -1,12 +1,17 @@
-import React from 'react'
-import OrderInfoClient from './OrderInfoClient'
+import React, { Suspense } from 'react';
+import OrderInfoClient from './OrderInfoClient';
+import { Loader2 } from 'lucide-react';
 
-const page = () => {
+const Page = () => {
   return (
-    <>
-      <OrderInfoClient/>
-    </>
-  )
-}
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader2 className="animate-spin text-[#8c1a3c]" size={40} />
+      </div>
+    }>
+      <OrderInfoClient />
+    </Suspense>
+  );
+};
 
-export default page
+export default Page;
