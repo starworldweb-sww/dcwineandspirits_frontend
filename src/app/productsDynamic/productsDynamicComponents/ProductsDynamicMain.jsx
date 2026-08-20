@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -9,6 +9,7 @@ import {
   Heart,
   Repeat,
   ShoppingBag,
+  Loader2,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -18,7 +19,6 @@ import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
 import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
-
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -32,6 +32,11 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
+// NOTE: "name_desc" has no matching branch in the backend's getCategoryData
+// sort switch (only price_asc/price_desc/name_asc are handled, anything else
+// falls through to the unsorted default). Either add a name_desc branch on
+// the backend, or drop this option until it does — leaving it in as-is means
+// picking "Name (Z - A)" silently does nothing.
 const SortOptions = [
   { value: "", label: "Default" },
   { value: "name_asc", label: "Name (A - Z)" },
@@ -56,8 +61,8 @@ const ProductListRow = ({ product }) => {
   const isPending = addToCartMut.isPending;
 
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
-  const productImage = product.image 
-    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+  const productImage = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
@@ -78,9 +83,9 @@ const ProductListRow = ({ product }) => {
         // 3. Success hote hi popup dikhao
         setShowPopup(true);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
-// Related products nikalne ka helper — same brand ke 2 products, current ko exclude karke
+  // Related products nikalne ka helper — same brand ke 2 products, current ko exclude karke
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200">
@@ -89,7 +94,7 @@ const ProductListRow = ({ product }) => {
         isOpen={showPopup}
         onClose={() => setShowPopup(false)}
         product={product}
-       
+
 
       />
 
@@ -187,15 +192,15 @@ const ProductGridCard = ({ product }) => {
   // 5. Grid card ke liye bhi apna local popup state
   const [showPopup, setShowPopup] = useState(false);
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
-  const productImage = product.image 
-    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+  const productImage = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
   const handleAddtoCart = (product_id) => {
     addtoCart(product_id, {
       onSuccess: (data) => {
-        
+
         setShowPopup(true);
       },
     });
@@ -243,127 +248,148 @@ const ProductGridCard = ({ product }) => {
   );
 };
 
-const ProductsDynamicMain = ({ data }) => {
+const ProductsDynamicMain = ({
+  data,
+  sort,
+  onSortChange,
+  limit,
+  onLimitChange,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+}) => {
   const [layout, setLayout] = useState("grid");
-  const [sortOption, setSortOption] = useState("");
-  const [showNum, setShowNum] = useState(24);
+  const sentinelRef = useRef(null);
 
-  const products = data.products || [];
+  const products = data.products?.items || [];
 
-  const sortedProducts = useMemo(() => {
-    if (!products.length) return [];
-    const sorted = [...products];
+  // infinite scroll: observe a sentinel div at the bottom of the list and
+  // fetch the next page once it's in view. Guarded so we never fire while
+  // already fetching, or once there's nothing left to fetch.
+  useEffect(() => {
+    
+      const node = sentinelRef.current;
+      if (!node || !hasNextPage) return;
 
-    switch (sortOption) {
-      case "name_asc":
-        return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      case "name_desc":
-        return sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-      case "price_asc":
-        return sorted.sort((a, b) => 
-          (parseFloat(a.special_price || a.price) || 0) - (parseFloat(b.special_price || b.price) || 0)
-        );
-      case "price_desc":
-        return sorted.sort((a, b) => 
-          (parseFloat(b.special_price || b.price) || 0) - (parseFloat(a.special_price || a.price) || 0)
-        );
-      default:
-        return sorted;
-    }
-  }, [products, sortOption]);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        },
+        { rootMargin: "400px" } // start loading a bit before the user hits bottom
+      );
+    },[])
 
-  const displayedProducts = sortedProducts.slice(0, showNum);
+    const displayedProducts = sortedProducts.slice(0, showNum);
 
-  return (
-    <section className="w-full bg-white flex-1">
-      {/* small description + subcategories pill*/}
-      <SmallDescAndSubcategory
-        smalldesc={data.smalldesc}
-        subCategories={data.subCategories}
-      />
+    return (
+      <section className="w-full bg-white flex-1">
+        <SmallDescAndSubcategory
+          smalldesc={data.smalldesc}
+          subCategories={data.subCategories}
+        />
 
-      <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
-        <div className="flex items-center gap-3">
-          <button
-           title="Grid View"
-            type="button"
-            onClick={() => setLayout("grid")}
-            aria-label="Grid view"
-            className={`cursor-pointer transition-colors ${
-              layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-            }`}
-          >
-            <RiGridFill size={20} />
-          </button>
-          <button
-            title="List View"
-            type="button"
-            onClick={() => setLayout("list")}
-            aria-label="List view"
-            className={`cursor-pointer transition-colors ${
-              layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-            }`}
-          >
-            <Logs size={20} />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="flex items-center gap-2">
-            <label className="text-gray-600 text-sm hidden sm:inline-block">
-              Sort By:
-            </label>
-            <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-              className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
+        <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
+          <div className="flex items-center gap-3">
+            <button
+              title="Grid View"
+              type="button"
+              onClick={() => setLayout("grid")}
+              aria-label="Grid view"
+              className={`cursor-pointer transition-colors ${layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+                }`}
             >
-              {SortOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <RiGridFill size={20} />
+            </button>
+            <button
+              title="List View"
+              type="button"
+              onClick={() => setLayout("list")}
+              aria-label="List view"
+              className={`cursor-pointer transition-colors ${layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+                }`}
+            >
+              <Logs size={20} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 hidden sm:inline-block">
-              Show:
-            </label>
-            <select
-              value={showNum}
-              onChange={(e) => setShowNum(Number(e.target.value))}
-              className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
-            >
-              {ShowOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-2">
+              <label className="text-gray-600 text-sm hidden sm:inline-block">
+                Sort By:
+              </label>
+              <select
+                value={sort}
+                onChange={(e) => onSortChange(e.target.value)}
+                className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
+              >
+                {SortOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 hidden sm:inline-block">
+                Show:
+              </label>
+              <select
+                value={limit}
+                onChange={(e) => onLimitChange(Number(e.target.value))}
+                className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
+              >
+                {ShowOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
-      {displayedProducts.length === 0 ? (
-        <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
-          No products found.
-        </div>
-      ) : layout === "list" ? (
-        <div>
-          {displayedProducts.map((product) => (
-            <ProductListRow key={product.product_id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
-          {displayedProducts.map((product) => (
-            <ProductGridCard key={product.product_id} product={product} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-};
+        {products.length === 0 ? (
+          <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
+            No products found.
+          </div>
+        ) : (
+          <>
+            {layout === "list" ? (
+              <div>
+                {products.map((product, i) => (
+                  <ProductListRow key={product.product_id ?? i} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
+                {products.map((product, i) => (
+                  <ProductGridCard key={product.product_id ?? i} product={product} />
+                ))}
+              </div>
+            )}
 
-export default ProductsDynamicMain;
+            {/* sentinel — observed to trigger fetchNextPage */}
+            <div ref={sentinelRef} className="h-1 w-full" />
+            {/* 
+          {isFetchingNextPage && (
+            <div className="w-full py-8 flex items-center justify-center text-gray-400 gap-2">
+              <Loader2 size={18} className="animate-spin" />
+              <span className="text-sm">Loading more...</span>
+            </div>
+          )} */}
+
+            {!hasNextPage && products.length > 0 && (
+              <div className="w-full py-8 text-center text-gray-400 text-sm">
+                You've reached the end.
+              </div>
+            )}
+          </>
+        )}
+      </section>
+    );
+  };
+
+  export default ProductsDynamicMain;

@@ -6,6 +6,8 @@ import { getQueryClient } from "@/libs/get-query-client";
 import { productKeys } from "@/libs/queryKeys";
 import ProductsDynamicClient from "../productsDynamic/productsDynamicComponents/ProductsDynamicClient";
 import ProductClient from "../product/productComponent/ProductClient";
+import { productsService } from "../api/services/productsService";
+import { cookies } from "next/headers";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -44,35 +46,25 @@ export async function generateMetadata({ params }) {
 export default async function ProductsSlugPage({ params }) {
   const { slug } = await params;
   const queryClient = getQueryClient();
-
+  const cookieStore = await cookies();
+  const currentPage = Number(cookieStore.get(`current_page_${slug}`)?.value) || 1;
   let meta = await getMetaByType("category", slug);
-  
+
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
   }
 
   const productMeta = await getMetaByType("product", slug);
-  
+
 
   if (!meta && !productMeta) {
     notFound();
   }
 
   if (productMeta) {
-    // Prefetch product data server-side
     await queryClient.prefetchQuery({
       queryKey: productKeys.singleProductDetail(slug),
-      queryFn: async () => {
-        const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-        const res = await fetch(`${baseURL}/products/single-product/${slug}`, {
-          next: { revalidate: 3600 },
-        });
-        const data = await res.json();
-        if (data?.success) {
-          return data.data;
-        }
-        return null;
-      },
+      queryFn: () => productsService.getSingleProductDetails(slug),
     });
 
     return (
@@ -82,26 +74,24 @@ export default async function ProductsSlugPage({ params }) {
     );
   }
 
-  // Prefetch category/manufacturer data server-side
-  await queryClient.prefetchQuery({
-    queryKey: productKeys.bySlugOrId(slug),
-    queryFn: async () => {
-      const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const res = await fetch(`${baseURL}/products/${slug}`, {
-        next: { revalidate: 3600 },
-      });
-      const data = await res.json();
-      if (data?.success) {
-        return data.data;
-      }
-      return null;
-    },
-  });
 
+  const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
+  const filter = {}; 
+  const limit = 24;
+
+  const queryKey = [...productKeys.bySlugOrId(slug), filter, limit];
+
+  const pagesData = await Promise.all(
+    pageParams.map((p) => productsService.getProductBySlugOrId(slug, filter, p, limit))
+  );
+
+  queryClient.setQueryData(queryKey, {
+    pages: pagesData,
+    pageParams: pageParams,
+  });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ProductsDynamicClient slug={slug} />
-      l
     </HydrationBoundary>
   );
 }

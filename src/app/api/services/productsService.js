@@ -13,8 +13,12 @@ export const productsService = {
     throw new Error(res.data?.message || "Failed to fetch products");
   },
 
-  getProductBySlugOrId: async (slug) => {
-    const res = await axiosInstance.get(`/products/${slug}`);
+  // filter is spread first so an explicit page/limit always wins over
+  // anything that might collide inside it
+  getProductBySlugOrId: async (slug, filter = {}, page = 1, limit = 24) => {
+    const res = await axiosInstance.get(`/products/${slug}`, {
+      params: { ...filter, page, limit },
+    });
 
     if (res.data?.success) {
       return res.data.data;
@@ -33,7 +37,6 @@ export const productsService = {
     throw new Error(res.data?.message || "Product not found");
   },
 
-  //  search products
   searchAllProducts: async (params) => {
     const res = await axiosInstance.get("/products/search", { params });
 
@@ -44,8 +47,12 @@ export const productsService = {
     throw new Error(res.data?.message || "Failed to search products");
   },
 
-getSearchResults: async (params) => {
-    const res = await axiosInstance.get("/products/search-results", { params });
+  // filter spread flat here too — search-results endpoint reads top-level
+  // query params the same way getSearchResultsService does on the backend
+  getSearchResults: async ({ search, page = 1, limit = 24, filter = {} }) => {
+    const res = await axiosInstance.get("/products/search-results", {
+      params: { search, ...filter, page, limit },
+    });
 
     if (res.data?.success) {
       return res.data.data;

@@ -50,7 +50,7 @@ const SmallDescAndSubcategory = ({ smalldesc, subCategories = [] }) => {
             {subCategories.map((sub) => (
               <Link
                 key={sub.category_id}
-                href={`/category/${sub.category_id}`}
+                href={`/${sub?.seo_url}`}
                 className={`${hindMadurai.className} flex-none snap-start whitespace-nowrap rounded-full bg-[#98022e] px-5 py-3 text-[13px] font-semibold text-white shadow-sm outline-none transition-all duration-150 hover:bg-[#7a0225] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#98022e] focus-visible:ring-offset-2 sm:px-6 sm:py-3.5 sm:text-sm`}
               >
                 {sub.name}
