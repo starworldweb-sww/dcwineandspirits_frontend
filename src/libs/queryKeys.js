@@ -185,3 +185,14 @@ export const blogKeys = {
   countViews: () => [...blogKeys.all, "count-views"],
   search: (params) => [...blogKeys.all, "search", params],
 };
+
+
+
+export const manufacturerKeys = {
+  // Base keys
+  all: ["manufacturers"],
+  lists: () => [...manufacturerKeys.all, "list"],
+
+  // getAllManufacturers ke liye (Maps to: GET /manufacturer)
+  allManufacturers: (params = {}) => [...manufacturerKeys.lists(), "all-data", params],
+};

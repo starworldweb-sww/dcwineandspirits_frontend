@@ -54,6 +54,17 @@ getSearchResults: async (params) => {
     throw new Error(res.data?.message || "Failed to fetch search results");
   },
 
+  // manufacturer
+  getAllManufacturers: async (params) => {
+    const res = await axiosInstance.get("/manufacturer", { params });
+
+    if (res.data?.success) {
+      return res.data.data;
+    }
+
+    throw new Error(res.data?.message || "Failed to fetch manufacturers");
+  },
+
 
   
 };
