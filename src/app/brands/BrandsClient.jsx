@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ProductsHeader from "../components/TittleAndBreadcrumb";
 import { useGetAllManufacturers } from "../api/hooks/useAllManufacturers";
-
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // ─────────────────────────────────────────────
 // Helper: Group brands alphabetically
@@ -78,8 +78,8 @@ function BrandCard({ brand }) {
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
           />
         ) : (
-          <span className="text-[14px] font-serif text-[#555555] text-center px-2 group-hover:scale-105 transition-transform duration-300">
-            {brand.name}
+          <span className="text-[14px] font-hind-madurai text-[#555555] text-center px-2 group-hover:scale-105 transition-transform duration-300">
+            {decodeHtml(brand.name)}
           </span>
         )}
       </div>
