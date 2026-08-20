@@ -38,13 +38,13 @@ const Stickynav = () => {
   const [showCart, setShowCart] = useState(false);
   const itemRefs = useRef({});
   const { data, isLoading, isError } = useTopCategoryHeader();
-  
+  console.log("header", data)
   const { data: cartlist } = useGetCartList();
 
   const rawItems = data || [];
   const MENU_ITEMS = rawItems?.map((item) => ({
     label: item.title,
-    href: "/deals-sales",
+    href: item.title === "Deals & Sale" ? "/deals-sales" : `/${toSlug(item.title)}`,
     hasDropdown: item.title !== "Deals & Sale",
   }));
 
