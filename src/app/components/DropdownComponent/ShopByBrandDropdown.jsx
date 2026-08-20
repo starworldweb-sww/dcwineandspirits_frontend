@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useShopByBrand } from "@/app/api/hooks/category/useShopByBrands";
 
-const ShopByBrandDropDown = () => {
+const ShopByBrandDropDown = ({ onClose }) => {
   // 1. API se brands ka data fetch kar rahe hain
   const { data } = useShopByBrand();
 
@@ -21,6 +21,7 @@ const ShopByBrandDropDown = () => {
           <Link
             key={brand.id}
             href={`/${brand.slug}`}
+            onClick={onClose}
             className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors aspect-[190/79] w-full"
           >
             <img
@@ -37,6 +38,7 @@ const ShopByBrandDropDown = () => {
       <div className="mt-4">
         <Link
           href="/brands/"
+          onClick={onClose}
           className="inline-block bg-[#98022e] hover:bg-[#7e1a3c] text-white text-[13px] font-bold uppercase tracking-wide px-6 py-3 transition-colors hover:rounded-xl"
         >
           View All

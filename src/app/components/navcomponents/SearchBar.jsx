@@ -7,12 +7,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation";
 import { useSearchAllProducts } from "@/app/api/hooks/useSearchAllProducts";
 
-// ======================== CONSTANTS ========================
+
 const ROTATING_WORDS = [
   "wine",
-  "champagne",
+  "champagne gift baskets",
   "veuve clicquot",
-  "gift baskets",
+  "godiva",
   "caymus",
   "birthday gifts",
   "dom perignon",
@@ -30,7 +30,7 @@ const DROPDOWN_VISIBLE_LIMIT = 4;
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
-// ======================== VOICE SEARCH HOOK ========================
+
 function useVoiceSearch({ lang = "en-IN" } = {}) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");

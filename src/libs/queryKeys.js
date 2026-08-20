@@ -175,3 +175,24 @@ export const orderKeys = {
   detail: (orderId) => [...orderKeys.all, "detail", orderId],
   track: (payload) => [...orderKeys.all, "track", payload],
 };
+
+
+
+export const blogKeys = {
+  all: ["blog"],
+  posts: (params) => [...blogKeys.all, "posts", params], // params = { page, limit }
+  postBySlug: (slug) => [...blogKeys.all, "detail", slug],
+  countViews: () => [...blogKeys.all, "count-views"],
+  search: (params) => [...blogKeys.all, "search", params],
+};
+
+
+
+export const manufacturerKeys = {
+  // Base keys
+  all: ["manufacturers"],
+  lists: () => [...manufacturerKeys.all, "list"],
+
+  // getAllManufacturers ke liye (Maps to: GET /manufacturer)
+  allManufacturers: (params = {}) => [...manufacturerKeys.lists(), "all-data", params],
+};

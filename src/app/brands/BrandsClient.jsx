@@ -4,22 +4,8 @@ import React, { useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ProductsHeader from "../components/TittleAndBreadcrumb";
-
-// ─────────────────────────────────────────────
-// MOCK DATA (Replaces API Call)
-// ─────────────────────────────────────────────
-const mockBrands = [
-  { manufacturer_id: 1, name: "Albert Bichot", slug: "albert-bichot", image: null },
-  { manufacturer_id: 2, name: "Ancient Peaks", slug: "ancient-peaks", image: null },
-  { manufacturer_id: 3, name: "Antinori", slug: "antinori", image: null },
-  { manufacturer_id: 4, name: "Armand De Brignac", slug: "armand-de-brignac", image: null },
-  { manufacturer_id: 5, name: "Arnaldo Rivera", slug: "arnaldo-rivera", image: null },
-  { manufacturer_id: 6, name: "Austin Hope", slug: "austin-hope", image: null },
-  { manufacturer_id: 7, name: "Bacardi", slug: "bacardi", image: null },
-  { manufacturer_id: 8, name: "Beringer", slug: "beringer", image: null },
-  { manufacturer_id: 9, name: "Chivas Regal", slug: "chivas-regal", image: null },
-  { manufacturer_id: 10, name: "Dom Perignon", slug: "dom-perignon", image: null },
-];
+import { useGetAllManufacturers } from "../api/hooks/useAllManufacturers";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // ─────────────────────────────────────────────
 // Helper: Group brands alphabetically
@@ -70,24 +56,30 @@ function BrandCard({ brand }) {
     router.push(url);
   }
 
+  const imageSrc = brand.image
+    ? brand.image.startsWith("http")
+      ? brand.image
+      : `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`
+    : null;
+
   return (
     <div
       onClick={handleClick}
       className="flex flex-col items-center cursor-pointer group"
     >
       <div className="w-full h-[120px] bg-[#f4f4f4] rounded-sm flex items-center justify-center overflow-hidden transition-all duration-200 relative">
-        {brand.image ? (
+        {imageSrc ? (
           <Image
             fill
             loading="lazy"
-            src={brand.image}
+            src={imageSrc}
             alt={brand.name}
             className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
           />
         ) : (
-          <span className="text-[14px] font-serif text-[#555555] text-center px-2 group-hover:scale-105 transition-transform duration-300">
-            {brand.name}
+          <span className="text-[14px] font-hind-madurai text-[#555555] text-center px-2 group-hover:scale-105 transition-transform duration-300">
+            {decodeHtml(brand.name)}
           </span>
         )}
       </div>
@@ -124,9 +116,13 @@ function BrandGroup({ letter, brands }) {
 // Main Component: BrandsPage
 // ─────────────────────────────────────────────
 const BrandsClient = () => {
+  const { data, isLoading, isError } = useGetAllManufacturers();
+
+  const brands = data || [];
+
   const brandsData = useMemo(() => {
-    return groupBrandsByLetter(mockBrands);
-  }, []);
+    return groupBrandsByLetter(brands);
+  }, [brands]);
 
   const alphabet = Object.keys(brandsData).sort();
 
@@ -140,17 +136,31 @@ const BrandsClient = () => {
 
       {/* 2. PAGE CONTENT: Constrained width to match the rest of the layout */}
       <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 2xl:px-12 mt-6">
-        <BrandIndex alphabet={alphabet} />
+        {isLoading && (
+          <p className="text-[14px] text-[#555555]">Loading brands...</p>
+        )}
 
-        <section className="space-y-4">
-          {alphabet.map((letter) => (
-            <BrandGroup
-              key={letter}
-              letter={letter}
-              brands={brandsData[letter]}
-            />
-          ))}
-        </section>
+        {isError && (
+          <p className="text-[14px] text-[#555555]">
+            Something went wrong while loading brands.
+          </p>
+        )}
+
+        {!isLoading && !isError && (
+          <>
+            <BrandIndex alphabet={alphabet} />
+
+            <section className="space-y-4">
+              {alphabet.map((letter) => (
+                <BrandGroup
+                  key={letter}
+                  letter={letter}
+                  brands={brandsData[letter]}
+                />
+              ))}
+            </section>
+          </>
+        )}
       </div>
 
     </main>

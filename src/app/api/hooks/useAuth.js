@@ -10,7 +10,7 @@ import {
   updateAccountInformation,
   forgotPassword,
   resetPassword,
-} from "@/app/api/services/authService"; 
+} from "@/app/api/services/authService";
 import { cartKeys, customerKeys } from "@/libs/queryKeys";
 
 export const useLogin = () => {
@@ -99,9 +99,13 @@ export const useForgotPassword = () => {
 
   return useMutation({
     mutationFn: forgotPassword,
-    onSuccess: (data) => {
+    onSuccess: (data, email) => {
+      // 1. 'email' yahan mutation ke 2nd param (variables) se mil raha hai —
+      //    jo bhi value mutateAsync(email) me pass ki thi, wahi yahan aati hai
       toast.success(data?.message || "Reset link sent");
-      router.push("/account/login");
+      router.push(
+        `/account/login?reset=success&email=${encodeURIComponent(email)}`,
+      );
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to send reset link");

@@ -6,7 +6,7 @@ import { usePersonalizedDropDown } from "@/app/api/hooks/category/usePersonalize
 
 
 
-const PersonalizedDropDown = () => {
+const PersonalizedDropDown = ({ onClose }) => {
   // 1. API se personalization ka data fetch kar rahe hain
   const { data } = usePersonalizedDropDown();
 
@@ -54,6 +54,7 @@ const PersonalizedDropDown = () => {
                   <li key={item.id}>
                     <Link
                       href={`/${item.seo_url}`}
+                      onClick={onClose}
                       className="text-[14px] text-gray-800 hover:text-[#98022e] normal-case font-hind-madurai hover:pl-1 transition-all duration-200"
                      
                     >
@@ -67,7 +68,11 @@ const PersonalizedDropDown = () => {
 
           {/* ================= RIGHT SIDE BANNER IMAGE ================= */}
           {banner && (
-            <Link href={banner.custom_url || `/${banner.seo_url}`} className="ml-auto">
+            <Link
+              href={banner.custom_url || `/${banner.seo_url}`}
+              onClick={onClose}
+              className="ml-auto"
+            >
               <img
                 src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${banner.image}`}
                 alt={banner.alt || banner.title}
@@ -89,6 +94,7 @@ const PersonalizedDropDown = () => {
         {index !== 0 && <span className="text-white">•</span>}
         <Link
           href={`/${item.seo_url}`}
+          onClick={onClose}
           className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200 "
         >
           {item.title}

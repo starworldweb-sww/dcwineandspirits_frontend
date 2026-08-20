@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useGetWineGifts } from "@/app/api/hooks/category/useWineGifts";
 
-export default function WineGiftsDropdown() {
+export default function WineGiftsDropdown({ onClose }) {
   const { data: wineGiftsResponse, isLoading, isError } = useGetWineGifts();
 
   if (isLoading || isError) return null;
@@ -62,6 +62,7 @@ export default function WineGiftsDropdown() {
                           <li key={item.id || slug}>
                             <Link
                               href={`/${slug.replace(/^\//, "")}`}
+                              onClick={onClose}
                               className="block text-[14px] text-gray-600 hover:text-[#98022e] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
                             >
                               {item.title}
@@ -94,6 +95,7 @@ export default function WineGiftsDropdown() {
                   {index !== 0 && <span className="text-white">•</span>}
                   <Link
                     href={`/${slug.replace(/^\//, "")}`}
+                    onClick={onClose}
                     className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200"
                   >
                     {item.title}

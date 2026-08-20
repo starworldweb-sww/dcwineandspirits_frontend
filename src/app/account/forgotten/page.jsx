@@ -1,35 +1,56 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
 import { useForgotPassword } from "@/app/api/hooks/useAuth";
 
-
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
 
 const breadcrumbs = [
- 
   { label: "Account", href: "/account" },
   { label: "Forgotten Password", href: "/account/forgotten-password" },
 ];
 
 // --- SHARED INPUT STYLE (login page se same rakha hai consistency ke liye) ---
 const inputClass =
-  "w-full bg-white border border-[#d9d9d9] rounded-[3px] px-3 py-2.5 text-[14px] text-[#333333] placeholder:text-[#9a9a9a] outline-none transition-colors duration-200 focus:border-[#8c1a3c] focus:ring-1 focus:ring-[#8c1a3c]/30";
+  "w-full bg-white border border-[#d9d9d9] rounded-[3px] px-3 py-2.5 text-[14px] text-[#333333] placeholder:text-[#9a9a9a] outline-none transition-colors duration-200 focus:border-[#8c1a3c] focus:ring-1 focus:ring-[#8c1a3c]/30 disabled:bg-[#f5f5f5] disabled:cursor-not-allowed";
+
+// 1. Resend cooldown duration (seconds) — chahen toh yahan se change kar sakte ho
+const RESEND_COOLDOWN = 45;
 
 const Page = () => {
-  // 1. Sirf email field ka simple state
+  // 2. Sirf email field ka simple state
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
 
-  // 2. Mutation hook - reset link bhejne ke liye (success par toast + login redirect hook ke andar hi ho raha hai)
+  // 3. Cooldown timer state — resend spam rokne ke liye
+  const [cooldown, setCooldown] = useState(0);
+
+  // 4. Email input pe autofocus ke liye ref
+  const emailInputRef = useRef(null);
+
+  // 5. Mutation hook - reset link bhejne ke liye (success par toast + login redirect hook ke andar hi ho raha hai)
   const forgotPasswordMutation = useForgotPassword();
 
-  // 3. Basic email validation
+  // 6. Page load hote hi email field pe focus chala jaye
+  useEffect(() => {
+    emailInputRef.current?.focus();
+  }, []);
+
+  // 7. Cooldown countdown — har second 1 kam hota rahega jab tak 0 na ho jaye
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // 8. Basic email validation
   const validateEmail = (value) => {
     if (!value) return "Email is required";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,23 +61,33 @@ const Page = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationError = validateEmail(email);
+    // 9. Agar cooldown chal raha hai toh submit hi mat hone do
+    if (cooldown > 0) return;
+
+    // 10. Trim karke validate karo — aage/peeche ke extra spaces na jaayein
+    const trimmedEmail = email.trim();
+    const validationError = validateEmail(trimmedEmail);
     if (validationError) {
       setError(validationError);
-      toast.error(validationError);
+      toast.warning(validationError);
       return;
     }
 
     setError("");
 
     try {
-      await forgotPasswordMutation.mutateAsync(email);
+      await forgotPasswordMutation.mutateAsync(trimmedEmail);
       // success toast + redirect already useForgotPassword hook ke andar ho raha hai
       setEmail("");
+      // 11. Send hote hi cooldown start — taaki turant dobara click na ho paaye
+      setCooldown(RESEND_COOLDOWN);
     } catch (err) {
       toast.error(err?.message || err?.error || "Something went wrong, please try again");
     }
   };
+
+  const isSubmitting = forgotPasswordMutation.isPending;
+  const isDisabled = isSubmitting || cooldown > 0;
 
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
@@ -84,12 +115,21 @@ const Page = () => {
               </label>
               <div>
                 <input
+                  ref={emailInputRef}
                   type="email"
                   placeholder="E-Mail Address"
                   value={email}
+                  disabled={isDisabled}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (error) setError("");
+                  }}
+                  // 12. Blur pe bhi validate kar do — user ko turant pata chal jaye galat format ka
+                  onBlur={() => {
+                    if (email) {
+                      const validationError = validateEmail(email.trim());
+                      setError(validationError);
+                    }
                   }}
                   className={inputClass}
                 />
@@ -101,11 +141,23 @@ const Page = () => {
 
             <button
               type="submit"
-              disabled={forgotPasswordMutation.isPending}
+              disabled={isDisabled}
               className="w-full sm:w-auto sm:self-start sm:px-10 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 mt-3 transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {forgotPasswordMutation.isPending ? "Sending..." : "Send"}
+              {isSubmitting
+                ? "Sending..."
+                : cooldown > 0
+                ? `Resend in ${cooldown}s`
+                : "Send"}
             </button>
+
+            {/* 13. "Didn't receive it?" hint — sirf cooldown ke dauraan dikhega, matlab email already gaya hai */}
+            {cooldown > 0 && (
+              <p className="text-[13px] font-hind-madurai text-[#666666] -mt-1">
+                Didn&apos;t receive the email? Check your spam folder, or you
+                can resend in {cooldown} second{cooldown !== 1 ? "s" : ""}.
+              </p>
+            )}
 
             <Link
               href="/account/login"
@@ -118,7 +170,6 @@ const Page = () => {
         </div>
 
         {/* Right Column: Sidebar */}
-        
       </div>
     </div>
   );

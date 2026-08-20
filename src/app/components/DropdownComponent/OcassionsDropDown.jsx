@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useOccasionTreasures } from "@/app/api/hooks/category/useOccasionTreasures";
 // Apna exact hook path check kar lena
 
-const OcassionsDropDown = () => {
+const OcassionsDropDown = ({ onClose }) => {
   const { data, isLoading, isError } = useOccasionTreasures();
  
 
@@ -78,6 +78,7 @@ const OcassionsDropDown = () => {
                       <li key={item.id}>
                         <Link
                           href={`/${item.seo_url}`}
+                          onClick={onClose}
                           className="block text-[14px] py-1 text-gray-600 hover:text-[#98022e] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
                         >
                           {item.title}
@@ -94,6 +95,7 @@ const OcassionsDropDown = () => {
           {bannerItem && (
             <Link
               href={`/${(bannerItem.seo_url || bannerItem.custom_url || "").replace(/^\//, "")}`}
+              onClick={onClose}
               className="block w-full lg:w-[260px] flex-shrink-0"
             >
               <img
@@ -119,6 +121,7 @@ const OcassionsDropDown = () => {
                 {index !== 0 && <span className="text-white">•</span>}
                 <Link
                   href={`/${item.seo_url}`}
+                  onClick={onClose}
                   className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200"
                 >
                   {item.title}

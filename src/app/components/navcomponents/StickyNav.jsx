@@ -38,12 +38,13 @@ const Stickynav = () => {
   const [showCart, setShowCart] = useState(false);
   const itemRefs = useRef({});
   const { data, isLoading, isError } = useTopCategoryHeader();
+  console.log("header", data)
   const { data: cartlist } = useGetCartList();
 
   const rawItems = data || [];
   const MENU_ITEMS = rawItems?.map((item) => ({
     label: item.title,
-    href: `/${toSlug(item.title)}`,
+    href: item.title === "Deals & Sale" ? "/deals-sales" : `/${toSlug(item.title)}`,
     hasDropdown: item.title !== "Deals & Sale",
   }));
 
@@ -191,7 +192,7 @@ const Stickynav = () => {
 
               <div className="p-3 space-y-2 bg-[#eeeeee]">
                 <Link
-                  href="/cart"
+                  href="/account/cart"
                   className="block w-full text-center py-3 bg-white text-gray-700 font-semibold text-[13px] tracking-wide hover:bg-gray-100 transition-colors"
                 >
                   VIEW CART
@@ -215,7 +216,7 @@ const Stickynav = () => {
           className={isCompact ? "absolute top-full" : ""}
           style={isCompact ? { left: `${compactLeft}px` } : undefined}
         >
-          <ActiveDropdown />
+          <ActiveDropdown  onClose={() => setOpenMenu(null)}/>
         </div>
       )}
     </div>

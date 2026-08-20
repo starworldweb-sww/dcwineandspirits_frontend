@@ -48,7 +48,7 @@ export default function ShopByBrand() {
             <Link
               key={brand.id}
               // 5. Fallback slug ke basis par link bana diya
-              href={`/brand/${slug}`}
+              href={`/${slug}`}
               className="group relative block w-full overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg"
               style={{ aspectRatio: '310 / 160' }}
             >

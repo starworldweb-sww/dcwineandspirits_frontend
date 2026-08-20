@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, CheckCircle2 } from "lucide-react"; // 1. CheckCircle2 icon add kiya banner ke liye
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation"; // 2. query params padhne ke liye
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useLogin } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 import AccountClient from "../AccountClient";
@@ -23,7 +24,7 @@ const sidebarLinks = [
 ];
 
 const breadcrumbs = [
-  { label: "Home", href: "/" },
+  
   { label: "Account", href: "/account" },
   { label: "Login", href: "/account/login" },
 ];
@@ -43,6 +44,11 @@ const validationSchema = Yup.object({
 const LoginClient = () => {
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
+
+  // 3. URL se reset-password success signal padhna
+  const searchParams = useSearchParams();
+  const showResetBanner = searchParams.get("reset") === "success";
+  const resetEmail = searchParams.get("email");
 
   const formik = useFormik({
     initialValues: {
@@ -94,7 +100,29 @@ const LoginClient = () => {
     <div className="font-['cambriaregular'] text-[#333333] w-full">
       <ProductsHeader categoryName="Account Login" breadcrumbs={breadcrumbs} />
 
-      <div className="flex flex-col lg:flex-row lg:items-start lg:gap-6 2xl:gap-8 w-full px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
+      <div className="w-full px-3 lg:px-3 2xl:px-32 mt-10">
+        {/* 4. Reset password success banner — dono columns ke upar, poori width me */}
+        {showResetBanner && (
+          <div className="flex items-start gap-3 bg-green-50 border border-green-200 text-green-800 rounded-[4px] px-4 py-3 mb-6 text-[14px] font-hind-madurai">
+            <CheckCircle2 size={18} className="mt-0.5 flex-shrink-0" />
+            <p>
+              We've sent a password reset link
+              {resetEmail ? (
+                <>
+                  {" "}
+                  to <strong>{decodeURIComponent(resetEmail)}</strong>
+                </>
+              ) : (
+                ""
+              )}
+              . Please check your inbox (and spam/junk folder) to reset your
+              password.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col lg:flex-row lg:items-start lg:gap-6 2xl:gap-8 w-full px-3 lg:px-3 2xl:px-32 mb-14">
         {/* New Customer */}
         <div className="flex-1 min-w-0 w-full bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
           <h2 className="text-[20px] font-hind-madurai font-semibold text-[#333333] pb-3 mb-4 border-b border-[#333333] inline-block">
@@ -159,7 +187,7 @@ const LoginClient = () => {
             </div>
 
             <Link
-              href="/account/forgotten-password"
+              href="/account/forgotten"
               className="text-[13.5px] font-hind-madurai transition-opacity duration-200 hover:opacity-80 -mt-1 cursor-pointer"
               style={{ color: ACCENT }}
             >
