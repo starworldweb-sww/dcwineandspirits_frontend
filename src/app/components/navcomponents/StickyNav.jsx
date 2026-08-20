@@ -38,7 +38,7 @@ const Stickynav = () => {
   const [showCart, setShowCart] = useState(false);
   const itemRefs = useRef({});
   const { data, isLoading, isError } = useTopCategoryHeader();
-  console.log("header", data)
+  
   const { data: cartlist } = useGetCartList();
 
   const rawItems = data || [];
