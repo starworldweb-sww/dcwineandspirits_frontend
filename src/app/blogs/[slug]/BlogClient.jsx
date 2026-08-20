@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { User, Eye, MessageCircle, Search, Clock } from 'lucide-react';
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-import { useGetPostBySlug } from '@/app/api/hooks/blog/useBlogPosts';
+import { useCountViews, useGetPostBySlug, useSearchPosts } from '@/app/api/hooks/blog/useBlogPosts';
+
 
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
@@ -48,9 +49,49 @@ const BlogClient = () => {
 
   console.log(post);
 
+  // 4a) View count - har NAYE post_id pe ek baar increment karo
+  // (boolean ref ki jagah post_id track kar rahe hain, taaki slug change hone
+  //  pe bhi naye post ka view sahi se count ho - pehle sirf ek baar hi hota tha)
+  const { mutate: countView } = useCountViews();
+  const countedPostIdRef = useRef(null);
+
+  useEffect(() => {
+    if (post?.post_id && countedPostIdRef.current !== post.post_id) {
+      countView(post.post_id);
+      countedPostIdRef.current = post.post_id;
+    }
+  }, [post?.post_id, countView]);
+
+  // 4b) Slug change hote hi page top pe scroll karo aur search state clear karo
+  // taaki naye blog pe navigate karne pe user ko turant naya content dikhe
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSearchQuery("");
+    setShowSuggestions(false);
+  }, [slug]);
+
+  // 4c) Sidebar search - live suggestions ke liye debounced query
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+  } = useSearchPosts({ keyword: debouncedQuery, page: 1, limit: 5 });
+
+  const suggestions = searchData?.posts || [];
+
   const handleSidebarSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
+    setShowSuggestions(false);
     router.push(`/blogs?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
@@ -167,7 +208,7 @@ const BlogClient = () => {
         <aside className="w-full lg:w-[300px] shrink-0 space-y-8">
 
           {/* Blog Search */}
-          <div>
+          <div className="relative">
             <h3 className="font-hind-madurai text-lg font-semibold text-gray-800 mb-3">
               Blog Search
             </h3>
@@ -175,7 +216,12 @@ const BlogClient = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 placeholder="Search blogs..."
                 className="flex-1 min-w-0 border border-gray-300 focus:border-[#98022e] rounded-l px-3 py-2.5 text-sm outline-none"
               />
@@ -187,6 +233,31 @@ const BlogClient = () => {
                 <Search size={16} />
               </button>
             </form>
+
+            {/* Live search suggestions dropdown */}
+            {showSuggestions && debouncedQuery && (
+              <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-20 max-h-80 overflow-y-auto">
+                {isSearchLoading ? (
+                  <p className="px-3 py-3 text-sm text-gray-400">Searching...</p>
+                ) : suggestions.length === 0 ? (
+                  <p className="px-3 py-3 text-sm text-gray-400">No results found.</p>
+                ) : (
+                  <ul className="divide-y divide-gray-100">
+                    {suggestions.map((item) => (
+                      <li key={item.post_id}>
+                        <Link
+                          href={`/blogs/${item.slug}`}
+                          className="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#98022e] transition-colors line-clamp-1"
+                          onClick={() => setShowSuggestions(false)}
+                        >
+                          {item.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ⚠️ Categories aur Related Products yahan nahi hain kyunki

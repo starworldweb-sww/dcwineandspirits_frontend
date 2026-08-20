@@ -14,4 +14,21 @@ export const blogService = {
     return response.data.data; 
   },
 
+
+
+   countViews: async (post_id) => {
+    const { data } = await axiosInstance.post("/blog/view-count", { post_id });
+    return data?.data;
+  },
+   
+
+
+  searchByKeyword: async ({ keyword, page = 1, limit = 10 }) => {
+    const { data } = await axiosInstance.get("/blog/search", {
+      params: { keyword, page, limit },
+    });
+    return data?.data; 
+  },
+
+
 };
