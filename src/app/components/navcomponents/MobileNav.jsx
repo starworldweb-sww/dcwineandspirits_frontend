@@ -1,11 +1,89 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Search, X } from 'lucide-react';
+import { ShoppingCart, Search, X, Mic } from 'lucide-react';
 import PhoneLeftMenu from '../phone-components/PhoneLeftMenu';
+import { useSearchAllProducts } from "@/app/api/hooks/useSearchAllProducts";
+
+// ======================== CONSTANTS (search wala logic desktop SearchBar se copy kiya hai) ========================
+const DEBOUNCE_DELAY = 400;
+const DROPDOWN_VISIBLE_LIMIT = 4;
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
+
+// ======================== VOICE SEARCH HOOK (same as desktop SearchBar se) ========================
+function useVoiceSearch({ lang = "en-IN" } = {}) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [voiceError, setVoiceError] = useState(null);
+  const [isSupported, setIsSupported] = useState(true);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    const SpeechRecognition =
+      typeof window !== "undefined" &&
+      (window.SpeechRecognition || window.webkitSpeechRecognition);
+    setIsSupported(Boolean(SpeechRecognition));
+  }, []);
+
+  const startListening = useCallback(() => {
+    const SpeechRecognition =
+      typeof window !== "undefined" &&
+      (window.SpeechRecognition || window.webkitSpeechRecognition);
+
+    if (!SpeechRecognition) {
+      setVoiceError("Voice search is not supported in this browser");
+      return;
+    }
+
+    setVoiceError(null);
+    setTranscript("");
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      setTranscript(text);
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed" || event.error === "permission-denied") {
+        setVoiceError("Mic permission denied. Please allow microphone access.");
+      } else if (event.error === "no-speech") {
+        setVoiceError("Didn't catch that. Try again.");
+      } else {
+        setVoiceError("Voice search failed. Try again.");
+      }
+      setIsListening(false);
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [lang]);
+
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+  }, []);
+
+  return {
+    isListening,
+    transcript,
+    voiceError,
+    isSupported,
+    startListening,
+    stopListening,
+  };
+}
 
 const MobileNavbar = () => {
   const router = useRouter();
@@ -25,23 +103,68 @@ const MobileNavbar = () => {
   // -------------------------------------------------------------
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  // 1) Search input + debounce state (jaise desktop SearchBar mein hai)
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedValue, setDebouncedValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapperRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  const MOCK_SUGGESTIONS = [
-    "Veuve Clicquot Champagne",
-    "Dom Perignon",
-    "Caymus Wine",
-    "Moet & Chandon",
-  ];
+  // 2) Voice search hook attach kiya
+  const {
+    isListening,
+    transcript,
+    voiceError,
+    isSupported: isVoiceSupported,
+    startListening,
+    stopListening,
+  } = useVoiceSearch({ lang: "en-IN" });
 
-  const filteredSuggestions = searchQuery.trim()
-    ? MOCK_SUGGESTIONS.filter((item) =>
-      item.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    : [];
+  // 3) Real API call - mock suggestions ki jagah ab yahi live data dega
+  const { data, isLoading, isFetching } = useSearchAllProducts(
+    { data: debouncedValue, page: 1, limit: 8 },
+    { enabled: debouncedValue.length > 0 }
+  );
+
+  const results = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const visibleResults = useMemo(
+    () => results.slice(0, DROPDOWN_VISIBLE_LIMIT),
+    [results]
+  );
+
+  // 4) Ghost text suggestion (input ke andar halka grey autocomplete)
+  const ghostSuggestion = useMemo(() => {
+    if (!searchQuery) return "";
+    const match = results.find((p) =>
+      p.name?.toLowerCase().startsWith(searchQuery.toLowerCase())
+    );
+    return match?.name ?? "";
+  }, [searchQuery, results]);
+
+  const ghostRemainder = ghostSuggestion
+    ? ghostSuggestion.slice(searchQuery.length)
+    : "";
+
+  // 5) Debounce - typing rukne ke 400ms baad hi API call trigger hogi
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(searchQuery.trim());
+    }, DEBOUNCE_DELAY);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 6) Debounced value aane pe dropdown khol do
+  useEffect(() => {
+    setShowSuggestions(debouncedValue.length > 0);
+  }, [debouncedValue]);
+
+  // 7) Voice se jo bola gaya text mila usse input mein daal do
+  useEffect(() => {
+    if (!transcript) return;
+    setSearchQuery(transcript);
+    searchInputRef.current?.focus();
+  }, [transcript]);
 
   // Suggestions dropdown ko bahar click karne pe band karna
   useEffect(() => {
@@ -65,20 +188,85 @@ const MobileNavbar = () => {
     setIsSearchOpen(false);
     setShowSuggestions(false);
     setSearchQuery("");
+    setDebouncedValue("");
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     setShowSuggestions(false);
-    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    router.push(`/productsDynamic?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+  // 8) Tab/Right-arrow se ghost suggestion accept karna (cursor end pe ho tabhi)
+  const handleKeyDown = (e) => {
+    const cursorAtEnd = e.target.selectionStart === searchQuery.length;
+    if (
+      (e.key === "Tab" || e.key === "ArrowRight") &&
+      ghostRemainder &&
+      cursorAtEnd
+    ) {
+      e.preventDefault();
+      setSearchQuery(ghostSuggestion);
+      return;
+    }
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+      searchInputRef.current?.blur();
+    }
   };
+
+  const handleResultClick = () => {
+    setShowSuggestions(false);
+  };
+
+  // 9) Input clear (X icon jo sirf text hatata hai, poora search band nahi karta)
+  const handleClearText = () => {
+    setSearchQuery("");
+    setDebouncedValue("");
+    searchInputRef.current?.focus();
+  };
+
+  const handleMicClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  // 10) Matching text ko bold/highlight karna results mein
+  const highlightMatch = (text, query) => {
+    if (!query || !text) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span className="font-bold text-[#98022e]">
+          {text.slice(idx, idx + query.length)}
+        </span>
+        {text.slice(idx + query.length)}
+      </>
+    );
+  };
+
+  // 11) Loading state ke liye skeleton rows
+  const SkeletonLoader = () => (
+    <div className="p-3 space-y-3">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-3 animate-pulse">
+          <div className="w-10 h-10 bg-gray-200 rounded-md shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="sticky top-0 z-50 lg:hidden w-full bg-white flex items-center justify-between gap-3 px-3 py-3 shadow-sm">
@@ -128,6 +316,7 @@ const MobileNavbar = () => {
           - Phone, search khula: poora expand hota hai, saath me "X" close button
           - Tablet (md aur upar): hamesha dikhega, "X" button yahan zaroorat
             nahi hai isliye md:hidden laga diya hai usme
+          - Ab isme real API search + ghost text + voice mic bhi hai
       ============================================================= */}
       <div
         ref={searchWrapperRef}
@@ -135,19 +324,141 @@ const MobileNavbar = () => {
           }`}
       >
         <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-2">
-          <div className="flex-1 min-w-0 flex items-center border border-gray-300 focus-within:border-[#98022e] rounded px-3 py-2 bg-white h-[40px]">
+          <div className="relative flex-1 min-w-0 flex items-center border border-gray-300 focus-within:border-[#98022e] rounded px-3 py-2 bg-white h-[40px]">
+
+            {/* Ghost text overlay - halka grey autocomplete text input ke peeche */}
+            {ghostRemainder && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center pl-3 pr-16 text-sm whitespace-pre"
+              >
+                <span className="invisible">{searchQuery}</span>
+                <span className="text-gray-400">{ghostRemainder}</span>
+              </div>
+            )}
+
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              placeholder="Search products..."
-              className="flex-1 min-w-0 text-sm text-gray-700 outline-none placeholder:text-gray-400"
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (searchQuery.trim().length > 0) setShowSuggestions(true);
+              }}
+              placeholder={isListening ? "Listening..." : "Search products..."}
+              autoComplete="off"
+              spellCheck="false"
+              className="relative flex-1 min-w-0 text-sm text-gray-700 outline-none placeholder:text-gray-400 bg-transparent"
             />
+
+            {/* Text clear button - sirf text hatata hai, search box open hi rehta hai */}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearText}
+                aria-label="Clear text"
+                className="shrink-0 flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 transition-colors mr-1"
+              >
+                <X size={14} />
+              </button>
+            )}
+
+            {/* Voice search mic button */}
+            {isVoiceSupported && (
+              <button
+                type="button"
+                onClick={handleMicClick}
+                title={isListening ? "Stop listening" : "Search by voice"}
+                aria-label={isListening ? "Stop listening" : "Search by voice"}
+                className={`relative shrink-0 flex items-center justify-center w-6 h-6 mr-1 transition-colors ${isListening ? "text-red-500" : "text-gray-400 hover:text-gray-600"
+                  }`}
+              >
+                {isListening && (
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-30 animate-ping" />
+                )}
+                <Mic size={16} className="relative" />
+              </button>
+            )}
+
             <button type="submit" aria-label="Search" className="text-[#98022e] shrink-0 flex items-center">
               <Search size={18} strokeWidth={2} />
             </button>
+
+            {/* Suggestions Dropdown - is bordered input box ke andar hi rakha hai
+                (form/close-button wale outer wrapper ke bahar nahi) taaki
+                dropdown ki width EXACTLY input jitni ho, close button ka
+                extra space isme add na ho */}
+            {showSuggestions && (
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white border border-gray-200 rounded shadow-md z-50 max-h-72 overflow-y-auto">
+                {(isLoading || isFetching) ? (
+              <SkeletonLoader />
+            ) : results.length === 0 ? (
+              <div className="p-4 text-sm text-gray-500">
+                No results found for &quot;{debouncedValue}&quot;
+              </div>
+            ) : (
+              <>
+                <ul className="divide-y divide-gray-100">
+                  {visibleResults.map((product) => (
+                    <li key={product.product_id}>
+                      <Link
+                        href={`/${product.slug}/`}
+                        onClick={handleResultClick}
+                        className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors"
+                      >
+                        {/* Product Image */}
+                        {product.image && (
+                          <div className="relative w-10 h-10 shrink-0 bg-gray-50 rounded overflow-hidden">
+                            <Image
+                              src={`${IMAGE_BASE_URL}${product.image}`}
+                              alt={product.name || ""}
+                              fill
+                              className="object-contain"
+                              sizes="40px"
+                            />
+                          </div>
+                        )}
+
+                        {/* Product Info with Highlighted Text */}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-800 truncate">
+                            {highlightMatch(product.name, debouncedValue)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {product.special_price ? (
+                              <>
+                                <span className="line-through mr-1">
+                                  ${product.price}
+                                </span>
+                                <span className="text-[#98022e] font-medium">
+                                  ${product.special_price}
+                                </span>
+                              </>
+                            ) : (
+                              <span>${product.price}</span>
+                            )}
+                          </p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* View All Button */}
+                {total > DROPDOWN_VISIBLE_LIMIT && (
+                  <Link
+                    href={`/productsDynamic?search=${encodeURIComponent(debouncedValue)}`}
+                    onClick={handleResultClick}
+                    className="block text-center text-sm text-[#98022e] font-medium py-2.5 border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    View all {total} results
+                  </Link>
+                )}
+              </>
+            )}
+              </div>
+            )}
           </div>
 
           {/* Close button - sirf phone ke liye. Tablet pe search hamesha
@@ -162,19 +473,11 @@ const MobileNavbar = () => {
           </button>
         </form>
 
-        {/* Suggestions Dropdown */}
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute top-full left-0 w-full bg-white border border-gray-200 border-t-0 shadow-md z-50 max-h-60 overflow-y-auto">
-            {filteredSuggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => handleSuggestionClick(suggestion)}
-                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
+        {/* Voice error message */}
+        {voiceError && (
+          <p className="absolute left-3 top-[calc(100%+4px)] text-xs text-red-500 z-10">
+            {voiceError}
+          </p>
         )}
       </div>
 

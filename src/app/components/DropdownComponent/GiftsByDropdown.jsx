@@ -35,6 +35,10 @@ const CATEGORY_SUBMENU_WIDTH = "w-[92vw] sm:w-[600px] lg:w-[850px] xl:w-[1075px]
 const ORIGIN_SUBMENU_WIDTH = "w-[92vw] sm:w-[600px] lg:w-[850px] xl:w-[1075px] max-w-[95vw]"; // Right wala "Gifts By Origin" panel
 const PRICE_SUBMENU_WIDTH = "w-[300px] max-w-[95vw]"; // Right wala "Shop By Price" panel
 
+// Active link ka underline style - har jagah reuse karne ke liye common helper
+const ACTIVE_LINK_CLASS =
+  "underline decoration-[#98022e] decoration-2 underline-offset-2 text-[#98022e]";
+
 const GiftsByDropdown = () => {
   // ============================================
   // STEP 1: Chaaro APIs se data mangwa rahe hain
@@ -98,11 +102,23 @@ const GiftsByDropdown = () => {
   );
 
   // ============================================
-  // STEP 4: Track karna hai konsa item hover ho raha hai
+  // STEP 4: Track karna hai konsa item hover ho raha hai,
+  // aur konsa link last click hua (underline ke liye)
   // ============================================
 
   // Value hogi: null, "Shop by Category", "Gifts By Origin", ya "Shop By Price"
   const [openSubmenu, setOpenSubmenu] = useState(null);
+
+  // Last click kiye hue link ki unique key (e.g. "category-12", "origin-brand-4")
+  const [activeLink, setActiveLink] = useState(null);
+
+  // Common click handler - har Link pe yehi call hoga:
+  // 1) us link ko "active" mark kar deta hai (maroon underline)
+  // 2) dropdown turant band kar deta hai
+  const handleLinkClick = (linkKey) => {
+    setActiveLink(linkKey);
+    setOpenSubmenu(null);
+  };
 
   if (isLoading) return null;
 
@@ -164,16 +180,22 @@ const GiftsByDropdown = () => {
                         </h3>
 
                         <ul className="space-y-0.5 mt-3">
-                          {section.items.map((subItem) => (
-                            <li key={subItem.id}>
-                              <Link
-                                href={`/${subItem.seo_url}`}
-                                className="block py-0.5 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
-                              >
-                                <span>{subItem.title}</span>
-                              </Link>
-                            </li>
-                          ))}
+                          {section.items.map((subItem) => {
+                            const linkKey = `category-${subItem.id}`;
+                            return (
+                              <li key={subItem.id}>
+                                <Link
+                                  href={`/${subItem.seo_url}`}
+                                  onClick={() => handleLinkClick(linkKey)}
+                                  className={`block py-0.5 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case ${
+                                    activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
+                                  }`}
+                                >
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     ))}
@@ -185,19 +207,25 @@ const GiftsByDropdown = () => {
                           className="font-bold text-white mr-1 text-[16px] normal-case"
                           dangerouslySetInnerHTML={{ __html: categoryRecommendedLabel }}
                         />
-                        {categoryRecommendedItems.map((recItem, index) => (
-                          <React.Fragment key={recItem.id}>
-                            {index !== 0 && (
-                              <span className="text-white">•</span>
-                            )}
-                            <Link
-                              href={`/${recItem.seo_url}`}
-                              className="text-white normal-case text-[16px] hover:text-[#d70b48] transition-colors duration-200"
-                            >
-                              {recItem.title}
-                            </Link>
-                          </React.Fragment>
-                        ))}
+                        {categoryRecommendedItems.map((recItem, index) => {
+                          const linkKey = `category-rec-${recItem.id}`;
+                          return (
+                            <React.Fragment key={recItem.id}>
+                              {index !== 0 && (
+                                <span className="text-white">•</span>
+                              )}
+                              <Link
+                                href={`/${recItem.seo_url}`}
+                                onClick={() => handleLinkClick(linkKey)}
+                                className={`text-white normal-case text-[16px] hover:text-[#d70b48] transition-colors duration-200 ${
+                                  activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
+                                }`}
+                              >
+                                {recItem.title}
+                              </Link>
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -217,35 +245,49 @@ const GiftsByDropdown = () => {
                       </h3>
 
                       <ul className="space-y-2 mt-3">
-                        {originCountries.map((country) => (
-                          <li key={country.id}>
-                            <Link
-                              href={`/${country.seo_url}`}
-                              className="flex items-center gap-2 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
-                            >
-                              <span>{getCountryFlag(country.title)}</span>
-                              <span>{country.title}</span>
-                            </Link>
-                          </li>
-                        ))}
+                        {originCountries.map((country) => {
+                          const linkKey = `origin-country-${country.id}`;
+                          return (
+                            <li key={country.id}>
+                              <Link
+                                href={`/${country.seo_url}`}
+                                onClick={() => handleLinkClick(linkKey)}
+                                className={`flex items-center gap-2 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case ${
+                                  activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
+                                }`}
+                              >
+                                <span>{getCountryFlag(country.title)}</span>
+                                <span>{country.title}</span>
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
 
                     {/* Right side - brand logos ka grid (3 columns) */}
                     <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-1">
-                      {originBrands.map((brand) => (
-                        <Link
-                          key={brand.id}
-                          href={`/${brand.seo_url}`}
-                          className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors h-[90px] px-3 w-[213px]"
-                        >
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
-                            alt={brand.title}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </Link>
-                      ))}
+                      {originBrands.map((brand) => {
+                        const linkKey = `origin-brand-${brand.id}`;
+                        return (
+                          <Link
+                            key={brand.id}
+                            href={`/${brand.seo_url}`}
+                            onClick={() => handleLinkClick(linkKey)}
+                            className={`flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors h-[90px] px-3 w-[213px] ${
+                              activeLink === linkKey
+                                ? "ring-2 ring-inset ring-[#98022e]"
+                                : ""
+                            }`}
+                          >
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
+                              alt={brand.title}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -256,19 +298,25 @@ const GiftsByDropdown = () => {
                           className="font-bold text-white mr-1 text-[16px] normal-case"
                           dangerouslySetInnerHTML={{ __html: originRecommendedLabel }}
                         />
-                        {originRecommendedItems.map((recItem, index) => (
-                          <React.Fragment key={recItem.id}>
-                            {index !== 0 && (
-                              <span className="text-white">•</span>
-                            )}
-                            <Link
-                              href={`/${recItem.seo_url}`}
-                              className="text-white normal-case text-[16px] hover:text-[#d70b48] transition-colors duration-200"
-                            >
-                              {recItem.title}
-                            </Link>
-                          </React.Fragment>
-                        ))}
+                        {originRecommendedItems.map((recItem, index) => {
+                          const linkKey = `origin-rec-${recItem.id}`;
+                          return (
+                            <React.Fragment key={recItem.id}>
+                              {index !== 0 && (
+                                <span className="text-white">•</span>
+                              )}
+                              <Link
+                                href={`/${recItem.seo_url}`}
+                                onClick={() => handleLinkClick(linkKey)}
+                                className={`text-white normal-case text-[16px] hover:text-[#d70b48] transition-colors duration-200 ${
+                                  activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
+                                }`}
+                              >
+                                {recItem.title}
+                              </Link>
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -288,21 +336,27 @@ const GiftsByDropdown = () => {
                     )}
 
                     <ul className="space-y-0.5 mt-3">
-                      {priceItems.map((priceItem) => (
-                        <li key={priceItem.id}>
-                          <Link
-                            href={`/${priceItem.slug}`}
-                            className="block py-0.5 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case"
-                          >
-                            <span
-                              // name mein &amp; jaisa HTML entity aa raha hai, isliye decode karna padega
-                              dangerouslySetInnerHTML={{
-                                __html: priceItem.name,
-                              }}
-                            />
-                          </Link>
-                        </li>
-                      ))}
+                      {priceItems.map((priceItem) => {
+                        const linkKey = `price-${priceItem.id}`;
+                        return (
+                          <li key={priceItem.id}>
+                            <Link
+                              href={`/${priceItem.slug}`}
+                              onClick={() => handleLinkClick(linkKey)}
+                              className={`block py-0.5 text-[15px] text-gray-600 hover:text-[#d70b48] hover:pl-1 transition-all duration-200 font-hind-madurai normal-case ${
+                                activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
+                              }`}
+                            >
+                              <span
+                                // name mein &amp; jaisa HTML entity aa raha hai, isliye decode karna padega
+                                dangerouslySetInnerHTML={{
+                                  __html: priceItem.name,
+                                }}
+                              />
+                            </Link>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>

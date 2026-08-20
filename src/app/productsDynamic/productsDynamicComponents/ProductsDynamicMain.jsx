@@ -17,6 +17,7 @@ import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
+import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
 
 
 const sumana = Sumana({
@@ -49,6 +50,8 @@ const ShowOptions = [
 const ProductListRow = ({ product }) => {
   const addToCartMut = useAddtoCart();
   const [qty, setQty] = useState(1);
+  // 2. Popup ke liye local state — sirf isi row ke liye control karta hai
+  const [showPopup, setShowPopup] = useState(false);
   const productId = product?.product_id || product?.id;
   const isPending = addToCartMut.isPending;
 
@@ -59,6 +62,9 @@ const ProductListRow = ({ product }) => {
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
 
+
+
+
   const handleAddToCart = async (e) => {
     e?.stopPropagation?.();
     if (!productId || isPending) return;
@@ -67,12 +73,26 @@ const ProductListRow = ({ product }) => {
         product_id: productId,
         quantity: Math.max(1, Number(qty) || 1),
       });
-      if (res?.success) toast.success(res.message || "Added to cart!");
+      if (res?.success) {
+        toast.success(res.message || "Added to cart!");
+        // 3. Success hote hi popup dikhao
+        setShowPopup(true);
+      }
     } catch (e) {}
   };
+// Related products nikalne ka helper — same brand ke 2 products, current ko exclude karke
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200">
+      {/* 4. Popup render — fixed positioned hai, layout pe asar nahi padega */}
+      <AddToCartPopup
+        isOpen={showPopup}
+        onClose={() => setShowPopup(false)}
+        product={product}
+       
+
+      />
+
       <Link
         href={productLink}
         className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group"
@@ -163,24 +183,33 @@ const ProductListRow = ({ product }) => {
 };
 
 const ProductGridCard = ({ product }) => {
-  const {mutate:addtoCart } =  useAddtoCart()
+  const { mutate: addtoCart } = useAddtoCart();
+  // 5. Grid card ke liye bhi apna local popup state
+  const [showPopup, setShowPopup] = useState(false);
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
   const productImage = product.image 
     ? `https://www.dcwineandspirits.com/image/${product.image}` 
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
-  const handleAddtoCart = (product_id)=>{
- 
-   addtoCart(product_id,{
-    onSuccess:(data)=>{
-      toast.success(data?.message || "Add to Cart Successful ")
-    }
-   })
-  }
+  const handleAddtoCart = (product_id) => {
+    addtoCart(product_id, {
+      onSuccess: (data) => {
+        
+        setShowPopup(true);
+      },
+    });
+  };
 
   return (
     <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
+      {/* 7. Popup render */}
+      <AddToCartPopup
+        isOpen={showPopup}
+        onClose={() => setShowPopup(false)}
+        product={product}
+      />
+
       <Link
         href={productLink}
         className="w-full h-[200px] flex items-center justify-center flex-shrink-0"
@@ -205,7 +234,7 @@ const ProductGridCard = ({ product }) => {
 
       <button
         type="button"
-        onClick={()=>handleAddtoCart(product?.product_id)}
+        onClick={() => handleAddtoCart(product?.product_id)}
         className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
@@ -244,16 +273,14 @@ const ProductsDynamicMain = ({ data }) => {
   }, [products, sortOption]);
 
   const displayedProducts = sortedProducts.slice(0, showNum);
-  console.log("des small:", data.smalldesc)
 
   return (
     <section className="w-full bg-white flex-1">
       {/* small description + subcategories pill*/}
       <SmallDescAndSubcategory
-  smalldesc={data.smalldesc}
-  subCategories={data.subCategories}
-/>
-
+        smalldesc={data.smalldesc}
+        subCategories={data.subCategories}
+      />
 
       <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
         <div className="flex items-center gap-3">
