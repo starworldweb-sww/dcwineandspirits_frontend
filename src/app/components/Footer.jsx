@@ -91,9 +91,9 @@ const customerServiceLinksLeft = [
 ];
 
 const customerServiceLinksRight = [
-  { label: "Coupon & Deals", href: "/coupons-deals" },
-  { label: "Corporate / Bulk Inquiry", href: "/corporate-bulk-inquiry" },
-  { label: "Bulk Order Form", href: "/bulk-order-form" },
+  { label: "Coupon & Deals", href: "/coupon-and-deals/" },
+  { label: "Corporate / Bulk Inquiry", href: "/corporate-bulk-inquiry/" },
+  { label: "Bulk Order Form", href: "/bulk-order-form/" },
   { label: "FAQ's", href: "/faqs" },
   { label: "Contact", href: "/contact" },
 ];
