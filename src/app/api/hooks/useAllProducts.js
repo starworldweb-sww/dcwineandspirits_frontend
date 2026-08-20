@@ -4,10 +4,18 @@ import { productsService } from "../services/productsService";
 import { productKeys } from "@/libs/queryKeys";
 
 const getNextPageParam = (lastPage) => {
-   
     if (!lastPage || !lastPage.page || !lastPage.totalPages) return undefined;
     if (lastPage.page >= lastPage.totalPages) return undefined;
     return lastPage.page + 1;
+};
+
+// getCategoryData / getSearchResultsService nest pagination under `products`
+// ({ items, total, page, limit, total_pages }) instead of top-level like
+// getAllProductsServices does — separate helper for that shape.
+const getNextPageParamNested = (lastPage) => {
+    const p = lastPage?.products;
+    if (!p || !p.page || !p.total_pages) return undefined;
+    return p.page < p.total_pages ? p.page + 1 : undefined;
 };
 
 export const useGetAllProducts = (showNum) => {
@@ -19,11 +27,15 @@ export const useGetAllProducts = (showNum) => {
     });
 };
 
-export const useGetProductBySlugOrId = (slug) => {
-    return useQuery({
-        queryKey: productKeys.bySlugOrId(slug),
-        queryFn: () => productsService.getProductBySlugOrId(slug),
-        enabled: !!slug,
+export const useGetProductBySlugOrId = (slug, filter = {}, options = {}, limit = 24) => {
+    return useInfiniteQuery({
+        queryKey: [...productKeys.bySlugOrId(slug), filter, limit],
+        queryFn: ({ pageParam = 1 }) =>
+            productsService.getProductBySlugOrId(slug, filter, pageParam, limit),
+        initialPageParam: 1,
+        getNextPageParam: getNextPageParamNested,
+        ...options,
+        enabled: !!slug && options.enabled !== false,
     });
 };
 

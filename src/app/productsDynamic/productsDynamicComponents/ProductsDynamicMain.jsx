@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -9,6 +9,7 @@ import {
   Heart,
   Repeat,
   ShoppingBag,
+  Loader2,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -17,7 +18,6 @@ import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
-
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -31,6 +31,11 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
+// NOTE: "name_desc" has no matching branch in the backend's getCategoryData
+// sort switch (only price_asc/price_desc/name_asc are handled, anything else
+// falls through to the unsorted default). Either add a name_desc branch on
+// the backend, or drop this option until it does — leaving it in as-is means
+// picking "Name (Z - A)" silently does nothing.
 const SortOptions = [
   { value: "", label: "Default" },
   { value: "name_asc", label: "Name (A - Z)" },
@@ -53,8 +58,8 @@ const ProductListRow = ({ product }) => {
   const isPending = addToCartMut.isPending;
 
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
-  const productImage = product.image 
-    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+  const productImage = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
@@ -163,21 +168,20 @@ const ProductListRow = ({ product }) => {
 };
 
 const ProductGridCard = ({ product }) => {
-  const {mutate:addtoCart } =  useAddtoCart()
+  const { mutate: addtoCart } = useAddtoCart();
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
-  const productImage = product.image 
-    ? `https://www.dcwineandspirits.com/image/${product.image}` 
+  const productImage = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
-  const handleAddtoCart = (product_id)=>{
- 
-   addtoCart(product_id,{
-    onSuccess:(data)=>{
-      toast.success(data?.message || "Add to Cart Successful ")
-    }
-   })
-  }
+  const handleAddtoCart = (product_id) => {
+    addtoCart(product_id, {
+      onSuccess: (data) => {
+        toast.success(data?.message || "Add to Cart Successful ");
+      },
+    });
+  };
 
   return (
     <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
@@ -205,7 +209,7 @@ const ProductGridCard = ({ product }) => {
 
       <button
         type="button"
-        onClick={()=>handleAddtoCart(product?.product_id)}
+        onClick={() => handleAddtoCart(product?.product_id)}
         className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
@@ -214,51 +218,52 @@ const ProductGridCard = ({ product }) => {
   );
 };
 
-const ProductsDynamicMain = ({ data }) => {
+const ProductsDynamicMain = ({
+  data,
+  sort,
+  onSortChange,
+  limit,
+  onLimitChange,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+}) => {
   const [layout, setLayout] = useState("grid");
-  const [sortOption, setSortOption] = useState("");
-  const [showNum, setShowNum] = useState(24);
+  const sentinelRef = useRef(null);
 
-  const products = data.products || [];
+  const products = data.products?.items || [];
 
-  const sortedProducts = useMemo(() => {
-    if (!products.length) return [];
-    const sorted = [...products];
+  // infinite scroll: observe a sentinel div at the bottom of the list and
+  // fetch the next page once it's in view. Guarded so we never fire while
+  // already fetching, or once there's nothing left to fetch.
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasNextPage) return;
 
-    switch (sortOption) {
-      case "name_asc":
-        return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      case "name_desc":
-        return sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-      case "price_asc":
-        return sorted.sort((a, b) => 
-          (parseFloat(a.special_price || a.price) || 0) - (parseFloat(b.special_price || b.price) || 0)
-        );
-      case "price_desc":
-        return sorted.sort((a, b) => 
-          (parseFloat(b.special_price || b.price) || 0) - (parseFloat(a.special_price || a.price) || 0)
-        );
-      default:
-        return sorted;
-    }
-  }, [products, sortOption]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "400px" } // start loading a bit before the user hits bottom
+    );
 
-  const displayedProducts = sortedProducts.slice(0, showNum);
-  console.log("des small:", data.smalldesc)
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <section className="w-full bg-white flex-1">
-      {/* small description + subcategories pill*/}
       <SmallDescAndSubcategory
-  smalldesc={data.smalldesc}
-  subCategories={data.subCategories}
-/>
-
+        smalldesc={data.smalldesc}
+        subCategories={data.subCategories}
+      />
 
       <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
         <div className="flex items-center gap-3">
           <button
-           title="Grid View"
+            title="Grid View"
             type="button"
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
@@ -287,8 +292,8 @@ const ProductsDynamicMain = ({ data }) => {
               Sort By:
             </label>
             <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
+              value={sort}
+              onChange={(e) => onSortChange(e.target.value)}
               className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
             >
               {SortOptions.map((opt) => (
@@ -304,8 +309,8 @@ const ProductsDynamicMain = ({ data }) => {
               Show:
             </label>
             <select
-              value={showNum}
-              onChange={(e) => setShowNum(Number(e.target.value))}
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
               className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
             >
               {ShowOptions.map((opt) => (
@@ -318,22 +323,42 @@ const ProductsDynamicMain = ({ data }) => {
         </div>
       </div>
 
-      {displayedProducts.length === 0 ? (
+      {products.length === 0 ? (
         <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
           No products found.
         </div>
-      ) : layout === "list" ? (
-        <div>
-          {displayedProducts.map((product) => (
-            <ProductListRow key={product.product_id} product={product} />
-          ))}
-        </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
-          {displayedProducts.map((product) => (
-            <ProductGridCard key={product.product_id} product={product} />
-          ))}
-        </div>
+        <>
+          {layout === "list" ? (
+            <div>
+              {products.map((product, i) => (
+                <ProductListRow key={product.product_id ?? i} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
+              {products.map((product, i) => (
+                <ProductGridCard key={product.product_id ?? i} product={product} />
+              ))}
+            </div>
+          )}
+
+          {/* sentinel — observed to trigger fetchNextPage */}
+          <div ref={sentinelRef} className="h-1 w-full" />
+{/* 
+          {isFetchingNextPage && (
+            <div className="w-full py-8 flex items-center justify-center text-gray-400 gap-2">
+              <Loader2 size={18} className="animate-spin" />
+              <span className="text-sm">Loading more...</span>
+            </div>
+          )} */}
+
+          {!hasNextPage && products.length > 0 && (
+            <div className="w-full py-8 text-center text-gray-400 text-sm">
+              You've reached the end.
+            </div>
+          )}
+        </>
       )}
     </section>
   );

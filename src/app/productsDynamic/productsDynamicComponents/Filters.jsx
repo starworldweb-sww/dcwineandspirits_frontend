@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { CircleX, Minus, Plus } from "lucide-react";
 import { Box, Slider, Input, Typography, Stack } from "@mui/material";
@@ -14,22 +14,43 @@ const STATIC_AVAILABILITY = [
   { id: "out_of_stock", label: "Out of Stock" },
 ];
 
-const PriceSlider = (priceData) => {
-  const STATIC_PRICE = {
-    min: priceData?.priceData?.min,
-    max: priceData?.priceData?.max,
-    value: [priceData?.priceData?.min, priceData?.priceData?.max],
+/**
+ * Controlled price slider.
+ * - `value` / `onCommit` come from the parent (ProductsDynamicClient).
+ * - We keep a local `dragValue` so the slider feels smooth while dragging,
+ *   but only call `onCommit` (which updates parent state -> triggers the
+ *   backend call) on mouse-up / blur / enter, not on every pixel of drag.
+ */
+const PriceSlider = ({ min, max, value, onCommit }) => {
+  const [dragValue, setDragValue] = useState(value ?? [min, max]);
+
+  // keep local drag state in sync if parent value changes externally
+  // (e.g. "Clear" button resets priceRange)
+  useEffect(() => {
+    if (value && (value[0] !== dragValue[0] || value[1] !== dragValue[1])) {
+      setDragValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const commit = (next) => {
+    let [lo, hi] = next;
+    lo = Math.min(max, Math.max(min, Number(lo)));
+    hi = Math.min(max, Math.max(min, Number(hi)));
+    if (lo > hi) [lo, hi] = [hi, lo];
+    setDragValue([lo, hi]);
+    onCommit?.([lo, hi]);
   };
-  const [localValue, setLocalValue] = useState(STATIC_PRICE.value);
 
   return (
     <Box sx={{ width: "100%", px: 1, pb: 2 }}>
       <Slider
-        value={localValue}
-        onChange={(_, v) => setLocalValue(v)}
+        value={dragValue}
+        onChange={(_, v) => setDragValue(v)}
+        onChangeCommitted={(_, v) => commit(v)}
         valueLabelDisplay="auto"
-        min={STATIC_PRICE.min}
-        max={STATIC_PRICE.max}
+        min={min}
+        max={max}
         sx={{
           color: NAVY,
           mb: 2,
@@ -67,25 +88,18 @@ const PriceSlider = (priceData) => {
                 $
               </Typography>
               <Input
-                value={localValue[idx]}
+                value={dragValue[idx]}
                 onChange={(e) => {
-                  const next = [...localValue];
+                  const next = [...dragValue];
                   next[idx] = e.target.value;
-                  setLocalValue(next);
+                  setDragValue(next);
                 }}
-                onBlur={(e) => {
-                  let num = e.target.value === "" ? STATIC_PRICE.min : Number(e.target.value);
-                  if (isNaN(num)) num = STATIC_PRICE.min;
-                  num = Math.min(STATIC_PRICE.max, Math.max(STATIC_PRICE.min, num));
-                  const next = [...localValue];
-                  next[idx] = num;
-                  setLocalValue(next);
-                }}
+                onBlur={() => commit(dragValue)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") e.target.blur();
                 }}
                 disableUnderline
-                inputProps={{ step: 10, min: STATIC_PRICE.min, max: STATIC_PRICE.max, type: "number" }}
+                inputProps={{ step: 10, min, max, type: "number" }}
                 sx={{
                   width: "100%",
                   fontSize: "0.85rem",
@@ -125,24 +139,26 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
-// ============================================================
-// Filters — ab ye SIRF content render karta hai (price, availability,
-// brands). Drawer/backdrop/trigger button ka koi kaam iska nahi —
-// wo parent (ProductsDynamicClient) control karta hai. Isse ye
-// component desktop sidebar mein AND mobile drawer ke andar, dono
-// jagah reusable ban gaya bina duplicate logic ke.
-// ============================================================
-const Filters = ({ data }) => {
+/**
+ * Fully controlled by the parent (ProductsDynamicClient). No local filter
+ * state here anymore — that was the bug: this component used to keep its
+ * own useState for availability/brands/price, completely disconnected from
+ * the `filters` object the parent actually sends to the backend hooks.
+ */
+const Filters = ({
+  data,
+  priceRange,
+  onPriceChange,
+  selectedAvailability,
+  onAvailabilityChange,
+  selectedBrandIds,
+  onBrandChange,
+  onClear,
+}) => {
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
 
-  const [selectedAvailability, setSelectedAvailability] = useState([]);
-  const [selectedBrandIds, setSelectedBrandIds] = useState([]);
-
-  // 1. API se data hai ya nahi, uske hisaab se har section ka existence check
-  //    - Price: min/max dono valid numbers hone chahiye (0 bhi valid hai, isliye undefined/null check)
-  //    - Brands: array hona chahiye aur usme kam se kam 1 item hona chahiye
   const hasPriceRange =
     data?.priceRange?.min !== undefined &&
     data?.priceRange?.min !== null &&
@@ -152,20 +168,17 @@ const Filters = ({ data }) => {
   const hasBrands = Array.isArray(data?.brands) && data.brands.length > 0;
 
   const toggleAvailability = (id) => {
-    setSelectedAvailability((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
-    );
+    const next = selectedAvailability.includes(id)
+      ? selectedAvailability.filter((v) => v !== id)
+      : [...selectedAvailability, id];
+    onAvailabilityChange(next);
   };
 
   const toggleBrand = (id) => {
-    setSelectedBrandIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
-    );
-  };
-
-  const handleClear = () => {
-    setSelectedAvailability([]);
-    setSelectedBrandIds([]);
+    const next = selectedBrandIds.includes(id)
+      ? selectedBrandIds.filter((v) => v !== id)
+      : [...selectedBrandIds, id];
+    onBrandChange(next);
   };
 
   return (
@@ -180,7 +193,7 @@ const Filters = ({ data }) => {
         </div>
         <button
           type="button"
-          onClick={handleClear}
+          onClick={onClear}
           className="flex items-center justify-center gap-1.5 bg-black text-white text-sm font-['Sarabun',sans-serif] px-4 py-1.5 hover:bg-gray-800 transition-colors cursor-pointer hover:scale-102 active:scale-98 hover:rounded-xl"
         >
           <CircleX size={14} />
@@ -194,7 +207,12 @@ const Filters = ({ data }) => {
           <SectionHeader label="Price" isOpen={priceOpen} onToggle={() => setPriceOpen((p) => !p)} />
           {priceOpen && (
             <div className="px-1 pt-4 pb-2">
-              <PriceSlider priceData={data?.priceRange} />
+              <PriceSlider
+                min={data.priceRange.min}
+                max={data.priceRange.max}
+                value={priceRange}
+                onCommit={onPriceChange}
+              />
             </div>
           )}
         </>

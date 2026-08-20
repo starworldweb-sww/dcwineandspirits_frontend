@@ -7,6 +7,28 @@ import { useSearchResults } from "@/app/api/hooks/useSearchResults";
 import { useSearchParams } from "next/navigation";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { SlidersHorizontal, X } from "lucide-react";
+import { p } from "motion/react-client";
+
+// merges every fetched page's product items into one flat list, while
+// keeping meta (brands/priceRange/breadcrumbs/subCategories/name/etc) from
+// the FIRST page only — those don't change page to page, only products.items
+// and the pagination cursor do
+const flattenCategoryPages = (pages) => {
+  if (!pages || !pages.length) return null;
+  const first = pages[0];
+  const items = pages.flatMap((p) => p.products?.items || []);
+  const last = pages[pages.length - 1];
+  return {
+    ...first,
+    products: {
+      ...first.products,
+      items,
+      page: last.products?.page,
+      total_pages: last.products?.total_pages,
+      total: last.products?.total,
+    },
+  };
+};
 
 const normalizeSearchToCategory = (raw) => {
   if (!raw) return null;
@@ -28,21 +50,25 @@ const normalizeSearchToCategory = (raw) => {
       max: raw.filters?.price?.max ?? null,
     },
     dynamic_filters: raw.dynamic_filters || [],
-    products: (raw.products?.items || []).map((p) => ({
-      product_id: p.id,
-      name: p.name,
-      image: p.image,
-      price: p.price,
-      special_price: p.special_price,
-      final_price: p.special_price ?? p.price,
-      in_stock: p.in_stock,
-      manufacturer: p.manufacturer_id
-        ? { manufacturer_id: p.manufacturer_id, name: "", image: "" }
-        : null,
-      seo_url: p.slug,
-    })),
+    products: {
+      items: (raw.products?.items || []).map((p) => ({
+        product_id: p.id,
+        name: p.name,
+        image: p.image,
+        price: p.price,
+        special_price: p.special_price,
+        final_price: p.special_price ?? p.price,
+        in_stock: p.in_stock,
+        manufacturer: p.manufacturer_id
+          ? { manufacturer_id: p.manufacturer_id, name: "", image: "" }
+          : null,
+        seo_url: p.slug,
+      })),
+      total: raw.products?.total ?? 0,
+      page: raw.products?.page,
+      total_pages: raw.products?.total_pages,
+    },
     breadcrumbs: raw.breadcrumbs || [],
-    total: raw.products?.total ?? 0,
   };
 };
 
@@ -52,17 +78,21 @@ const ProductsDynamicClient = ({ slug }) => {
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  // ---- filter state (dono — category aur search — dono ke liye common) ----
+  // page size — changing this restarts the infinite query from page 1
+  // (it's part of the query key in the hooks)
+  const [limit, setLimit] = useState(24);
+  // sort now goes to the backend instead of being re-sorted client-side per
+  // fetched page (client-side sort would only be correct within one page and
+  // break across pages once you scroll past the first)
+  const [sort, setSort] = useState("");
+
   const [priceRange, setPriceRange] = useState([null, null]);
   const [priceInitialized, setPriceInitialized] = useState(false);
-  // backend se mila hua default min/max — isi se compare karke pata chalega
-  // ki user ne slider khud move kiya ya ye sirf auto-init hai
   const [defaultBounds, setDefaultBounds] = useState([null, null]);
 
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
 
-  // in_stock: dono selected ya koi nahi -> filter mat lagao
   const inStockParam =
     selectedAvailability.length === 1
       ? selectedAvailability[0] === "in_stock"
@@ -70,20 +100,12 @@ const ProductsDynamicClient = ({ slug }) => {
         : 0
       : null;
 
-  // ---- FIX ----
-  // priceRange auto-init hote hi backend ke default min/max ke barabar ho jaata
-  // hai. Agar wo default value bhi min_price/max_price ke roop mein bhej di
-  // jaaye, to backend ka filterProducts() (jahan getEffectivePrice ko poora
-  // product object galti se pass hota hai) sab products ko filter kar deta hai
-  // -> "no products found" dikhta hai.
-  //
-  // Isliye min_price/max_price sirf tab bhejo jab user ne slider ko default
-  // range se hata kar khud move kiya ho.
   const isDefaultPriceRange =
     priceRange[0] === defaultBounds[0] && priceRange[1] === defaultBounds[1];
 
   const filters = useMemo(() => {
     const f = {};
+    if (sort) f.sort = sort;
     if (selectedBrandIds.length) f.fm = selectedBrandIds.join(",");
     if (inStockParam != null) f.in_stock = inStockParam;
 
@@ -92,31 +114,54 @@ const ProductsDynamicClient = ({ slug }) => {
       if (priceRange[1] != null) f.max_price = priceRange[1];
     }
     return f;
-  }, [selectedBrandIds, priceRange, inStockParam, priceInitialized, isDefaultPriceRange]);
+  }, [sort, selectedBrandIds, priceRange, inStockParam, priceInitialized, isDefaultPriceRange]);
 
   const {
-    data: dynamicData,
+    data: dynamicPages,
     isLoading: dynamicLoading,
     isError: dynamicError,
-  } = useGetProductBySlugOrId(slug, filters, {
-    enabled: !search,
-  });
+    fetchNextPage: fetchNextDynamicPage,
+    hasNextPage: hasNextDynamicPage,
+    isFetchingNextPage: isFetchingNextDynamicPage,
+  } = useGetProductBySlugOrId(
+    slug,
+    filters,
+    { enabled: !search },
+    limit
+  );
 
   const {
-    data: searchData,
+    data: searchPages,
     isLoading: searchLoading,
     isError: searchError,
-  } = useSearchResults({ search, page: 1, limit: 24, filters });
+    fetchNextPage: fetchNextSearchPage,
+    hasNextPage: hasNextSearchPage,
+    isFetchingNextPage: isFetchingNextSearchPage,
+  } = useSearchResults({
+    search,
+    limit,
+    filter: filters,
+    options: { enabled: !!search },
+  });
 
   const data = useMemo(() => {
-    if (search) return normalizeSearchToCategory(searchData);
-    return dynamicData;
-  }, [search, searchData, dynamicData]);
+    if (search) {
+      if (!searchPages?.pages?.length) return null;
+      const merged = flattenCategoryPages(searchPages.pages);
+      return normalizeSearchToCategory({
+        ...merged,
+        products: merged.products, // already { items, total, page, total_pages }
+      });
+    }
+    return flattenCategoryPages(dynamicPages?.pages);
+  }, [search, searchPages, dynamicPages]);
 
   const isLoading = search ? searchLoading : dynamicLoading;
   const isError = search ? searchError : dynamicError;
-
-  // jab data pehli baar aaye, price slider ko backend ke min/max se init karo
+  const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
+  const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;
+  const isFetchingNextPage = search ? isFetchingNextSearchPage : isFetchingNextDynamicPage;
+  console.log("data", data)
   React.useEffect(() => {
     if (data?.priceRange && !priceInitialized) {
       const bounds = [data.priceRange.min, data.priceRange.max];
@@ -130,6 +175,11 @@ const ProductsDynamicClient = ({ slug }) => {
     setSelectedBrandIds([]);
     setSelectedAvailability([]);
     setPriceRange(defaultBounds);
+  };
+  const handleLoadMore = async () => {
+    await fetchNextPage();
+    const newPage = (data?.pages?.length || 1) + 1;
+    document.cookie = `current_page_${slug}=${newPage}; path=/; max-age=1800`;
   };
 
   if (isLoading) {
@@ -166,7 +216,16 @@ const ProductsDynamicClient = ({ slug }) => {
           />
         </div>
 
-        <ProductsDynamicMain data={data} />
+        <ProductsDynamicMain
+          data={data}
+          sort={sort}
+          onSortChange={setSort}
+          limit={limit}
+          onLimitChange={setLimit}
+          // fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+        // isFetchingNextPage={isFetchingNextPage}
+        />
       </div>
 
       <button
@@ -208,7 +267,37 @@ const ProductsDynamicClient = ({ slug }) => {
           </div>
         </div>
       )}
+      {hasNextPage && (
+        <div className="flex flex-col items-center pl-7 gap-3 py-5">
+         
+          {isFetchingNextPage ? (
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#98022e]" />
+              Loading more products...
+            </div>
+          ) : (
+            <button
+              onClick={handleLoadMore}
+              className="rounded-md bg-[#98022e] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#7a0225] hover:shadow-md active:scale-95"
+            >
+              Load More Products
+            </button>
+          )}
 
+          {/* Product Count */}
+          <p className="text-sm text-gray-500">
+            Showing{" "}
+            <span className="font-semibold text-gray-700">
+              {data?.products?.items?.length || 0}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-gray-700">
+              {data?.products?.total || 0}
+            </span>{" "}
+            products
+          </p>
+        </div>
+      )}
       <style jsx global>{`
         @keyframes slideIn {
           from { transform: translateX(-100%); }
