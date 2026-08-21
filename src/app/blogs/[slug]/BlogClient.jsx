@@ -3,15 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { User, Eye, MessageCircle, Search, Clock } from 'lucide-react';
+import { User, Eye, MessageCircle, Search, Clock, Rss, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-import { useCountViews, useGetPostBySlug, useSearchPosts } from '@/app/api/hooks/blog/useBlogPosts';
-
-
+import { useCountViews, useGetAllPosts, useGetCategory, useGetPostBySlug, useSearchPosts } from '@/app/api/hooks/blog/useBlogPosts';
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
+const BLOGS_PER_PAGE = 10;
 
-// 1) Date helper - list page jaisa hi, "date_created" se badge banata hai
 const formatBlogDate = (dateString) => {
   if (!dateString) return { day: "--", month: "" };
   const dateObj = new Date(dateString);
@@ -22,7 +20,17 @@ const formatBlogDate = (dateString) => {
   };
 };
 
-// 2) Reading time helper - list page jaisa hi, "content" HTML se words count karta hai
+const getExcerpt = (html, maxLength = 220) => {
+  if (!html) return "";
+  const plainText = html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (plainText.length <= maxLength) return plainText;
+  return plainText.slice(0, maxLength).trim() + "…";
+};
+
 const getReadingTime = (html) => {
   if (!html) return 1;
   const plainText = html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
@@ -30,7 +38,6 @@ const getReadingTime = (html) => {
   return Math.max(1, Math.ceil(wordCount / 225));
 };
 
-// 3) Image URL helper - relative path ko IMAGE_BASE_URL ke saath jodta hai
 const getBlogImageUrl = (imagePath) => {
   if (!imagePath) return "";
   if (imagePath.startsWith("http")) return imagePath;
@@ -39,40 +46,57 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const BlogClient = () => {
-  const { slug } = useParams(); // route se slug uthaya, jaise tumne bana rakha hai
+const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData }) => {
+  const { slug } = useParams();
   const router = useRouter();
+
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 4) Real API call - slug based single post
-  const { data: post, isLoading, isError } = useGetPostBySlug(slug);
+  const { data: catData } = useGetCategory();
 
-  console.log(post);
+  const { data: post, isLoading: postLoading, isError: postError } = useGetPostBySlug(
+    viewType === "post" ? slug : null,
+    viewType === "post" ? initialPostData : undefined
+  );
 
-  // 4a) View count - har NAYE post_id pe ek baar increment karo
-  // (boolean ref ki jagah post_id track kar rahe hain, taaki slug change hone
-  //  pe bhi naye post ka view sahi se count ho - pehle sirf ek baar hi hota tha)
+  const {
+    data: categoryData,
+    isLoading: categoryLoading,
+    isFetching: categoryFetching,
+    isError: categoryError,
+  } = useGetAllPosts(
+    {
+      page: currentPage,
+      limit: BLOGS_PER_PAGE,
+      categorySlug: viewType === "category" ? slug : undefined,
+      categoryId: viewType === "category" ? category?.category_id : undefined,
+    },
+    {
+      initialData:
+        viewType === "category" && currentPage === 1 ? initialCategoryPosts : undefined,
+      enabled: viewType === "category",
+    }
+  );
+
   const { mutate: countView } = useCountViews();
   const countedPostIdRef = useRef(null);
 
   useEffect(() => {
-    if (post?.post_id && countedPostIdRef.current !== post.post_id) {
+    if (viewType === "post" && post?.post_id && countedPostIdRef.current !== post.post_id) {
       countView(post.post_id);
       countedPostIdRef.current = post.post_id;
     }
-  }, [post?.post_id, countView]);
+  }, [viewType, post?.post_id, countView]);
 
-  // 4b) Slug change hote hi page top pe scroll karo aur search state clear karo
-  // taaki naye blog pe navigate karne pe user ko turant naya content dikhe
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setSearchQuery("");
     setShowSuggestions(false);
+    setCurrentPage(1);
   }, [slug]);
-
-  // 4c) Sidebar search - live suggestions ke liye debounced query
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,10 +105,11 @@ const BlogClient = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const {
-    data: searchData,
-    isLoading: isSearchLoading,
-  } = useSearchPosts({ keyword: debouncedQuery, page: 1, limit: 5 });
+  const { data: searchData, isLoading: isSearchLoading } = useSearchPosts({
+    keyword: debouncedQuery,
+    page: 1,
+    limit: 5,
+  });
 
   const suggestions = searchData?.posts || [];
 
@@ -95,8 +120,286 @@ const BlogClient = () => {
     router.push(`/blogs?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  // 5) Loading skeleton
-  if (isLoading) {
+  const posts = categoryData?.posts ?? [];
+  const pagination = categoryData?.pagination ?? {
+    total: 0,
+    page: 1,
+    limit: BLOGS_PER_PAGE,
+    totalPages: 1,
+  };
+  const totalPages = pagination.totalPages || 1;
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderSidebar = () => (
+    <aside className="w-full lg:w-[300px] shrink-0 space-y-8">
+      <div className="relative">
+        <h3 className="font-hind-madurai text-lg font-semibold text-gray-800 mb-3">
+          Blog Search
+        </h3>
+
+        <form onSubmit={handleSidebarSearch} className="flex">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder="Search blogs..."
+            className="flex-1 min-w-0 border border-gray-300 focus:border-[#98022e] rounded-l px-3 py-2.5 text-sm outline-none"
+          />
+
+          <button
+            type="submit"
+            aria-label="Search"
+            className="shrink-0 bg-[#98022e] hover:bg-[#8c1a3c] text-white px-4 rounded-r transition-colors"
+          >
+            <Search size={16} />
+          </button>
+        </form>
+
+        {showSuggestions && debouncedQuery && (
+          <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-20 max-h-80 overflow-y-auto">
+            {isSearchLoading ? (
+              <p className="px-3 py-3 text-sm text-gray-400">Searching...</p>
+            ) : suggestions.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-gray-400">No results found.</p>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {suggestions.map((item) => (
+                  <li key={item.post_id}>
+                    <Link
+                      href={`/blogs/${item.slug}`}
+                      className="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#98022e] transition-colors line-clamp-1"
+                      onClick={() => setShowSuggestions(false)}
+                    >
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h3 className="font-hind-madurai text-lg font-semibold text-gray-800 mb-3">
+          Categories
+        </h3>
+
+        <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+          {catData?.map((c) => (
+            <Link
+              key={c?.category_id}
+              href={`/blogs/${c?.slug}`}
+              className={`flex items-center justify-between px-4 py-3 border-b last:border-b-0 border-gray-100 text-sm transition-colors ${
+                viewType === "category" && c?.slug === slug
+                  ? "bg-[#98022e]/5 text-[#98022e] font-medium"
+                  : "text-gray-700 hover:bg-gray-50 hover:text-[#98022e]"
+              }`}
+            >
+              <span>{c?.name}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+
+  if (viewType === "category") {
+    const breadcrumbs = [
+      { label: "Blogs", href: "/blogs" },
+      { label: category?.name || slug, href: `/blogs/${slug}` },
+    ];
+
+    const SkeletonCard = () => (
+      <div className="flex flex-col md:flex-row gap-6 py-8 animate-pulse">
+        <div className="w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md bg-gray-200 shrink-0" />
+        <div className="flex-1 space-y-3">
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="h-6 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-full" />
+          <div className="h-4 bg-gray-200 rounded w-5/6" />
+          <div className="h-10 bg-gray-200 rounded w-40 mt-4" />
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="w-full bg-white">
+        <ProductsHeader categoryName={category?.name || "Blog Category"} breadcrumbs={breadcrumbs} />
+
+        <div className="px-3 2xl:px-32 py-8 md:py-12 flex flex-col lg:flex-row gap-10">
+          <div className="flex-1 min-w-0">
+            <div className="hidden md:flex justify-end mb-4">
+              <Link
+                href="/blogs/rss"
+                className="flex items-center gap-1.5 text-sm text-[#98022e] hover:text-[#8c1a3c] transition-colors"
+              >
+                <Rss size={16} />
+                <span>RSS Feed</span>
+              </Link>
+            </div>
+
+            {category && (
+              <div className="mb-6 pb-4 border-b border-gray-200">
+                <h1 className="font-sarabun text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                  {category.name}
+                </h1>
+                {category.description && (
+                  // <p className="text-gray-600 text-sm md:text-base">
+                  //   {category.description}
+                  // </p>
+                  <div
+                  dangerouslySetInnerHTML={{ __html: category.description }}
+                  />
+                )}
+              </div>
+            )}
+
+            {categoryLoading || categoryFetching ? (
+              <div className="flex flex-col divide-y divide-gray-200">
+                {[1, 2, 3].map((i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : categoryError ? (
+              <p className="text-center text-gray-500 py-10">
+                Something went wrong while loading blogs. Please try again.
+              </p>
+            ) : posts.length === 0 ? (
+              <p className="text-center text-gray-500 py-10">
+                No blog posts found in this category.
+              </p>
+            ) : (
+              <div className="flex flex-col divide-y divide-gray-200">
+                {posts.map((postItem) => {
+                  const { day, month } = formatBlogDate(postItem.date_created);
+                  const authorName = [postItem.author_firstname, postItem.author_lastname]
+                    .filter(Boolean)
+                    .join(" ");
+                  const readingMinutes = getReadingTime(postItem.description);
+
+                  return (
+                    <article
+                      key={postItem.post_id}
+                      className="flex flex-col md:flex-row gap-6 py-8 first:pt-0"
+                    >
+                      <Link
+                        href={`/blogs/${postItem.slug}`}
+                        className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md overflow-hidden bg-gray-100"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getBlogImageUrl(postItem.image)}
+                          alt={postItem.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
+                          <span className="block text-lg font-bold">{day}</span>
+                          <span className="block text-[11px] uppercase tracking-wide">
+                            {month}
+                          </span>
+                        </div>
+                      </Link>
+
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="flex items-center flex-wrap gap-4 text-sm text-gray-500 mb-2">
+                          {authorName && (
+                            <span className="flex items-center gap-1.5">
+                              <User size={15} className="text-[#98022e]" />
+                              {authorName}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1.5">
+                            <Clock size={15} className="text-[#98022e]" />
+                            {readingMinutes} min read
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Eye size={15} className="text-[#98022e]" />
+                            {postItem.views ?? 0}
+                          </span>
+                        </div>
+
+                        <Link href={`/blogs/${postItem.slug}`}>
+                          <h2 className="font-sarabun text-xl md:text-2xl font-semibold text-gray-800 hover:text-[#98022e] transition-colors mb-3">
+                            {postItem.title}
+                          </h2>
+                        </Link>
+
+                        <p className="font-sarabun text-sm md:text-[15px] text-gray-600 leading-relaxed line-clamp-3 mb-5">
+                          {getExcerpt(postItem.description)}
+                        </p>
+
+                        <Link
+                          href={`/blogs/${postItem.slug}`}
+                          className="inline-flex items-center gap-2 w-fit bg-gray-900 hover:bg-[#98022e] text-white text-xs font-semibold tracking-wider uppercase px-5 py-3 rounded transition-all hover:rounded-xl group"
+                        >
+                          Continue Reading
+                          <ArrowRight size={14} className="group-hover:ml-1 transition-all" />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-10">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${
+                      page === currentPage
+                        ? "bg-[#98022e] border-[#98022e] text-white"
+                        : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {renderSidebar()}
+        </div>
+      </div>
+    );
+  }
+
+  if (postLoading) {
     return (
       <div className="w-full px-3 2xl:px-32 py-10 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-2/3 mb-6" />
@@ -110,8 +413,7 @@ const BlogClient = () => {
     );
   }
 
-  // 6) Not found / error state
-  if (isError || !post) {
+  if (postError || !post) {
     return (
       <div className="w-full px-3 2xl:px-32 py-16 text-center">
         <h1 className="font-hind-madurai text-2xl font-semibold text-gray-800 mb-3">
@@ -131,9 +433,7 @@ const BlogClient = () => {
   }
 
   const { day, month } = formatBlogDate(post.date_created);
-  const authorName = [post.author_firstname, post.author_lastname]
-    .filter(Boolean)
-    .join(" ");
+  const authorName = [post.author_firstname, post.author_lastname].filter(Boolean).join(" ");
   const readingMinutes = getReadingTime(post.content);
 
   const breadcrumbs = [
@@ -143,21 +443,10 @@ const BlogClient = () => {
 
   return (
     <div className="w-full bg-white">
-
-      {/* =============================================================
-          7) PAGE HEADER - login/blogs list jaisa hi shared ProductsHeader
-      ============================================================= */}
       <ProductsHeader categoryName={post.title} breadcrumbs={breadcrumbs} />
 
-      {/* =============================================================
-          8) MAIN LAYOUT - content (left) + sidebar (right)
-      ============================================================= */}
       <div className="px-3 2xl:px-32 py-8 md:py-12 flex flex-col lg:flex-row gap-10">
-
-        {/* ---------- LEFT: Article ---------- */}
         <article className="flex-1 min-w-0">
-
-          {/* Featured image + date badge */}
           <div className="relative w-full h-[280px] md:h-[420px] rounded-md overflow-hidden bg-gray-100 mb-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -171,9 +460,6 @@ const BlogClient = () => {
             </div>
           </div>
 
-          {/* Meta row - author, reading time, views
-              Note: "comments" API se boolean aata hai (count nahi), isliye
-              yahan sirf icon dikha rahe hain, number nahi (fake 0 nahi likha) */}
           <div className="flex items-center flex-wrap gap-4 text-sm text-gray-500 mb-6 pb-4 border-b border-gray-200">
             {authorName && (
               <span className="flex items-center gap-1.5">
@@ -195,81 +481,15 @@ const BlogClient = () => {
             </span>
           </div>
 
-          {/* 9) Actual blog HTML content - "content" field mein h2/h3/table/
-              blockquote/details-faq sab hai, isliye ek scoped className
-              "blog-article-body" se style kar rahe hain (neeche styled-jsx) */}
           <div
             className="blog-article-body"
             dangerouslySetInnerHTML={{ __html: post.content || "" }}
           />
         </article>
 
-        {/* ---------- RIGHT: Sidebar ---------- */}
-        <aside className="w-full lg:w-[300px] shrink-0 space-y-8">
-
-          {/* Blog Search */}
-          <div className="relative">
-            <h3 className="font-hind-madurai text-lg font-semibold text-gray-800 mb-3">
-              Blog Search
-            </h3>
-            <form onSubmit={handleSidebarSearch} className="flex">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Search blogs..."
-                className="flex-1 min-w-0 border border-gray-300 focus:border-[#98022e] rounded-l px-3 py-2.5 text-sm outline-none"
-              />
-              <button
-                type="submit"
-                aria-label="Search"
-                className="shrink-0 bg-[#98022e] hover:bg-[#8c1a3c] text-white px-4 rounded-r transition-colors"
-              >
-                <Search size={16} />
-              </button>
-            </form>
-
-            {/* Live search suggestions dropdown */}
-            {showSuggestions && debouncedQuery && (
-              <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-20 max-h-80 overflow-y-auto">
-                {isSearchLoading ? (
-                  <p className="px-3 py-3 text-sm text-gray-400">Searching...</p>
-                ) : suggestions.length === 0 ? (
-                  <p className="px-3 py-3 text-sm text-gray-400">No results found.</p>
-                ) : (
-                  <ul className="divide-y divide-gray-100">
-                    {suggestions.map((item) => (
-                      <li key={item.post_id}>
-                        <Link
-                          href={`/blogs/${item.slug}`}
-                          className="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#98022e] transition-colors line-clamp-1"
-                          onClick={() => setShowSuggestions(false)}
-                        >
-                          {item.title}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ⚠️ Categories aur Related Products yahan nahi hain kyunki
-              getPostBySlug API in fields ko return nahi karta abhi.
-              Jab category/related-product API ready ho, yahan add kar dena. */}
-        </aside>
+        {renderSidebar()}
       </div>
 
-      {/* =============================================================
-          10) Blog content ke andar aane wale raw HTML tags (h2, table,
-              blockquote, details/faq, etc.) ko style karne ke liye
-      ============================================================= */}
       <style jsx global>{`
         .blog-article-body {
           font-family: var(--font-sarabun, inherit);

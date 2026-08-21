@@ -148,7 +148,7 @@ const CartClient = () => {
                       <tr key={item.id} className="border-b border-gray-100">
                         <td className="px-4 py-4 w-20">
                           <Image
-                            src={item.image}
+                            src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${item?.image}`}
                             alt={item.name}
                             width={64}
                             height={64}

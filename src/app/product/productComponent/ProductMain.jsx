@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Check,
   Dot,
@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
+import { addRecentProduct } from "@/libs/recentProducts";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -127,7 +128,7 @@ export default function ProductMain({ product }) {
       if (res?.success) {
         toast.success(res.message || "Added to cart!");
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const handleAddToWishlistClick = async () => {
@@ -145,6 +146,12 @@ export default function ProductMain({ product }) {
     console.log("Write a review clicked for", product.product_id);
   };
 
+
+  useEffect(() => {
+    if (product?.product_id) {
+      addRecentProduct(product);
+    }
+  }, [product])
   return (
     <>
       <ProductsHeader categoryName={product.name} />
@@ -166,11 +173,10 @@ export default function ProductMain({ product }) {
                     <div
                       key={`${imageUrl}-${index}`}
                       onClick={() => handleImageChange(imageUrl)}
-                      className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
-                        mainImage === imageUrl
+                      className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${mainImage === imageUrl
                           ? "border-[#98022e]"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     >
                       <img
                         src={imageUrl}
@@ -189,9 +195,8 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${
-                  hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
-                }`}
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
+                  }`}
               >
                 {hasSpecialPrice && discountPercent > 0 && (
                   <>
@@ -402,11 +407,10 @@ export default function ProductMain({ product }) {
                       type="button"
                       onClick={handleAddToWishlistClick}
                       disabled={isAddingToWishlist || isInWishlist}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${
-                        isInWishlist
+                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${isInWishlist
                           ? "text-[#98022e]"
                           : "text-gray-700 hover:text-[#98022e]"
-                      }`}
+                        }`}
                     >
                       <Heart
                         size={16}
