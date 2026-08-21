@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
     description: decodeHtml(meta?.meta_description) || "",
     keywords: decodeHtml(meta?.meta_keyword) || "",
     alternates: {
-      canonical: `https://www.dcwineandspirits.com/${slug}`,
+      canonical: `https://www.dcwineandspirits.com/${slug}/`,
     },
     openGraph: {
       title: decodeHtml(meta?.meta_title) || decodeHtml(meta?.custom_title),

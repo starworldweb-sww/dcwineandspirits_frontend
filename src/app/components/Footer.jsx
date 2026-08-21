@@ -83,7 +83,7 @@ const myAccountLinksRight = [
 
 const customerServiceLinksLeft = [
   { label: "About Us", href: "/about-us" },
-  { label: "Shipping & Delivery", href: "/shipping-delivery" },
+  { label: "Shipping & Delivery", href: "/shipping-and-delivery-policy" },
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Return Policy", href: "/return-policy" },
   { label: "Terms & Conditions", href: "/terms-conditions" },
@@ -91,10 +91,10 @@ const customerServiceLinksLeft = [
 ];
 
 const customerServiceLinksRight = [
-  { label: "Coupon & Deals", href: "/coupons-deals" },
-  { label: "Corporate / Bulk Inquiry", href: "/corporate-bulk-inquiry" },
-  { label: "Bulk Order Form", href: "/bulk-order-form" },
-  { label: "FAQ's", href: "/faqs" },
+  { label: "Coupon & Deals", href: "/coupon-and-deals/" },
+  { label: "Corporate / Bulk Inquiry", href: "/corporate-bulk-inquiry/" },
+  { label: "Bulk Order Form", href: "/bulk-order-form/" },
+  { label: "FAQ's", href: "/frequently-asked-questions/" },
   { label: "Contact", href: "/contact" },
 ];
 
