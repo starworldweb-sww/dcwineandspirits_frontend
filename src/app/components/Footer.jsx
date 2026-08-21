@@ -83,7 +83,7 @@ const myAccountLinksRight = [
 
 const customerServiceLinksLeft = [
   { label: "About Us", href: "/about-us" },
-  { label: "Shipping & Delivery", href: "/shipping-delivery" },
+  { label: "Shipping & Delivery", href: "/shipping-and-delivery-policy" },
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Return Policy", href: "/return-policy" },
   { label: "Terms & Conditions", href: "/terms-conditions" },
