@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link"; // 1. useRouter ki jagah Link import kiya
 import ProductsHeader from "../components/TittleAndBreadcrumb";
 import { useGetAllManufacturers } from "../api/hooks/useAllManufacturers";
 import { decodeHtml } from "@/libs/decodeHtml";
@@ -47,14 +47,11 @@ function BrandIndex({ alphabet }) {
 // Sub-Component: Single Brand Card
 // ─────────────────────────────────────────────
 function BrandCard({ brand }) {
-  const router = useRouter();
+  // 2. router.push wala function aur useRouter hata diya, ab Link use karenge
 
-  function handleClick() {
-    const url = brand.slug
-      ? `/${brand.slug}`
-      : `/products?manufacturer=${brand.manufacturer_id}`;
-    router.push(url);
-  }
+  const href = brand.slug
+    ? `/${brand.slug}/`
+    : `/products?manufacturer=${brand.manufacturer_id}`;
 
   const imageSrc = brand.image
     ? brand.image.startsWith("http")
@@ -63,10 +60,8 @@ function BrandCard({ brand }) {
     : null;
 
   return (
-    <div
-      onClick={handleClick}
-      className="flex flex-col items-center cursor-pointer group"
-    >
+    // 3. Poora card ab Link ke andar wrap hai, onClick ki zaroorat nahi
+    <Link href={href} className="flex flex-col items-center cursor-pointer group">
       <div className="w-full h-[120px] bg-[#f4f4f4] rounded-sm flex items-center justify-center overflow-hidden transition-all duration-200 relative">
         {imageSrc ? (
           <Image
@@ -86,7 +81,7 @@ function BrandCard({ brand }) {
       <p className="mt-3 text-[14px] text-center text-[#333333] group-hover:text-[#901c3f] transition-colors">
         {brand.name}
       </p>
-    </div>
+    </Link>
   );
 }
 
