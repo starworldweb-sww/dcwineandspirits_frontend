@@ -8,7 +8,7 @@ import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 const ACCENT = "#8c1a3c";
 
 const breadcrumbs = [
-  { label: "Home", href: "/" },
+
   { label: "Terms & Conditions", href: "/terms" },
 ];
 
@@ -124,7 +124,7 @@ const TermsClient = () => {
 
       <div className="w-full px-3 lg:px-3 2xl:px-32 mt-10 mb-14">
         {/* --- Quick Facts strip --- */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
           {quickFacts.map((fact) => (
             <div
               key={fact.label}
@@ -139,7 +139,7 @@ const TermsClient = () => {
               </p>
             </div>
           ))}
-        </div>
+        </div> */}
 
         <div className="flex flex-col lg:flex-row lg:items-start lg:gap-10 w-full">
           {/* ---- LEFT: Sticky jump-nav (desktop only) ---- */}
