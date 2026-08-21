@@ -8,6 +8,8 @@ import ProductsDynamicClient from "../productsDynamic/productsDynamicComponents/
 import ProductClient from "../product/productComponent/ProductClient";
 import { productsService } from "../api/services/productsService";
 import { cookies } from "next/headers";
+import { buildProductSchema } from "@/libs/productSchema";
+import Script from "next/script";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -62,17 +64,37 @@ export default async function ProductsSlugPage({ params }) {
   }
 
   if (productMeta) {
-    await queryClient.prefetchQuery({
-      queryKey: productKeys.singleProductDetail(slug),
-      queryFn: () => productsService.getSingleProductDetails(slug),
-    });
+  let schema = null;
 
-    return (
+  try {
+    const product = await productsService.getSingleProductDetails(slug);
+    if (product) {
+      schema = buildProductSchema(product);
+    }
+  } catch (e) {
+    console.error("Schema fetch failed:", e.message);
+  }
+
+  await queryClient.prefetchQuery({
+    queryKey: productKeys.singleProductDetail(slug),
+    queryFn: () => productsService.getSingleProductDetails(slug),
+  });
+
+  return (
+    <>
+      {schema && (
+        <Script
+          id="product-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      )}
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ProductClient slug={slug} />
       </HydrationBoundary>
-    );
-  }
+    </>
+  );
+}
 
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
