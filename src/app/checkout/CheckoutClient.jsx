@@ -39,7 +39,7 @@ import { useshippingRate } from "../api/hooks/useShippingRate";
 import { useCheckoutLogin } from "../api/hooks/checkout/useCheckoutLogin";
 import { useFormik } from "formik";
 import { useCoupon } from "../api/hooks/coupon/useCoupon";
-import { useupdatedCart } from "../api/hooks/cart/useUpdated";
+import { useupdatedCart } from "../api/hooks/cart/useUpdatedCart";
 
 const ACCENT = "#8c1a3c";
 const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)

@@ -120,6 +120,9 @@ export default function ProductMain({ product }) {
       const res = await addToCartMut.mutateAsync({
         product_id: productId,
         quantity: Math.max(1, Number(quantity) || 1),
+        option: giftMessage.trim()
+          ? JSON.stringify({ gift_message: giftMessage.trim() })
+          : "[]",
       });
       if (res?.success) {
         toast.success(res.message || "Added to cart!");

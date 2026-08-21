@@ -7,6 +7,8 @@ import { Home, Plus, Minus, RefreshCw, X, ShoppingBag } from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; // agar login page waala component hai to reuse kar lo
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { useupdatedCart } from "@/app/api/hooks/cart/useUpdatedCart";
+import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart"; // 👈 Hook imported here
 
 const ACCENT = "#98022e";
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""; // 👈 apna actual base URL daal dena
@@ -18,6 +20,8 @@ const breadcrumbs = [
 
 const CartClient = () => {
   const { data, isLoading, isError } = useGetCartList();
+  const updatedCartMut = useupdatedCart();
+  const removeCartMut = useRemoveFromCart(); // 👈 Hook initialized here
 
   // 👇 API response ka shape yahan map kar rahe hain UI ke expected format me
   //    Apne actual response ke hisaab se yeh mapping adjust kar lena
@@ -47,21 +51,24 @@ const CartClient = () => {
   const toggleSection = (section) =>
     setOpenSection((prev) => (prev === section ? null : section));
 
-  // TODO: local qty change abhi sirf UI state update karta hai —
-  // useUpdateCart hook milte hi yahan mutate() call laga dena
+  // qty change ab UI state ke saath-saath useupdatedCart mutation bhi fire karta hai
   const updateQty = (id, delta) => {
+    const target = items.find((item) => item.id === id);
+    if (!target) return;
+
+    const newQty = Math.max(1, target.qty + delta);
+
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, qty: Math.max(1, item.qty + delta) }
-          : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, qty: newQty } : item))
     );
+
+    updatedCartMut.mutate({ cart_id: id, quantity: newQty });
   };
 
-  // TODO: useRemoveFromCart hook milte hi yahan mutate(id) call laga dena
+  // useRemoveFromCart hook milte hi yahan mutate(id) call laga diya
   const removeItem = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
+    removeCartMut.mutate(id); // 👈 Mutation called here
   };
 
   const subTotal = items.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
@@ -186,14 +193,16 @@ const CartClient = () => {
                             </div>
                             <button
                               title="Update cart"
-                              className="flex items-center justify-center w-9 h-9 bg-black text-white hover:bg-[#1a1a1a] transition-colors"
+                              disabled={updatedCartMut.isPending}
+                              className="flex items-center justify-center w-9 h-9 bg-black text-white hover:bg-[#1a1a1a] transition-colors disabled:opacity-50"
                             >
                               <RefreshCw size={14} />
                             </button>
                             <button
                               title="Remove item"
                               onClick={() => removeItem(item.id)}
-                              className="flex items-center justify-center w-9 h-9 bg-black text-white hover:bg-[#1a1a1a] transition-colors"
+                              disabled={removeCartMut.isPending}
+                              className="flex items-center justify-center w-9 h-9 bg-black text-white hover:bg-[#1a1a1a] transition-colors disabled:opacity-50"
                             >
                               <X size={14} />
                             </button>
@@ -260,7 +269,8 @@ const CartClient = () => {
                         <button
                           title="Remove item"
                           onClick={() => removeItem(item.id)}
-                          className="flex items-center justify-center w-8 h-8 bg-black text-white rounded-[3px]"
+                          disabled={removeCartMut.isPending}
+                          className="flex items-center justify-center w-8 h-8 bg-black text-white rounded-[3px] disabled:opacity-50"
                         >
                           <X size={13} />
                         </button>

@@ -73,5 +73,15 @@ export const productsService = {
   },
 
 
-  
+    getMostViewedProducts: async (params) => {
+    const res = await axiosInstance.get("/products/most-viewed-product", {
+      params,
+    });
+
+    if (res.data?.success) {
+      return res.data.data;
+    }
+
+    throw new Error(res.data?.message || "Failed to fetch most viewed products");
+  },
 };

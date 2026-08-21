@@ -79,6 +79,10 @@ export const productKeys = {
 
 
    searchResults: (params) => [...productKeys.all, "search-results", params],
+  //  most viewed..
+
+    // most viewed
+  mostViewedProducts: (params = {}) => [...productKeys.lists(), "most-viewed", params],
 };
 export const customerKeys = {
   // Base keys

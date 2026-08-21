@@ -80,5 +80,13 @@ export const cartServices = {
         cart_id,quantity
      })
      return res?.data || [];
-    }
+    },
+
+
+    clearCart: async (cartId) => {
+    const res = await axiosInstance.delete(`/cart/delete/${cartId}`)
+    return res?.data || [];
+    },
+
+    
 }
