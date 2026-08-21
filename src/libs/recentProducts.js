@@ -23,6 +23,7 @@ export const addRecentProduct = (product) => {
     }
 };
 
+
 export const getRecentProducts = () => {
     if (typeof window === "undefined") return;
     return JSON.parse(localStorage.getItem("recent_products")) || [];

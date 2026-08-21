@@ -253,14 +253,14 @@ export default function ProductMain({ product }) {
                           <span className="font-semibold text-lg text-[#98022e] [text-decoration-line:line-through]">
                             ${Number(originalPrice).toFixed(2)}
                           </span>
-                          <h1 className="font-bold text-2xl lg:text-3xl text-black">
+                          <strong className="font-bold text-2xl lg:text-3xl text-black">
                             ${Number(specialPrice).toFixed(2)}
-                          </h1>
+                          </strong>
                         </div>
                       ) : (
-                        <h1 className="font-bold text-2xl lg:text-3xl text-black">
+                        <strong className="font-bold text-2xl lg:text-3xl text-black">
                           ${Number(originalPrice).toFixed(2)}
-                        </h1>
+                        </strong>
                       )}
                     </div>
 

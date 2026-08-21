@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React, { useRef, useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Award, ShoppingCart, Percent, Loader2 } from "lucide-react";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
@@ -62,6 +63,7 @@ const HomeProductSlider = () => {
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
+    e.preventDefault();
 
     const productId = product?.product_id || product?.id;
 
@@ -150,9 +152,9 @@ const HomeProductSlider = () => {
         >
           {products.length > 0 ? (
             products.map((item) => (
-              <div
+              <Link
                 key={item.id}
-                onClick={() => router.push(`/${item.seo_url}`)}
+                href={`/${item.seo_url}`}
                 className="w-full sm:w-[243px] flex-shrink-0 flex flex-col bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer snap-center sm:snap-start relative rounded-none"
               >
                 {/* IMAGE */}
@@ -204,7 +206,7 @@ const HomeProductSlider = () => {
                       : "ADD TO CART"}
                   </button>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="w-full text-center py-20 text-gray-400 font-sans">
