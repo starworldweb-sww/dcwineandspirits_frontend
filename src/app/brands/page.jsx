@@ -8,7 +8,7 @@ export const metadata = {
   description:
     "Browse our wide selection of wine and champagne brands available as gifts. Discover top-rated labels handpicked for quality, taste, and elegant presentation.",
   alternates: {
-    canonical: "https://www.dcwineandspirits.com/brands",
+    canonical: "https://www.dcwineandspirits.com/brands/",
   },
 };
 
