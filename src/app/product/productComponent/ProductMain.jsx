@@ -100,7 +100,7 @@ export default function ProductMain({ product }) {
   const brandImage = product.manufacturer?.image
     ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.manufacturer.image}`
     : "";
-
+  console.log("product",product)
   const handleImageChange = (clickedImage) => {
     setMainImage(clickedImage);
     setIsImageHovered(false);
