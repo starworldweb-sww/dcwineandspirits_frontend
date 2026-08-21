@@ -1,7 +1,9 @@
 import React from 'react'
 import BlogsClient from './BlogsClient'
-
-
+import { getQueryClient } from '@/libs/get-query-client';
+import { blogService } from '../api/services/blogService';
+import { blogKeys } from '@/libs/queryKeys';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 
 export const metadata = {
@@ -13,10 +15,23 @@ export const metadata = {
   },
 };
 
-const page = () => {
+
+const page = async () => {
+
+  const queryClient = getQueryClient();
+  const initialData = await blogService.getAllPosts({ page: 1, limit: 10 });
+
+  await queryClient.prefetchQuery({
+    queryKey: blogKeys.posts({ page: 1, limit: 10 }),
+    queryFn: () => Promise.resolve(initialData), 
+  });
+
+
   return (
     <>
-     <BlogsClient/> 
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <BlogsClient initialData={initialData} />
+      </HydrationBoundary>
     </>
   )
 }

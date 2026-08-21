@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, Eye, Rss, ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; 
+import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useGetAllPosts } from '../api/hooks/blog/useBlogPosts';
 
 
@@ -62,7 +62,7 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const BlogsClient = () => {
+const BlogsClient = ({ initialData }) => {
   // 5) Pagination state - "page" seedha API ko jaata hai
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -70,7 +70,8 @@ const BlogsClient = () => {
   const { data, isLoading, isFetching, isError } = useGetAllPosts({
     page: currentPage,
     limit: BLOGS_PER_PAGE,
-  });
+  }, { initialData: currentPage === 1 ? initialData : undefined }
+  );
 
   const posts = data?.posts ?? [];
   const pagination = data?.pagination ?? { total: 0, page: 1, limit: BLOGS_PER_PAGE, totalPages: 1 };
@@ -234,11 +235,10 @@ const BlogsClient = () => {
                 key={page}
                 type="button"
                 onClick={() => handlePageChange(page)}
-                className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${
-                  page === currentPage
+                className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${page === currentPage
                     ? "bg-[#98022e] border-[#98022e] text-white"
                     : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
-                }`}
+                  }`}
               >
                 {page}
               </button>

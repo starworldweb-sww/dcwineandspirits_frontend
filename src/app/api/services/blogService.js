@@ -6,8 +6,10 @@ export const blogService = {
     const { data } = await axiosInstance.get("/blog/posts", { params });
     return data?.data; 
   },
-
-
+  getAllCategory: async () => {
+    const { data } = await axiosInstance.get("/blog/categories");
+    return data?.data; 
+  },
 
   getPostBySlug: async (slug) => {
     const response = await axiosInstance.get(`blog/posts/${slug}`);
@@ -16,7 +18,7 @@ export const blogService = {
 
 
 
-   countViews: async (post_id) => {
+  countViews: async (post_id) => {
     const { data } = await axiosInstance.post("/blog/view-count", { post_id });
     return data?.data;
   },

@@ -281,7 +281,7 @@ const ProductsDynamicMain = ({
       );
     },[])
 
-    const displayedProducts = sortedProducts.slice(0, showNum);
+    // const displayedProducts = sortedProducts.slice(0, showNum);
 
     return (
       <section className="w-full bg-white flex-1">

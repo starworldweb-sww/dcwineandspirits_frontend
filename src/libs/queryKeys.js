@@ -183,6 +183,7 @@ export const blogKeys = {
   posts: (params) => [...blogKeys.all, "posts", params], // params = { page, limit }
   postBySlug: (slug) => [...blogKeys.all, "detail", slug],
   countViews: () => [...blogKeys.all, "count-views"],
+  getCategory: () => [...blogKeys.all, "category"],
   search: (params) => [...blogKeys.all, "search", params],
 };
 
