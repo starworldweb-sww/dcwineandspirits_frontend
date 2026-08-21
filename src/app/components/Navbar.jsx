@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { User, Heart, Download, Edit3, FileText, LogOut, ChevronDown } from 'lucide-react';
@@ -14,6 +14,7 @@ const Navbar = () => {
   const isLoggedIn = !!user;
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const closeTimeoutRef = useRef(null);
 
   const { data: wishlistData } = useGetWishlist();
   const wishlistCount = wishlistData?.data?.items?.total ?? 0;
@@ -21,6 +22,17 @@ const Navbar = () => {
   const handleLogout = () => {
     setIsAccountOpen(false);
     logoutMutation.mutate();
+  };
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    setIsAccountOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsAccountOpen(false);
+    }, 150);
   };
 
   return (
@@ -46,13 +58,19 @@ const Navbar = () => {
 
         {/* Account Icon / Dropdown */}
         {isLoggedIn ? (
-          <div className="relative">
-            <button
-              onClick={() => setIsAccountOpen((prev) => !prev)}
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {/* 1. FIX: plain Link, koi router.push nahi - click seedha /account pe navigate karega */}
+            <Link
+              href="/account"
+              onClick={() => setIsAccountOpen(false)}
               className="flex items-center gap-1.5 text-[#98022e] hover:opacity-80 transition-opacity cursor-pointer"
               title="Account"
             >
-              <User size={30} className="md:w-[34px] md:h-[34px] " strokeWidth={1} />
+              <User size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
               <span className="hidden md:inline text-sm font-semibold tracking-wide">
                 ACCOUNT
               </span>
@@ -61,36 +79,41 @@ const Navbar = () => {
                 strokeWidth={2}
                 className={`transition-transform duration-200 ${isAccountOpen ? "rotate-180" : ""}`}
               />
-            </button>
+            </Link>
 
             {isAccountOpen && (
-              <div className="absolute top-full right-0 mt-3 w-56 bg-white border border-gray-100 rounded-md shadow-xl shadow-black/10 overflow-hidden z-50">
-                <Link
-                  href="/account/edit"
-                  onClick={() => setIsAccountOpen(false)}
-                  className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
-                >
-                  <Edit3 size={18} strokeWidth={1.75} />
-                  EDIT ACCOUNT
-                </Link>
-                <div className="h-px bg-gray-100 mx-5" />
-                <Link
-                  href="/account/orders"
-                  onClick={() => setIsAccountOpen(false)}
-                  className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
-                >
-                  <FileText size={18} strokeWidth={1.75} />
-                  MY ORDERS
-                </Link>
-                <div className="h-px bg-gray-100 mx-5" />
-                <button
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                  className="w-full flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors disabled:opacity-60"
-                >
-                  <LogOut size={18} strokeWidth={1.75} />
-                  {logoutMutation.isPending ? "LOGGING OUT..." : "LOGOUT"}
-                </button>
+              // 2. FIX: right-0 ki jagah center-align (left-1/2 -translate-x-1/2)
+              //    taaki dropdown account button ke exact neeche ho, left ki
+              //    taraf overhang na kare
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-56 z-50">
+                <div className="bg-white border border-gray-100 rounded-md shadow-xl shadow-black/10 overflow-hidden">
+                  <Link
+                    href="/account/edit"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                  >
+                    <Edit3 size={18} strokeWidth={1.75} />
+                    EDIT ACCOUNT
+                  </Link>
+                  <div className="h-px bg-gray-100 mx-5" />
+                  <Link
+                    href="/account/order/"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                  >
+                    <FileText size={18} strokeWidth={1.75} />
+                    MY ORDERS
+                  </Link>
+                  <div className="h-px bg-gray-100 mx-5" />
+                  <button
+                    onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
+                    className="w-full flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors disabled:opacity-60"
+                  >
+                    <LogOut size={18} strokeWidth={1.75} />
+                    {logoutMutation.isPending ? "LOGGING OUT..." : "LOGOUT"}
+                  </button>
+                </div>
               </div>
             )}
           </div>
