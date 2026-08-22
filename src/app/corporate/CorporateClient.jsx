@@ -511,42 +511,7 @@ export default function CorporateClient() {
       </section>
 
       {/* Price tier banners */}
-      <section className="max-w-[1200px] mx-auto px-5 mt-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pb-16">
-          {PRICE_TIERS.map((tier) => (
-            <Link
-              key={tier.amount}
-              href={tier.href}
-              className={`
-                relative overflow-hidden rounded-2xl
-                bg-gradient-to-br ${tier.bg}
-                text-white no-underline
-                px-8 py-12 text-center block
-                shadow-lg hover:shadow-2xl
-                hover:-translate-y-1
-                transition-all duration-300
-                group font-hind-madurai
-              `}
-            >
-              {/* Glow */}
-              <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
-
-              <p className="text-xs uppercase tracking-[3px] text-white/80 mb-3">
-                {tier.label}
-              </p>
-
-              <h3 className="text-4xl font-bold mb-4">{tier.amount}</h3>
-
-              <div className="flex items-center justify-center gap-2 text-sm tracking-wider uppercase">
-                <span>Shop Now</span>
-                <span className="transition-transform duration-300 group-hover:translate-x-1">
-                  →
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      
 
       {/* Featured Brands */}
       {/* <section className="max-w-[1200px] mx-auto px-5 mb-16 text-center font-hind-madurai">

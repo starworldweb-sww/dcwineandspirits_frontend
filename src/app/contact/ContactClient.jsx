@@ -9,7 +9,7 @@ const ContactClient = () => {
         <ProductsHeader categoryName="Contact Us" className="" />
         </div>
        
-       <ContactClient /> 
+       
    </main> 
     </>
   )
