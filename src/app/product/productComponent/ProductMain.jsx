@@ -317,7 +317,7 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full lg:max-h-[486px] ${
                   hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
                 }`}
               >
@@ -352,7 +352,7 @@ export default function ProductMain({ product }) {
                   src={mainImage}
                   alt={sanitizedName}
                   draggable={false}
-                  className="w-full h-full object-cover object-center select-none will-change-transform"
+                  className="w-full h-full object-contain object-center select-none will-change-transform"
                   style={{
                     transform: isImageHovered ? "scale(2.2)" : "scale(1)",
                     transformOrigin: zoomOrigin,
@@ -365,15 +365,16 @@ export default function ProductMain({ product }) {
             </div>
 
             <div className="w-full lg:w-1/2 min-w-0 flex flex-col justify-between">
-              <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:h-[486px] lg:overflow-y-auto">
-                <div className="flex items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
-                  <div className="flex items-stretch gap-4">
+              <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:min-h-[486px]">
+                <div className="flex flex-wrap sm:flex-nowrap items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
+                  <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-4">
                     <div
                       className={`${sumana.className} flex flex-col justify-center`}
                     >
                       {hasSpecialPrice ? (
                         <div className="flex flex-col">
-                          <span className="font-semibold text-lg text-[#98022e] [text-decoration-line:line-through]">
+                          <span className="relative inline-block w-fit font-semibold text-lg text-[#98022e]">
+                            <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-[#98022e]" />
                             ${Number(originalPrice).toFixed(2)}
                           </span>
                           <strong className="font-bold text-2xl lg:text-3xl text-black">
@@ -480,6 +481,27 @@ export default function ProductMain({ product }) {
                       );
                       const baseInputClass =
                         "block w-full p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none text-gray-700 bg-white";
+
+                      // option_id 13 ("Message On Gift Card") ke paas type field nahi aata
+                      // isliye ise pehle hi textarea (100px height) ke roop me render kar rahe hain
+                      if (String(opt.option_id) === "13") {
+                        const currentValue = optionValues[key] || "";
+                        return (
+                          <div key={key}>
+                            {label}
+                            <textarea
+                              id={`option-${key}`}
+                              rows={4}
+                              value={currentValue}
+                              onChange={(e) =>
+                                setOptionValue(key, e.target.value)
+                              }
+                              placeholder={opt.name}
+                              className="block w-full h-[100px] lg:h-[120px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
+                            />
+                          </div>
+                        );
+                      }
 
                       if (optionType === "select" || (optionType === "" && hasValues)) {
                         const value = optionValues[key] || "";

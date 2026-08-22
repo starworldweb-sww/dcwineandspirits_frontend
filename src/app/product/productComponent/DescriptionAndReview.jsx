@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, X } from "lucide-react";
 import { Sumana } from "next/font/google";
 
@@ -82,7 +82,38 @@ const ASSISTANCE_BOX = {
 };
 
 const DescriptionAndReview = ({ product = {} }) => {
-  const [activeTab, setActiveTab] = useState("description");
+  const rawDescription = product.description || "";
+  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
+  const reviews = Array.isArray(product.reviews) ? product.reviews : [];
+  const totalReviews = product.review_count ?? reviews.length;
+
+  // Kis tab me actual data hai — sirf usi tab ka button/section render hoga.
+  // Reviews hamesha render hoga (data ho ya na ho), Shipping static content hai
+  // (product data pe depend nahi karta) isliye wo bhi hamesha available rahega.
+  const hasDescription = Boolean(String(rawDescription).trim());
+  const hasSpecifications = attributes.length > 0;
+
+  const TABS = [
+    { key: "description", label: "Description", visible: hasDescription },
+    { key: "specifications", label: "Specifications", visible: hasSpecifications },
+    { key: "shipping", label: "Shipping", visible: true },
+    { key: "reviews", label: `Reviews (${totalReviews})`, visible: true },
+  ];
+  const visibleTabs = TABS.filter((t) => t.visible);
+
+  const [activeTab, setActiveTab] = useState(
+    () => visibleTabs[0]?.key || "reviews",
+  );
+
+  // Agar current active tab kisi wajah se visible list me na ho (e.g. data
+  // baad me change ho), toh pehle available tab par switch kar do.
+  useEffect(() => {
+    if (!visibleTabs.some((t) => t.key === activeTab)) {
+      setActiveTab(visibleTabs[0]?.key || "reviews");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasDescription, hasSpecifications]);
+
   const [rating, setRating] = useState(0);
   const [selectedImages, setSelectedImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -93,11 +124,6 @@ const DescriptionAndReview = ({ product = {} }) => {
 
   const user = MOCK_USER;
   const isUserLoggedIn = Boolean(user);
-
-  const rawDescription = product.description || "";
-  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
-  const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  const totalReviews = product.review_count ?? reviews.length;
 
   const handleImageChange = (e) => {
     const newFiles = Array.from(e.target.files);
@@ -138,7 +164,7 @@ const DescriptionAndReview = ({ product = {} }) => {
 
   const getTabButtonClass = (tabName) => {
     const isActive = activeTab === tabName;
-    return `relative hover:cursor-pointer flex flex-row items-center justify-center h-[33.75px] pb-[10px] font-['cambriaregular',Cambria,Georgia,serif] text-[19px] font-bold leading-[23.75px] capitalize transition-all duration-75 ease-out ${
+    return `relative hover:cursor-pointer flex flex-row items-center justify-center h-auto sm:h-[33.75px] pb-[8px] sm:pb-[10px] font-['cambriaregular',Cambria,Georgia,serif] text-[15px] sm:text-[19px] font-bold leading-[23.75px] capitalize whitespace-nowrap transition-all duration-75 ease-out ${
       isActive
         ? "text-[#98022e] border-b-2 border-[#98022e]"
         : "text-gray-500 hover:text-[#98022e]"
@@ -147,37 +173,19 @@ const DescriptionAndReview = ({ product = {} }) => {
 
   return (
     <main className="px-3 2xl:px-32 py-3">
-      <div className="flex items-center gap-6 border-y border-gray-200 justify-center pt-4">
-        <button
-          onClick={() => setActiveTab("description")}
-          className={getTabButtonClass("description")}
-        >
-          Description
-        </button>
-
-        <button
-          onClick={() => setActiveTab("specifications")}
-          className={getTabButtonClass("specifications")}
-        >
-          Specifications
-        </button>
-
-        <button
-          onClick={() => setActiveTab("shipping")}
-          className={getTabButtonClass("shipping")}
-        >
-          Shipping
-        </button>
-
-        <button
-          onClick={() => setActiveTab("reviews")}
-          className={getTabButtonClass("reviews")}
-        >
-          Reviews ({totalReviews})
-        </button>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4">
+        {visibleTabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={getTabButtonClass(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {activeTab === "description" && (
+      {activeTab === "description" && hasDescription && (
         <section className="py-4 mt-1 px-2 lg:px-0">
           <div
             className="product-description-text text-[15px] leading-7 text-zinc-700"
@@ -186,35 +194,29 @@ const DescriptionAndReview = ({ product = {} }) => {
         </section>
       )}
 
-      {activeTab === "specifications" && (
+      {activeTab === "specifications" && hasSpecifications && (
         <section className="py-6 mt-1">
           <h2
             className={`${sumana.className} text-2xl font-bold text-black mb-4`}
           >
             Specifications
           </h2>
-          {attributes.length === 0 ? (
-            <p className="text-gray-500">
-              No specifications available for this product.
-            </p>
-          ) : (
-            <div className="border border-gray-200 rounded-sm overflow-hidden">
-              <table className="w-full text-[15px]">
-                <tbody className="divide-y divide-gray-200">
-                  {attributes.map((attr, i) => (
-                    <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
-                      <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
-                        {decodeHtml(attr.name)}
-                      </th>
-                      <td className="px-4 py-3 text-zinc-700 align-top">
-                        {decodeHtml(attr.text)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="border border-gray-200 rounded-sm overflow-hidden">
+            <table className="w-full text-[15px]">
+              <tbody className="divide-y divide-gray-200">
+                {attributes.map((attr, i) => (
+                  <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
+                    <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
+                      {decodeHtml(attr.name)}
+                    </th>
+                    <td className="px-4 py-3 text-zinc-700 align-top">
+                      {decodeHtml(attr.text)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 
