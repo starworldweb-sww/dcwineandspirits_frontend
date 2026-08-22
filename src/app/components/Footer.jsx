@@ -71,7 +71,7 @@ const myAccountLinksLeft = [
   { label: "My Account", href: "/account/" },
   { label: "Order History", href: "/account/order/" },
   { label: "Affiliates", href: "/affiliates/" },
-  { label: "Sitemap", href: "/sitemap"/ },
+  { label: "Sitemap", href: "/sitemap/" },
 ];
 
 const myAccountLinksRight = [
