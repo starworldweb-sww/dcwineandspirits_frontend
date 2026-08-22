@@ -9,27 +9,36 @@ const OrderConfirmation = () => {
 
   const router = useRouter();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [countdown, setCountdown] = useState(2);
 
   useEffect(() => {
-    const handlePostThankYou = async () => {
-      const checkoutType = sessionStorage.getItem('checkoutType');
-    
+    const checkoutType = sessionStorage.getItem("checkoutType");
+    const redirectPath = sessionStorage.getItem("redirectAfterThankYou") || "/";
 
-      if (checkoutType === 'register' ||  checkoutType === 'login') {
-        setIsLoggingIn(true);
-        const redirectPath = sessionStorage.getItem('redirectAfterThankYou') || '/';
-        setTimeout(() => {
-          router.push(redirectPath);
-        }, 2000);
+    if (checkoutType === "register" || checkoutType === "login") {
+      setIsLoggingIn(true);
+    }
+
+    const tickInterval = setInterval(() => {
+      setCountdown((c) => Math.max(0, c - 1));
+    }, 1000);
+
+    const redirectTimer = setTimeout(() => {
+      try {
+        sessionStorage.removeItem("checkoutType");
+        sessionStorage.removeItem("redirectAfterThankYou");
+      } catch (e) {
+        console.warn("Failed to clear session keys:", e?.message);
       }
+      router.replace(redirectPath);
+    }, 2000);
 
-      sessionStorage.removeItem('checkoutType');
-      sessionStorage.removeItem('redirectAfterThankYou');
+    return () => {
+      clearInterval(tickInterval);
+      clearTimeout(redirectTimer);
     };
+  }, [router]);
 
-    handlePostThankYou();
-    
-  }, []);
   return (
     <div className="py-5 px-5 bg-[#eeeeee] flex items-center justify-center font-['cambriaregular']">
       <div className="bg-white max-w-[600px] w-full mx-auto shadow-md px-10 py-5 flex flex-col items-center text-center">
@@ -51,14 +60,20 @@ const OrderConfirmation = () => {
         <p className="text-[16px] text-[#555] leading-[28px] mb-2">
           Your order has been successfully placed.
         </p>
-        <p className="text-[15px] text-[#888] leading-[26px] mb-10">
+        <p className="text-[15px] text-[#888] leading-[26px] mb-2">
           We'll send you a confirmation email shortly. Thank you for shopping with Wine & Champagne Gifts.
+        </p>
+
+        <p className="text-[13px] text-[#999] leading-[22px] mb-10">
+          {isLoggingIn
+            ? `Finalizing your session... Redirecting in ${countdown}s...`
+            : `Redirecting in ${countdown}s...`}
         </p>
 
         {isLoggingIn && (
           <div className="mb-6 flex items-center gap-2 text-[14px] text-[#555]">
             <Loader2 size={20} className="animate-spin text-[#b8922a]" />
-            Logging you in...
+            Finalizing your session...
           </div>
         )}
 

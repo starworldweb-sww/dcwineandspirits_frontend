@@ -74,7 +74,7 @@ export default function NewsletterSection() {
           <button
             type="submit"
             disabled={newsletterMutation.isPending}
-            className="flex items-center justify-center gap-2 bg-black px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#98022e] hover:rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-black px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#98022e] hover:rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Mail size={16} />
             {newsletterMutation.isPending ? "Sending..." : "Send"}

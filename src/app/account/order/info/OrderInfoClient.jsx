@@ -99,6 +99,7 @@ const OrderInfoClient = () => {
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1.5">
                 <p><span className="font-bold text-[16px]">Order ID: </span>#{order_details.order_id}</p>
                 <p><span className="font-bold text-[16px]">Date Added: </span>{formatDate(order_details.date_added)}</p>
+                <p><span className="font-bold text-[16px]">Comment: </span>{order_details?.comment}</p>
               </div>
               <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1.5">
                 <p><span className="font-bold text-[16px]">Payment Method: </span>{order_details.payment_method}</p>
@@ -106,24 +107,29 @@ const OrderInfoClient = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <SectionHeader>Payment Address</SectionHeader>
-              <SectionHeader>Shipping Address</SectionHeader>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-5 py-6">
-              <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1">
-                <p>{payment_address.firstname} {payment_address.lastname}</p>
-                <p>{payment_address.address_1}</p>
-                {payment_address.address_2 && <p>{payment_address.address_2}</p>}
-                <p>{payment_address.city}, {payment_address.zone} {payment_address.postcode}</p>
-                <p>{payment_address.country}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-[#e5e5e5]">
+              {/* Payment Address block */}
+              <div className="border-b md:border-b-0 border-[#e5e5e5]">
+                <SectionHeader>Payment Address</SectionHeader>
+                <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1 px-5 py-6">
+                  <p>{payment_address.firstname} {payment_address.lastname}</p>
+                  <p>{payment_address.address_1}</p>
+                  {payment_address.address_2 && <p>{payment_address.address_2}</p>}
+                  <p>{payment_address.city}, {payment_address.zone} {payment_address.postcode}</p>
+                  <p>{payment_address.country}</p>
+                </div>
               </div>
-              <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1">
-                <p>{shipping_address.firstname} {shipping_address.lastname}</p>
-                <p>{shipping_address.address_1}</p>
-                {shipping_address.address_2 && <p>{shipping_address.address_2}</p>}
-                <p>{shipping_address.city}, {shipping_address.zone} {shipping_address.postcode}</p>
-                <p>{shipping_address.country}</p>
+
+              {/* Shipping Address block */}
+              <div>
+                <SectionHeader>Shipping Address</SectionHeader>
+                <div className="text-[14px] font-hind-madurai text-[#333333] space-y-1 px-5 py-6">
+                  <p>{shipping_address.firstname} {shipping_address.lastname}</p>
+                  <p>{shipping_address.address_1}</p>
+                  {shipping_address.address_2 && <p>{shipping_address.address_2}</p>}
+                  <p>{shipping_address.city}, {shipping_address.zone} {shipping_address.postcode}</p>
+                  <p>{shipping_address.country}</p>
+                </div>
               </div>
             </div>
 
@@ -194,9 +200,8 @@ const OrderInfoClient = () => {
               {totals.map((t, idx) => (
                 <div
                   key={idx}
-                  className={`flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333] ${
-                    idx === totals.length - 1 ? "border-t border-[#e5e5e5]" : ""
-                  }`}
+                  className={`flex justify-between px-5 py-3 text-[14px] font-hind-madurai font-bold text-[#333333] ${idx === totals.length - 1 ? "border-t border-[#e5e5e5]" : ""
+                    }`}
                 >
                   <span>{t.title}</span>
                   <span>${Number(t.value).toFixed(2)}</span>
@@ -225,7 +230,7 @@ const OrderInfoClient = () => {
                     <tr key={idx} className={idx % 2 === 1 ? "bg-[#fafafa]" : "bg-white"}>
                       <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{formatDate(entry.date_added)}</td>
                       <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#333333]">{entry.status}</td>
-                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{decodeHtml(entry?.comment)  || "-"}</td>
+                      <td className="px-5 py-4 text-[14px] font-hind-madurai text-[#666666]">{decodeHtml(entry?.comment) || "-"}</td>
                     </tr>
                   ))
                 ) : (
