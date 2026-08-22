@@ -68,25 +68,25 @@ function TwitterIcon(props) {
 
 // 2. Link data - edit these arrays to add/remove/rename footer links
 const myAccountLinksLeft = [
-  { label: "My Account", href: "/account" },
-  { label: "Order History", href: "/account/orders" },
-  { label: "Affiliates", href: "/affiliates" },
-  { label: "Sitemap", href: "/sitemap" },
+  { label: "My Account", href: "/account/" },
+  { label: "Order History", href: "/account/order/" },
+  { label: "Affiliates", href: "/affiliates/" },
+  { label: "Sitemap", href: "/sitemap"/ },
 ];
 
 const myAccountLinksRight = [
-  { label: "Gift Certificates", href: "/gift-certificates" },
-  { label: "Brands", href: "/brands" },
+  { label: "Gift Certificates", href: "/gift-certificates/" },
+  { label: "Brands", href: "/brands/" },
   { label: "Blogs", href: "/blogs/" },
-  { label: "Newsletter", href: "/newsletter" },
+  { label: "Newsletter", href: "/newsletter/" },
 ];
 
 const customerServiceLinksLeft = [
-  { label: "About Us", href: "/about-us" },
-  { label: "Shipping & Delivery", href: "/shipping-and-delivery-policy" },
+  { label: "About Us", href: "/about-us/" },
+  { label: "Shipping & Delivery", href: "/shipping-and-delivery-policy/" },
   { label: "Privacy Policy", href: "/privacy-policy" },
-  { label: "Return Policy", href: "/return-policy" },
-  { label: "Terms & Conditions", href: "/terms-conditions" },
+  { label: "Return Policy", href: "/return-policy//" },
+  { label: "Terms & Conditions", href: "/terms/" },
   { label: "Testimonials", href: "/testimonials" },
 ];
 

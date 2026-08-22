@@ -9,6 +9,8 @@ import ProductClient from "../product/productComponent/ProductClient";
 import { productsService } from "../api/services/productsService";
 import { cookies } from "next/headers";
 import { buildProductSchema } from "@/libs/productSchema";
+import { generateCollectionPageSchema } from "@/libs/collectionPageSchema";
+import { generateBreadcrumbSchema } from "@/libs/breadCrumbSchema";
 import Script from "next/script";
 
 export async function generateMetadata({ params }) {
@@ -65,11 +67,18 @@ export default async function ProductsSlugPage({ params }) {
 
   if (productMeta) {
   let schema = null;
+  let breadcrumbSchema = null;
 
   try {
     const product = await productsService.getSingleProductDetails(slug);
     if (product) {
       schema = buildProductSchema(product);
+      breadcrumbSchema = generateBreadcrumbSchema(
+        product.breadcrumbs,
+        product.slug,
+        "https://www.dcwineandspirits.com",
+        product.name,
+      );
     }
   } catch (e) {
     console.error("Schema fetch failed:", e.message);
@@ -87,6 +96,13 @@ export default async function ProductsSlugPage({ params }) {
           id="product-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <Script
+          id="product-breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
       <HydrationBoundary state={dehydrate(queryClient)}>
@@ -111,9 +127,57 @@ export default async function ProductsSlugPage({ params }) {
     pages: pagesData,
     pageParams: pageParams,
   });
+
+  let categoryCollectionSchema = null;
+  let categoryBreadcrumbSchema = null;
+  try {
+    const firstPageData = pagesData[0];
+    if (firstPageData) {
+      categoryCollectionSchema = generateCollectionPageSchema(
+        firstPageData.products?.items,
+        decodeHtml(meta?.custom_title || meta?.meta_title) ||
+        firstPageData.name,
+        decodeHtml(meta?.meta_description) ||
+        firstPageData.smalldesc,
+        slug,
+        firstPageData.products?.total,
+        firstPageData.priceRange,
+      );
+
+      categoryBreadcrumbSchema = generateBreadcrumbSchema(
+        firstPageData.breadcrumbs,
+        slug,
+        "https://www.dcwineandspirits.com",
+        decodeHtml(meta?.custom_title || meta?.meta_title) || firstPageData.name,
+      );
+    }
+  } catch (e) {
+    console.error("Collection schema build failed:", e.message);
+  }
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProductsDynamicClient slug={slug} />
-    </HydrationBoundary>
+    <>
+      {categoryCollectionSchema && (
+        <Script
+          id="category-collection-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(categoryCollectionSchema),
+          }}
+        />
+      )}
+      {categoryBreadcrumbSchema && (
+        <Script
+          id="category-breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(categoryBreadcrumbSchema),
+          }}
+        />
+      )}
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ProductsDynamicClient slug={slug} />
+      </HydrationBoundary>
+    </>
   );
 }
