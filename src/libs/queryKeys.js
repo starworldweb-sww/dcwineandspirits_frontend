@@ -201,3 +201,16 @@ export const manufacturerKeys = {
   // getAllManufacturers ke liye (Maps to: GET /manufacturer)
   allManufacturers: (params = {}) => [...manufacturerKeys.lists(), "all-data", params],
 };
+
+export const sitemapKeys = {
+  all: ["sitemap"],
+  lists: () => [...sitemapKeys.all, "list"],
+
+  allData: () => [...sitemapKeys.lists(), "all-data"],
+  categories: () => [...sitemapKeys.lists(), "categories"],
+  products: () => [...sitemapKeys.lists(), "products"],
+  brands: () => [...sitemapKeys.lists(), "brands"],
+  blogs: () => [...sitemapKeys.lists(), "blogs"],
+  blogCategories: () => [...sitemapKeys.lists(), "blog-categories"],
+  information: () => [...sitemapKeys.lists(), "information"],
+};

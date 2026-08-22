@@ -12,6 +12,43 @@ const nextConfig = {
       },
     ],
   },
+
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/sitemap.xml",
+          destination: "/api/sitemaps/root",
+        },
+        {
+          source: "/sitemap-pages.xml",
+          destination: "/api/sitemaps/pages",
+        },
+        {
+          source: "/sitemap-categories.xml",
+          destination: "/api/sitemaps/categories",
+        },
+        {
+          source: "/sitemap-products.xml",
+          destination: "/api/sitemaps/products",
+        },
+        {
+          source: "/sitemap-brands.xml",
+          destination: "/api/sitemaps/brands",
+        },
+        {
+          source: "/sitemap-blogs.xml",
+          destination: "/api/sitemaps/blogs",
+        },
+        {
+          source: "/sitemap-information.xml",
+          destination: "/api/sitemaps/information",
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default nextConfig;
