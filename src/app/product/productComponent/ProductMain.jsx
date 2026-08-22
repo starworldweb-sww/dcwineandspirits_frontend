@@ -894,14 +894,14 @@ export default function ProductMain({ product }) {
               <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-200">
                   <a
-                    href="/gift-message-info"
+                    
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
                   >
                     <Gift size={18} className="text-[#98022e]" />
                     Free Gift Card
                   </a>
                   <a
-                    href="/shipping-delivery"
+                    
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors "
                   >
                     <Truck size={18} className="text-[#98022e]" />
@@ -909,7 +909,7 @@ export default function ProductMain({ product }) {
                   </a>
 
                   <a
-                    download="bulk-order-form.xlsx"
+                    download={true}
                     href="/bulk-order-form.xlsx"
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
                   >
@@ -918,7 +918,7 @@ export default function ProductMain({ product }) {
                   </a>
 
                   <a
-                    href="/faqs"
+                    href="/frequently-asked-questions/"
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
                   >
                     <HelpCircle size={18} className="text-[#98022e]" />
