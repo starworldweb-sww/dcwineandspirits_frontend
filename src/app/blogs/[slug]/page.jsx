@@ -4,6 +4,8 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getQueryClient } from '@/libs/get-query-client';
 import { blogKeys } from '@/libs/queryKeys';
 import { blogService } from '@/app/api/services/blogService';
+import Script from 'next/script';
+import { generateArticleSchema } from '@/libs/aricleSchema';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -81,8 +83,17 @@ const page = async ({ params }) => {
     queryFn: () => Promise.resolve(initialPostData),
   });
 
+  const articleSchema = initialPostData ? generateArticleSchema(initialPostData) : null;
+
   return (
     <div>
+      {articleSchema && (
+        <Script
+          id="dynamicblog-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+      )}
       <HydrationBoundary state={dehydrate(queryClient)}>
         <BlogClient
           viewType="post"

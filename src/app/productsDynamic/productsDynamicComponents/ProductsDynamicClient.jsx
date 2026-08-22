@@ -200,7 +200,10 @@ const ProductsDynamicClient = ({ slug }) => {
 
   return (
     <>
-      <ProductsHeader categoryName={data?.meta_h1 || data?.name} />
+      <ProductsHeader 
+  categoryName={data?.meta_h1 || data?.name} 
+  breadcrumbs={data?.breadcrumbs}
+/>
 
       <div className="2xl:px-32 flex items-start justify-between gap-6 mt-2">
         <div className="hidden lg:block">
