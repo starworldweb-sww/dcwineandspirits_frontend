@@ -352,7 +352,7 @@ export default function ProductMain({ product }) {
                   src={mainImage}
                   alt={sanitizedName}
                   draggable={false}
-                  className="w-full h-full object-cover object-center select-none will-change-transform"
+                  className="w-full h-full object-contain object-center select-none will-change-transform"
                   style={{
                     transform: isImageHovered ? "scale(2.2)" : "scale(1)",
                     transformOrigin: zoomOrigin,
@@ -497,7 +497,7 @@ export default function ProductMain({ product }) {
                                 setOptionValue(key, e.target.value)
                               }
                               placeholder={opt.name}
-                              className="block w-full h-[100px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
+                              className="block w-full h-[100px] lg:h-[120px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
                             />
                           </div>
                         );
