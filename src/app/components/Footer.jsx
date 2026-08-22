@@ -7,7 +7,6 @@ import {
   Headphones,
   Phone,
   Mail,
-  Star,
 } from "lucide-react";
 import NewsletterSection from "./NewsletterSection";
 
@@ -66,6 +65,43 @@ function TwitterIcon(props) {
   );
 }
 
+// 1b. Real Trustpilot mark (green circle with the 5-pointed "star" bracket
+// glyph) and the real multi-colour Google "G" logo, used in the Review Us
+// row below.
+function TrustpilotIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="M12 17.27 17.18 21l-1.64-6.31L21 10.24l-6.36-.49L12 4l-2.64 5.75L3 10.24l4.46 4.45L5.82 21z"
+      />
+    </svg>
+  );
+}
+
+function GoogleIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" {...props}>
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.84z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.07 7.94-2.9l-3.88-3.02c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.11A12 12 0 0 0 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.29 14.29a7.2 7.2 0 0 1 0-4.58V6.6H1.28a12 12 0 0 0 0 10.8z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0A12 12 0 0 0 1.28 6.6l4.01 3.11C6.23 6.88 8.88 4.77 12 4.77z"
+      />
+    </svg>
+  );
+}
+
 // 2. Link data - edit these arrays to add/remove/rename footer links
 const myAccountLinksLeft = [
   { label: "My Account", href: "/account/" },
@@ -84,7 +120,7 @@ const myAccountLinksRight = [
 const customerServiceLinksLeft = [
   { label: "About Us", href: "/about-us/" },
   { label: "Shipping & Delivery", href: "/shipping-and-delivery-policy/" },
-  { label: "Privacy Policy", href: "/privacy-policy/" },
+  { label: "Privacy Policy", href: "/privacy/" },
   { label: "Return Policy", href: "/return-policy/" },
   { label: "Terms & Conditions", href: "/terms/" },
   { label: "Testimonials", href: "/testimonials" },
@@ -100,11 +136,11 @@ const customerServiceLinksRight = [
 
 // 3. Social links - swap the icon or href for each platform here
 const socialLinks = [
-  { label: "Facebook", href: "https://facebook.com", Icon: FacebookIcon },
-  { label: "Instagram", href: "https://instagram.com", Icon: InstagramIcon },
-  { label: "LinkedIn", href: "https://linkedin.com", Icon: LinkedinIcon },
-  { label: "YouTube", href: "https://youtube.com", Icon: YoutubeIcon },
-  { label: "Twitter", href: "https://twitter.com", Icon: TwitterIcon },
+  { label: "Facebook", href: "https://www.facebook.com/dcwineandspirits.official/", Icon: FacebookIcon },
+  { label: "Instagram", href: "https://www.instagram.com/dcwineandspirits/", Icon: InstagramIcon },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/dc-wine-spirits/", Icon: LinkedinIcon },
+  { label: "YouTube", href: "https://www.youtube.com/@dcwineandspirits/", Icon: YoutubeIcon },
+  { label: "Twitter", href: "https://x.com/dcwine_spirits/", Icon: TwitterIcon },
   // Note: no Pinterest icon here, swap in your own Pinterest SVG/asset if needed.
 ];
 
@@ -242,33 +278,32 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 8b. Review badges - built with text + icons instead of trademarked logos,
-               swap in the real Trustpilot / Google Reviews badge images if you have them */}
+          {/* 8b. Review badges - real Trustpilot (green circle + star bracket
+               mark) and real multi-colour Google "G" logo */}
           <div className="flex items-center gap-4">
             <span className="text-lg font-bold text-gray-800">Review Us</span>
 
             <div className="flex items-center gap-3">
-              {/* Trustpilot circle badge - green, with a star inside like the social icons */}
+              {/* Trustpilot circle badge */}
               <a
-                href="https://www.trustpilot.com"
+                href="https://www.trustpilot.com/review/dcwineandspirits.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Trustpilot Reviews"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[#00b67a] text-white transition hover:bg-[#00945f]"
               >
-                <Star size={16} className="fill-white text-white" />
+                <TrustpilotIcon width={18} height={18} />
               </a>
 
-              {/* Google circle badge - a simple "G" instead of the trademarked
-                  Google logo asset, swap in your own asset if you have one */}
+              {/* Google circle badge */}
               <a
-                href="https://www.google.com/search?q=dc+wine+and+spirits+reviews"
+                href="https://g.page/r/CT-eswvbpQaMEAE/review/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Google Reviews"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg font-bold text-[#4285F4] shadow transition hover:shadow-md"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow transition hover:shadow-md"
               >
-                G
+                <GoogleIcon width={18} height={18} />
               </a>
             </div>
           </div>

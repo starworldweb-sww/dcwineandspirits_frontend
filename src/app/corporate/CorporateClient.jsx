@@ -215,7 +215,7 @@ export default function CorporateClient() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 text-sm mb-5 font-hind-madurai">
             <span>✉ contact@dcwineandspirits.com</span>
-            <span>703.626.9045</span>
+            <span>📞 (202) 459-8489</span>
           </div>
           <a
             href="/bulk-order-form.xlsx"
@@ -359,11 +359,11 @@ export default function CorporateClient() {
               24x7
             </p>
             <a
-              href="tel:+17036269045"
+              href="tel:+12024598489"
               className="text-[13px] hover:underline"
               style={{ color: ACCENT }}
             >
-              Call Now 703 626 9045
+              Call Now (202) 459-8489
             </a>
           </FeatureCard>
         </div>
@@ -465,7 +465,7 @@ export default function CorporateClient() {
             <p className="text-xs text-[#777] mb-4">5 recipients or more</p>
             <div className="flex flex-wrap gap-4">
               <a
-                href="tel:7036269045"
+                href="tel:2024598489"
                 className="border px-5 py-3 text-[13px] font-semibold no-underline transition-colors"
                 style={{ borderColor: "#333333", color: "#333333" }}
                 onMouseEnter={(e) => {
@@ -477,7 +477,7 @@ export default function CorporateClient() {
                   e.currentTarget.style.color = "#333333";
                 }}
               >
-                📞 Call us today 703-626-9045
+                📞 Call us today (202) 459-8489
               </a>
               <a
                 href="/bulk-order-form.xlsx"
