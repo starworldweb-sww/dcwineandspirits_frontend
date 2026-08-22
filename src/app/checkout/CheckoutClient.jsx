@@ -40,6 +40,7 @@ import { useCheckoutLogin } from "../api/hooks/checkout/useCheckoutLogin";
 import { useFormik } from "formik";
 import { useCoupon } from "../api/hooks/coupon/useCoupon";
 import { useupdatedCart } from "../api/hooks/cart/useUpdatedCart";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const ACCENT = "#8c1a3c";
 const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -172,7 +173,7 @@ const CheckoutClient = () => {
   const { data: countryData = [] } = useCountryget();
   const { data: user, isLoading: userLoading } = useUser();
   const { data: cartRaw, isLoading: cartLoading } = useGetCartList();
-  const { mutate: loginId, isPending } = useCheckoutLogin();
+  const { mutate: loginId, mutateAsync: loginasync, isPending } = useCheckoutLogin();
 
 
   const isLoggedIn = !!user?.customer_id;
@@ -332,7 +333,6 @@ const CheckoutClient = () => {
 
   const populateAddressToShipping = (addr) => {
     if (!addr) return;
-      console.log("shipping addr country_id:", addr.country_id, typeof addr.country_id); // 👈 temp debug
 
     if (!isUSAddress(addr.country_id)) {
       toast.error("We currently only deliver within the United States. Please select or add a US shipping address.");
@@ -880,7 +880,6 @@ const CheckoutClient = () => {
   // FINAL "Place Order" — confirms Stripe payment against the draft order
   // ══════════════════════════════════════════════════════════════════════
   const handleConfirmOrder = async () => {
-    console.log("hyeeee confrm order")
     setOrderError("");
 
     if (!validateBilling()) return;
@@ -961,25 +960,41 @@ const CheckoutClient = () => {
         }
       }
 
-      if (checkoutType === "register") {
+      let finalCheckoutType = checkoutType;
+      if (isLoggedIn) {
+        finalCheckoutType = "login";
+      } else if (checkoutType === "register") {
         try {
-          loginId({ email: registerData.email, password: registerData.password });
-          sessionStorage.setItem("checkoutType", "register");
+          await loginasync({ email: registerData.email, password: registerData.password });
+          finalCheckoutType = "register";
         } catch (e) {
           console.warn("Auto-login after register failed:", e?.message);
+          finalCheckoutType = "guest";
+        }
+      } else if (checkoutType === "login" && email && password) {
+        try {
+          await loginasync({ email, password });
+          finalCheckoutType = "login";
+        } catch (e) {
+          console.warn("Auto-login before redirect failed:", e?.message);
+          finalCheckoutType = "guest";
         }
       }
 
       clearMissingOrder();
-      setCoupon("")
+      setCoupon("");
       const redirect =
-        isLoggedIn || checkoutType === "register"
-          ? `/account/order/info?order_id=${orderId}`
-          : "/";
+        finalCheckoutType === "login" || finalCheckoutType === "register"
+          ? `/account/order/info/?order_id=${orderId}`
+          : orderId
+            ? `/account/order/info/?order_id=${orderId}`
+            : "/";
+
+      sessionStorage.setItem("checkoutType", finalCheckoutType);
       sessionStorage.setItem("redirectAfterThankYou", redirect);
 
-      router.push("/thank-you");
       cartItems.forEach((item) => clearCartMut(item.cart_id));
+      router.replace("/thank-you");
     } catch (err) {
       setOrderError(err?.message || "Something went wrong.");
     } finally {
@@ -2090,7 +2105,7 @@ const CheckoutClient = () => {
                                       className="font-medium"
                                       style={{ color: ACCENT }}
                                     >
-                                      {item.name}
+                                      {decodeHtml(item?.name)}
                                     </p>
                                   </Link>
                                   {item.selected_options?.length > 0 && (
@@ -2151,7 +2166,7 @@ const CheckoutClient = () => {
                           </span>
                           <span>${discountAmount.toFixed(2)}</span>
                         </div>}
-                       { tipAmount > 0 && <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 border-b-0">
+                        {tipAmount > 0 && <div className="w-full flex justify-end gap-5 bg-[#f9f9f9] p-2 border border-gray-200 border-b-0">
                           <span className="font-bold">
                             Tip Amount
                           </span>

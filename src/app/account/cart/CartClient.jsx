@@ -3,15 +3,19 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Plus, Minus, RefreshCw, X, ShoppingBag } from "lucide-react";
-import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; 
+import { Home, Plus, Minus, RefreshCw, X, ShoppingBag, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
 import { decodeHtml } from "@/libs/decodeHtml";
 import { useupdatedCart } from "@/app/api/hooks/cart/useUpdatedCart";
-import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart"; 
+import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart";
+import { useCountryget } from "@/app/api/hooks/customerAddress/useCountryget";
+import { useZoneget } from "@/app/api/hooks/customerAddress/useZoneget";
+import { shippingRateService } from "@/app/api/services/shippingRateService";
 
 const ACCENT = "#98022e";
-const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""; 
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "";
 
 const breadcrumbs = [
   { label: "Home", href: "/" },
@@ -21,11 +25,21 @@ const breadcrumbs = [
 const CartClient = () => {
   const { data, isLoading, isError } = useGetCartList();
   const updatedCartMut = useupdatedCart();
-  const removeCartMut = useRemoveFromCart(); 
+  const removeCartMut = useRemoveFromCart();
+  const { data: countries = [] } = useCountryget();
+  const { mutateAsync: fetchZonesAsync, isPending: isZonesLoading } = useZoneget();
 
   const [items, setItems] = useState([]);
-  const [openSection, setOpenSection] = useState(null); 
-  
+  const [openSection, setOpenSection] = useState("shipping");
+
+  const [selectedCountryId, setSelectedCountryId] = useState("223");
+  const [selectedZoneId, setSelectedZoneId] = useState("");
+  const [zones, setZones] = useState([]);
+  const [estimatedShipping, setEstimatedShipping] = useState(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  const [quoteRequested, setQuoteRequested] = useState(false);
+  const [selectedShippingOption, setSelectedShippingOption] = useState(null);
+
   useEffect(() => {
     const list = data?.items || [];
     setItems(
@@ -40,17 +54,86 @@ const CartClient = () => {
           name: product.name,
           model: product.model ?? product.sku ?? String(product.product_id ?? ""),
           qty: item.quantity ?? 1,
-          slug:product?.slug,
+          slug: product?.slug,
           unitPrice: parseFloat(price) || 0,
+          selectedOptions: item.selected_options || [],
         };
       })
     );
   }, [data]);
-
   const toggleSection = (section) =>
     setOpenSection((prev) => (prev === section ? null : section));
 
-  // qty change ab UI state ke saath-saath useupdatedCart mutation bhi fire karta hai
+  useEffect(() => {
+    if (!selectedCountryId) {
+      setZones([]);
+      setSelectedZoneId("");
+      return;
+    }
+    let cancelled = false;
+    const loadZones = async () => {
+      try {
+        const zoneList = await fetchZonesAsync(selectedCountryId);
+        if (!cancelled) {
+          setZones(zoneList || []);
+          setSelectedZoneId("");
+        }
+      } catch (e) {
+        console.warn("Failed to load zones:", e.message);
+        if (!cancelled) setZones([]);
+      }
+    };
+    loadZones();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCountryId, fetchZonesAsync]);
+
+  const handleGetQuote = async () => {
+    if (!selectedCountryId) {
+      toast.error("Please select a country");
+      return;
+    }
+    if (!selectedZoneId) {
+      toast.error("Please select a region/state");
+      return;
+    }
+
+    const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
+    setIsQuoteLoading(true);
+    setQuoteRequested(true);
+    setSelectedShippingOption(null);
+    try {
+      const result = await shippingRateService.getShippingRate(
+        selectedCountryId,
+        selectedZoneId,
+        totalQty || 1
+      );
+      if (result) {
+        setEstimatedShipping(result);
+        const allMatches = result.allMatches || [];
+        const defaultOption = allMatches.length
+          ? allMatches[0]
+          : { title: result.matchedCharge || "Standard Shipping", price: result.price };
+        setSelectedShippingOption(defaultOption);
+        toast.success(
+          allMatches.length > 1
+            ? `${allMatches.length} shipping options available`
+            : `Shipping estimate: $${result.price?.toFixed(2)}`
+        );
+      } else {
+        setEstimatedShipping(null);
+        toast.error("No shipping rate found for this location");
+      }
+    } catch (e) {
+      setEstimatedShipping(null);
+      toast.error(e?.response?.data?.message || "Failed to fetch shipping rate");
+    } finally {
+      setIsQuoteLoading(false);
+    }
+  };
+
+  // Update quantity: syncs UI state and fires useupdatedCart mutation
   const updateQty = (id, delta) => {
     const target = items.find((item) => item.id === id);
     if (!target) return;
@@ -64,16 +147,17 @@ const CartClient = () => {
     updatedCartMut.mutate({ cart_id: id, quantity: newQty });
   };
 
-  // useRemoveFromCart hook milte hi yahan mutate(id) call laga diya
+  // Remove cart item: updates UI and calls useRemoveFromCart mutation
   const removeItem = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
-    removeCartMut.mutate(id); // 👈 Mutation called here
+    removeCartMut.mutate(id);
   };
 
   const subTotal = items.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
   const taxRate = 0.0625;
   const tax = subTotal * taxRate;
-  const total = subTotal + tax;
+  const shippingCost = selectedShippingOption?.price ?? estimatedShipping?.price ?? 0;
+  const total = subTotal + tax + shippingCost;
 
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
@@ -155,13 +239,30 @@ const CartClient = () => {
                           />
                         </td>
                         <td className="px-4 py-4">
-                          <Link
-                            href={`/${item.slug}`}
-                            className="text-[14px] font-hind-madurai font-medium hover:opacity-80 transition-opacity"
-                            style={{ color: ACCENT }}
-                          >
-                            {decodeHtml(item.name)}
-                          </Link>
+                          <div>
+                            <Link
+                              href={`/${item.slug}`}
+                              className="text-[14px] font-hind-madurai font-medium hover:opacity-80 transition-opacity"
+                              style={{ color: ACCENT }}
+                            >
+                              {decodeHtml(item.name)}
+                            </Link>
+
+                            {item.selectedOptions?.length > 0 && (
+                              <div className="mt-1 space-y-0.5">
+                                {item.selectedOptions.map((option) => (
+                                  <div
+                                    key={option.option_id}
+                                    className="text-[12px] text-[#777] font-hind-madurai"
+                                  >
+                                    <span className="font-semibold">{option.option_name}:</span>{" "}
+                                    {option.value}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
                         </td>
                         <td className="px-4 py-4 text-[14px] font-hind-madurai text-[#555]">
                           {item.model}
@@ -236,12 +337,26 @@ const CartClient = () => {
 
                     <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                       <Link
-                        href={`/product/${item.id}`}
+                        href={`/${item.slug}`}
                         className="text-[14px] font-hind-madurai font-medium leading-snug"
                         style={{ color: ACCENT }}
                       >
                         {item.name}
                       </Link>
+                      {item.selectedOptions?.length > 0 && (
+                        <div className="mt-1 space-y-0.5">
+                          {item.selectedOptions.map((option) => (
+                            <div
+                              key={option.option_id}
+                              className="text-[12px] text-[#777] font-hind-madurai"
+                            >
+                              <span className="font-semibold">{option.option_name}:</span>{" "}
+                              {option.value}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <span className="text-[12px] font-hind-madurai text-[#888]">
                         Model: {item.model}
                       </span>
@@ -279,6 +394,7 @@ const CartClient = () => {
                         <span className="text-[12px] font-hind-madurai text-[#888]">
                           ${item.unitPrice.toFixed(2)} each
                         </span>
+
                         <span className="text-[14px] font-hind-madurai font-semibold">
                           ${(item.unitPrice * item.qty).toFixed(2)}
                         </span>
@@ -300,9 +416,9 @@ const CartClient = () => {
 
             {/* Accordion Rows */}
             {[
-              { key: "coupon", label: "Use Coupon Code" },
+              // { key: "coupon", label: "Use Coupon Code" },
               { key: "shipping", label: "Estimate Shipping & Taxes" },
-              { key: "gift", label: "Use Gift Certificate" },
+              // { key: "gift", label: "Use Gift Certificate" },
             ].map((section) => (
               <div key={section.key} className="border-b border-gray-200">
                 <button
@@ -329,7 +445,161 @@ const CartClient = () => {
                       </div>
                     )}
                     {section.key === "shipping" && (
-                      <p>Enter your destination to estimate shipping & taxes.</p>
+                      <div className="space-y-3">
+                        <p className="mb-2">Enter your destination to estimate shipping & taxes.</p>
+
+                        <div>
+                          <label className="block text-[12px] font-semibold uppercase mb-1 text-[#555]">
+                            Country
+                          </label>
+                          <select
+                            value={selectedCountryId}
+                            onChange={(e) => {
+                              setSelectedCountryId(String(e.target.value));
+                              setEstimatedShipping(null);
+                              setQuoteRequested(false);
+                              setSelectedShippingOption(null);
+                            }}
+                            disabled
+                            className="w-full border border-[#d9d9d9] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#98022e] bg-gray-100 cursor-not-allowed text-[#555]"
+                          >
+                            <option value="">--- Please Select Country ---</option>
+                            {countries.map((c) => (
+                              <option key={c.country_id} value={c.country_id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[12px] font-semibold uppercase mb-1 text-[#555]">
+                            Region / State
+                          </label>
+                          <select
+                            value={selectedZoneId}
+                            onChange={(e) => {
+                              setSelectedZoneId(e.target.value);
+                              setEstimatedShipping(null);
+                              setQuoteRequested(false);
+                              setSelectedShippingOption(null);
+                            }}
+                            disabled={!selectedCountryId || isZonesLoading}
+                            className="w-full border border-[#d9d9d9] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#98022e] bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          >
+                            <option value="">
+                              {!selectedCountryId
+                                ? "--- Please Select Country First ---"
+                                : isZonesLoading
+                                  ? "Loading zones..."
+                                  : zones.length === 0
+                                    ? "--- No zones available ---"
+                                    : "--- Please Select Region ---"}
+                            </option>
+                            {zones.map((z) => (
+                              <option key={z.zone_id} value={z.zone_id}>
+                                {z.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <button
+                          onClick={handleGetQuote}
+                          disabled={isQuoteLoading || !selectedCountryId || !selectedZoneId}
+                          className="w-full bg-black text-white text-[12px] font-semibold uppercase tracking-wider py-2.5 rounded-[3px] hover:bg-[#1a1a1a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {isQuoteLoading && <Loader2 size={14} className="animate-spin" />}
+                          {isQuoteLoading ? "Fetching Quotes..." : "Get Quotes"}
+                        </button>
+
+                        {quoteRequested && !isQuoteLoading && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            {estimatedShipping ? (
+                              <div className="space-y-2">
+                                {(() => {
+                                  const allMatches = estimatedShipping.allMatches || [];
+                                  if (allMatches.length > 1) {
+                                    return (
+                                      <div className="space-y-2">
+                                        <p className="text-[12px] text-[#888] mb-1">
+                                          Please select a shipping method:
+                                        </p>
+                                        {allMatches.map((opt) => {
+                                          const isSelected =
+                                            selectedShippingOption?.title === opt.title &&
+                                            Number(selectedShippingOption?.price) === Number(opt.price);
+                                          return (
+                                            <label
+                                              key={`${opt.title}-${opt.price}`}
+                                              className={`flex items-start justify-between gap-3 p-3 border rounded-[3px] cursor-pointer transition-colors ${
+                                                isSelected
+                                                  ? "border-[#98022e] bg-[#fff5f7]"
+                                                  : "border-gray-200 bg-white hover:bg-gray-50"
+                                              }`}
+                                            >
+                                              <div className="flex items-start gap-2">
+                                                <input
+                                                  type="radio"
+                                                  name="cartShippingOption"
+                                                  checked={isSelected}
+                                                  onChange={() =>
+                                                    setSelectedShippingOption({
+                                                      title: opt.title,
+                                                      price: opt.price,
+                                                    })
+                                                  }
+                                                  className="mt-1 accent-[#98022e]"
+                                                />
+                                                <div>
+                                                  <p className="text-[13px] font-semibold text-[#333]">
+                                                    {opt.title}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <span
+                                                className="text-[14px] font-bold whitespace-nowrap"
+                                                style={{ color: ACCENT }}
+                                              >
+                                                ${Number(opt.price).toFixed(2)}
+                                              </span>
+                                            </label>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  }
+                                  const optTitle =
+                                    selectedShippingOption?.title ||
+                                    estimatedShipping.matchedCharge ||
+                                    "Standard Shipping";
+                                  const optPrice =
+                                    selectedShippingOption?.price ?? estimatedShipping.price ?? 0;
+                                  return (
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <p className="text-[13px] font-semibold text-[#333]">
+                                          {optTitle}
+                                        </p>
+                                      </div>
+                                      <span
+                                        className="text-[14px] font-bold whitespace-nowrap"
+                                        style={{ color: ACCENT }}
+                                      >
+                                        ${Number(optPrice).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            ) : (
+                              <p className="text-[12px] text-orange-600">
+                                No shipping quotes available for the selected location.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     )}
                     {section.key === "gift" && (
                       <div className="flex gap-2">
@@ -366,6 +636,27 @@ const CartClient = () => {
                   ${tax.toFixed(2)}
                 </span>
               </div>
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-hind-madurai font-semibold uppercase text-[#333]">
+                    Shipping:
+                  </span>
+                  {quoteRequested &&
+                    estimatedShipping &&
+                    selectedShippingOption?.title && (
+                      <span className="text-[11px] font-hind-madurai text-[#888] mt-0.5">
+                        {selectedShippingOption.title}
+                      </span>
+                    )}
+                </div>
+                <span className="text-[14px] font-hind-madurai">
+                  {quoteRequested && estimatedShipping
+                    ? `$${Number(shippingCost).toFixed(2)}`
+                    : quoteRequested
+                      ? "N/A"
+                      : "---"}
+                </span>
+              </div>
               <div className="flex items-center justify-between px-5 py-4">
                 <span className="text-[14px] font-hind-madurai font-bold uppercase text-[#333]">
                   Total:
@@ -382,7 +673,7 @@ const CartClient = () => {
               <button className="w-full cursor-pointer mt-5 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 hover:bg-[#1a1a1a] transition-colors">
                 Proceed to Checkout
               </button>
-            </a>  
+            </a>
           </div>
         </div>
       </div>
