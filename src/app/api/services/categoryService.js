@@ -324,4 +324,18 @@ export const categoryService = {
       return { sections: [] };
     }
   },
+
+  getHomePageAllData: async () => {
+    try {
+      const res = await axiosInstance.get("/header-category/home-page-all-data");
+
+      if (res.data && res.data.success) {
+        return res.data.data;
+      }
+      return {};
+    } catch (error) {
+      console.error("Failed to fetch home page all data:", error);
+      return {};
+    }
+  },
 };

@@ -18,12 +18,13 @@ const hindMadurai = Hind_Madurai({
   variable: "--font-hind-madurai",
 });
 
-export default function HomepageSeoSection() {
+export default function HomepageSeoSection({ data: propData, isLoading: propLoading, isError: propError }) {
   const [expanded, setExpanded] = useState(false);
 
-  // 0. Data ab yahin fetch ho raha hai - HomePageClient se props (seoData,
-  //    isLoading) hata diye, kyunki component khud apna data la sakta hai.
-  const { data: seoData, isLoading } = useGetHomePageText();
+  // 0. Conditional fetch: agar props se data mil raha hai toh hook mat chalao
+  const hookResult = useGetHomePageText({ enabled: propData === undefined && propLoading === undefined });
+  const seoData = propData !== undefined ? propData : hookResult.data;
+  const isLoading = propLoading !== undefined ? propLoading : hookResult.isLoading;
 
   if (isLoading) {
     return (

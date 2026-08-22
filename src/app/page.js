@@ -5,60 +5,33 @@ import { getQueryClient } from "@/libs/get-query-client";
 import { categoryService } from "./api/services/categoryService";
 
 export default async function Page() {
-  // 1. Server pe ek per-request QueryClient banaya (naya QueryClient() ki
-  //    jagah shared getQueryClient() helper use kiya - Provider.jsx wale
-  //    config ke saath consistent rahega).
   const queryClient = getQueryClient();
 
-  // 2. Homepage ke saare sections ka data yahan parallel prefetch ho raha hai -
-  //    same query keys + service functions jo hooks mein already use ho rahe hain.
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.topBanner(),
-      queryFn: () => categoryService.getHomePageTopBanner(),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.giftByOccasion(),
-      queryFn: () => categoryService.getGiftByOccasion(),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.wineGifts(),
-      queryFn: () => categoryService.getWineGifts(),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.topCategories(),
-      queryFn: () => categoryService.getTopCategories(),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.pageProducts(),
-      queryFn: () => categoryService.getHomePageProducts(),
-    }),
+  const allData = await categoryService.getHomePageAllData();
 
-     queryClient.prefetchQuery({
-      queryKey: homeKeys.pageText(),
-      queryFn: () => categoryService.getHomePageText(),
-    }),
+  queryClient.setQueryData(homeKeys.allData(), allData);
 
+  if (allData) {
+    queryClient.setQueryData(homeKeys.topCategory(), allData.topCategory ?? null);
+    queryClient.setQueryData(homeKeys.giftDropDown(), allData.giftDropDown ?? null);
+    queryClient.setQueryData(homeKeys.giftDropDownShopByCategory(), allData.shopByCategory ?? null);
+    queryClient.setQueryData(homeKeys.giftDropDownGiftByOrigin(), allData.giftByOrigin ?? null);
+    queryClient.setQueryData(homeKeys.giftDropDownShopByPrice(), allData.shopByPrice ?? null);
+    queryClient.setQueryData(homeKeys.shopByBrand(), allData.shopByBrand ?? null);
+    queryClient.setQueryData(homeKeys.personalization(), allData.personalization ?? null);
+    queryClient.setQueryData(homeKeys.wineGifts(), allData.wineGift ?? null);
+    queryClient.setQueryData(homeKeys.occasionTreasures(), allData.occasionTreasures ?? null);
+    queryClient.setQueryData(homeKeys.occasionMenu(), allData.occasionMenu ?? null);
 
-     queryClient.prefetchQuery({
-      queryKey: homeKeys.shopByBrandTitle(),
-      queryFn: () => categoryService.getShopByBrandTitle(),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeKeys.topCategory(),
-      queryFn: () => categoryService.getTopCategory(),
-    }),
+    queryClient.setQueryData(homeKeys.topBanner(), allData.homeTopBanner ?? null);
+    queryClient.setQueryData(homeKeys.topCategories(), allData.topCategories ?? null);
+    queryClient.setQueryData(homeKeys.loveByBanner(), allData.loveBanners ?? null);
+    queryClient.setQueryData(homeKeys.giftByOccasion(), allData.giftByOccasion ?? null);
+    queryClient.setQueryData(homeKeys.pageProducts(), allData.homePageProducts ?? null);
+    queryClient.setQueryData(homeKeys.shopByBrandTitle(), allData.shopByBrandTitle ?? null);
+    queryClient.setQueryData(homeKeys.pageText(), allData.homePageText ?? null);
+  }
 
-
-      queryClient.prefetchQuery({
-      queryKey: homeKeys.occasionMenu(),
-      queryFn: () => categoryService.getOccasionMenu(),
-    }),
-  ]);
-
-  // 3. Dehydrated cache ko HydrationBoundary ke through HomePageClient (aur
-  //    uske andar ke saare client components) ko pass kiya - unke useQuery
-  //    hooks isi data ko turant use kar lenge, dobara fetch nahi karenge.
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <HomePageClient />

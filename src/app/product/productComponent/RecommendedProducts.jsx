@@ -189,7 +189,7 @@ export default function RecommendedProducts({ product = {} }) {
             className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {activeProducts.map((p) => {
-              const href = p.seo_url ? `/product/${p.seo_url}` : "#";
+              const href = p.seo_url ? `/${p.seo_url}` : "#";
               const isHot =
                 p.hasDiscount &&
                 p.discountPercent >= 5 &&

@@ -48,6 +48,7 @@ export const homeKeys = {
   ],
   personalization: () => [...homeKeys.lists(), "personalization"],
   occasionTreasures: () => [...homeKeys.lists(), "occasion-treasures"],
+  allData: () => [...homeKeys.lists(), "home-page-all-data"],
 };
 
 export const newsletterKeys = {

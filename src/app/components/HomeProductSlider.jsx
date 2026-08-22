@@ -24,12 +24,15 @@ const TAB_ICONS = {
 // ---------------------------------------------------------------------------
 // COMPONENT
 // ---------------------------------------------------------------------------
-const HomeProductSlider = () => {
+const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: propError }) => {
   const router = useRouter();
   const scrollRef = useRef(null);
   const addToCartMut = useAddtoCart();
   const [addingProductId, setAddingProductId] = useState(null);
-  const { data, isLoading, isError } = useHomePageProducts();
+  const hookResult = useHomePageProducts({ enabled: propData === undefined && propLoading === undefined });
+  const data = propData !== undefined ? propData : hookResult.data;
+  const isLoading = propLoading !== undefined ? propLoading : hookResult.isLoading;
+  const isError = propError !== undefined ? propError : hookResult.isError;
 
   // ============================================================
   // NEW: AddToCartPopup ke liye state — kaunsa product abhi add

@@ -6,9 +6,12 @@ import Link from 'next/link';
 // Apna exact path zaroor check kar lena - jahan bhi ye hook file rakhi hai
 
 
-export default function ShopByBrand() {
-  // 1. API hook call
-  const { data, isLoading, isError } = useShopByBrandTitle();
+export default function ShopByBrand({ data: propData, isLoading: propLoading, isError: propError }) {
+  // 1. API hook call - conditional
+  const hookResult = useShopByBrandTitle({ enabled: propData === undefined && propLoading === undefined });
+  const data = propData !== undefined ? propData : hookResult.data;
+  const isLoading = propLoading !== undefined ? propLoading : hookResult.isLoading;
+  const isError = propError !== undefined ? propError : hookResult.isError;
 
   // Loading state (UI kharab na ho isliye simple text/spinner rakh sakte hain)
   if (isLoading) return <div className="w-full px-3 2xl:px-32 py-10 text-center text-gray-500">Loading Brands...</div>;

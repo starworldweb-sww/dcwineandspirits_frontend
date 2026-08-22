@@ -2,9 +2,12 @@ import { homeKeys } from "@/libs/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 import { categoryService } from "../../services/categoryService";
 
-export const useGetGiftByOccasion = () => {
+export const useGetGiftByOccasion = (options = {}) => {
     return useQuery({
         queryKey: homeKeys.giftByOccasion(),
         queryFn: () => categoryService.getGiftByOccasion(),
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        ...options,
     });
 };

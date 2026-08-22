@@ -7,43 +7,23 @@ import { useGetGiftByOccasion } from "../api/hooks/category/useGiftsByOccassion"
 import { useLovebyBanner } from "../api/hooks/category/useLovebyBanner";
 
 
-// 0. constants ki jagah seedha env variable use kar rahe hain
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 
+const GiftsByOccasionHero = ({ data, bannersData, isLoading: propLoading, isError: propError }) => {
+  const standalone = propLoading === undefined;
+  const giftHookResult = useGetGiftByOccasion({ enabled: standalone });
+  const bannerHookResult = useLovebyBanner({ enabled: standalone });
 
+  const finalGiftData = data !== undefined ? data : giftHookResult.data;
+  const finalBannersData = bannersData !== undefined ? bannersData : bannerHookResult.data;
+  const isLoading = standalone ? (giftHookResult.isLoading || bannerHookResult.isLoading) : propLoading;
+  const isError = standalone ? (giftHookResult.isError || bannerHookResult.isError) : propError;
 
-// ---------------------------------------------------------------
-// BANNER DATA (YE PURANA CODE HAI — ISME KUCH NAHI BADLA)
-// Add/remove/edit Banners here. Each one is just a clickable image.
-// ---------------------------------------------------------------
-// const Banners = [
-//   {
-//     href: "/veuve-clicquot-champagne-and-flutes-gift-set/",
-//     image: "https://www.dcwineandspirits.com/image/cache/catalog/Banners/veuve-clicquot-champagne-and-flutes-giftset-1047x349.webp",
-//     alt: "veuve-clicquot-champagne-and-flutes-gift-set",
-//   },
-//   {
-//     href: "/graduation-gifts/",
-//     image: "/graduation-1047x349.webp",
-//     alt: "graduation-day-cheers",
-//   },
-// ];
-
-const GiftsByOccasionHero = () => {
-  // 2. Live data ab API se aa raha hai — static OCCASIONS array hata diya.
-  const { data, isLoading, isError } = useGetGiftByOccasion();
-  const { data: Banners } = useLovebyBanner()
-  
-  // 3. Response shape: { sections: [ {heading, items: "text"}, {heading:null, items: [...]} ] }
-  //    Pehla section sirf heading/subtitle text hai, doosra section mein asli
-  //    occasion cards (items array) hain — wahi humein grid mein chahiye.
-  const occasionSection = Array.isArray(data?.sections)
-    ? data.sections.find((section) => Array.isArray(section.items))
+  const occasionSection = Array.isArray(finalGiftData?.sections)
+    ? finalGiftData.sections.find((section) => Array.isArray(section.items))
     : null;
 
-  // 4. Backend fields (title, seo_url, custom_url, image) ko design ke existing
-  //    shape (name, slug, image, href) mein map kar rahe hain — design/JSX same rakha.
   const occasions = (occasionSection?.items || []).map((item) => ({
     name: item.title,
     slug: item.seo_url,
@@ -51,8 +31,6 @@ const GiftsByOccasionHero = () => {
     href: item.custom_url ? item.custom_url : `/${item.seo_url}/`,
   }));
 
-  // 5. Mobile pe horizontal slider ke liye ref + arrow show/hide state
-  //    (sirf Gifts By Occasion section ke liye chahiye, banner section ko iski zaroorat nahi)
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -79,22 +57,14 @@ const GiftsByOccasionHero = () => {
 
   return (
     <>
-      {/* ============================================================= */}
-      {/* PURANA BANNER SECTION — bilkul same rakha hai, kuch nahi hataya */}
-      {/* ============================================================= */}
       <div className="w-full px-3 2xl:px-32 py-6">
-
-        {/* 4. "EXPLORE ALL PRODUCTS" button — banner grid ke upar */}
-
-
-        {/* PROMO BANNER ROW — Desktop/tablet: side by side. Mobile: stacked. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {Banners?.sections?.flatMap(section =>
+          {finalBannersData?.sections?.flatMap(section =>
             section?.items?.map((item) => {
               const href =
                 item.type === "custom"
                   ? item.custom_url
-                  : `/${item.seo_url || item.id}`; 
+                  : `/${item.seo_url || item.id}`;
 
               return (
                 <Link
@@ -119,14 +89,8 @@ const GiftsByOccasionHero = () => {
       </div>
 
 
-      {/* ============================================================= */}
-      {/* NAYA SECTION — GIFTS BY OCCASION                              */}
-      {/* ============================================================= */}
       <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
 
-        {/* Header: Title + Subtitle (design same — static text, API ka heading/subtitle
-            HTML ke tarike se aata hai jo yaha ke existing styling se match nahi karta,
-            isliye design consistency ke liye ye static hi rakha hai) */}
         <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10">
           <h2 className="text-2xl md:text-[24px] font-bold uppercase tracking-widest text-black font-sumana">
             Gifts By Occasion
@@ -138,7 +102,6 @@ const GiftsByOccasionHero = () => {
           </p>
         </div>
 
-        {/* Cards section */}
         <div className="relative">
 
           {canScrollLeft && (
@@ -169,11 +132,6 @@ const GiftsByOccasionHero = () => {
             </button>
           )}
 
-          {/* Mobile: horizontal scroll. Desktop (md+): grid.
-              5. FIX: "flex-nowrap" + "overflow-y-hidden" explicitly add kiye hain
-                 taaki row kabhi bhi neeche wrap na ho aur vertical scrollbar na aaye.
-                 "items-start" bhi laga diya taaki cards ki height alag-alag ho to
-                 bhi row apni natural height se zyada na phaile. */}
           <div
             ref={scrollRef}
             onScroll={updateArrows}
