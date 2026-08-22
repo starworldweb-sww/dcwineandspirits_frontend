@@ -92,10 +92,10 @@ const customerServiceLinksLeft = [
 
 const customerServiceLinksRight = [
   { label: "Coupon & Deals", href: "/coupon-and-deals/" },
-  { label: "Corporate / Bulk Inquiry", href: "/corporate-bulk-inquiry/" },
+  { label: "Corporate / Bulk Inquiry", href: "/corporate/" },
   { label: "Bulk Order Form", href: "/bulk-order-form/" },
   { label: "FAQ's", href: "/frequently-asked-questions/" },
-  { label: "Contact", href: "/contact" },
+  { label: "Contact", href: "/contact/" },
 ];
 
 // 3. Social links - swap the icon or href for each platform here

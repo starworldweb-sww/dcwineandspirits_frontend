@@ -11,7 +11,6 @@ export default function BulkOrderBanner() {
     <section className="relative w-full mt-4 lg:mt-6">
       {/* 2. Background image + dark overlay */}
       <img
-        
         src="/champagne-dc-banner-1600x350.webp"
         alt="Champagne bottles background"
         className="absolute inset-0 h-full w-full object-cover"
@@ -43,7 +42,8 @@ export default function BulkOrderBanner() {
 
               {/* 4b. Download form button - filled white */}
               <a
-                href="/downloads/large-order-form.pdf"
+                download={true}
+                href="/bulk-order-form.xlsx"
                 className="flex items-center justify-center gap-2 bg-white text-black px-5 py-3 text-sm md:text-base hover:bg-gray-200 transition-colors"
               >
                 <Download size={16} />
