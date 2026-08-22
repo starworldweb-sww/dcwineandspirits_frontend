@@ -36,11 +36,18 @@ const Breadcrumbs = ({ breadcrumbs }) => {
     <div className={wrapperClass}>
       <nav
         aria-label="breadcrumb"
-        className="max-w-screen-2xl mx-auto flex justify-center"
+        className="max-w-screen-2xl w-full mx-auto flex justify-center"
       >
-        <ul aria-label="Breadcrumbs" className="flex items-center m-0 p-0 list-none gap-2 text-[13px] md:text-[14px] font-[Cambria,Georgia,serif]">
+        {/* ── Mobile par is wrapper ko horizontally scrollable rakha hai (no-wrap +
+             overflow-x-auto), taaki jyada items hone par bhi ek hi line mein rahe
+             aur user side-swipe karke pura breadcrumb dekh sake. Scrollbar hide
+             kar di hai (scrollbar-hide util neeche global css mein add karna). ──*/}
+        <ul
+          aria-label="Breadcrumbs"
+          className="flex items-center m-0 p-0 list-none gap-2 text-[13px] md:text-[14px] font-[Cambria,Georgia,serif] flex-nowrap overflow-x-auto scrollbar-hide max-w-full py-0.5"
+        >
           {/* ── Home Icon ── */}
-          <li className="flex items-center">
+          <li className="flex items-center shrink-0">
             <Link
               href="/"
               className="text-gray-600 hover:text-black transition-colors flex items-center justify-center"
@@ -86,14 +93,16 @@ const Breadcrumbs = ({ breadcrumbs }) => {
             }
 
             return (
-              <li key={index} className="flex items-center gap-2">
+              <li key={index} className="flex items-center gap-2 shrink-0">
                 {/* Separator */}
-                <span className="text-[#d1d1d1] font-sans text-[15px]">/</span>
+                <span className="text-[#d1d1d1] font-sans text-[15px] shrink-0">
+                  /
+                </span>
 
                 {/* Agar last item hai YA fir link valid nahi hai, toh as a text render karo */}
                 {isLast || linkToUse === "#" ? (
                   <span
-                    className="text-[#444] capitalize font-medium"
+                    className="text-[#444] capitalize font-medium whitespace-nowrap"
                     style={{ userSelect: "text" }}
                   >
                     {labelToDisplay}
@@ -101,7 +110,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
                 ) : (
                   <Link
                     href={linkToUse}
-                    className="text-[#666] hover:text-black capitalize transition-colors"
+                    className="text-[#666] hover:text-black capitalize transition-colors whitespace-nowrap"
                     style={{ userSelect: "text" }}
                   >
                     {labelToDisplay}

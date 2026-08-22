@@ -111,7 +111,7 @@ const myAccountLinksLeft = [
 ];
 
 const myAccountLinksRight = [
-  { label: "Gift Certificates", href: "/gift-certificates/" },
+  { label: "Gift Certificates", href: "/voucher/" },
   { label: "Brands", href: "/brands/" },
   { label: "Blogs", href: "/blogs/" },
   { label: "Newsletter", href: "/newsletter/" },
