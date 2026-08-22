@@ -79,7 +79,7 @@ const ProductListRow = ({ product }) => {
         quantity: Math.max(1, Number(qty) || 1),
       });
       if (res?.success) {
-        toast.success(res.message || "Added to cart!");
+       
         // 3. Success hote hi popup dikhao
         setShowPopup(true);
       }

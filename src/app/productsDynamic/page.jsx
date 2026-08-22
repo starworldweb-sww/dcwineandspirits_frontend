@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProductsDynamicClient from './productsDynamicComponents/ProductsDynamicClient'
 
 
 const page = () => {
   return (
     <>
-   <ProductsDynamicClient/>
+      <Suspense fallback={null}>
+        <ProductsDynamicClient/>
+      </Suspense>
     </>
   )
 }
