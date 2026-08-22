@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Home, Plus, Minus, RefreshCw, X, ShoppingBag } from "lucide-react";
-import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; // agar login page waala component hai to reuse kar lo
+import ProductsHeader from "@/app/components/TittleAndBreadcrumb"; 
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
 import { decodeHtml } from "@/libs/decodeHtml";
 import { useupdatedCart } from "@/app/api/hooks/cart/useUpdatedCart";
-import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart"; // 👈 Hook imported here
+import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart"; 
 
 const ACCENT = "#98022e";
-const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""; // 👈 apna actual base URL daal dena
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""; 
 
 const breadcrumbs = [
   { label: "Home", href: "/" },
@@ -21,13 +21,11 @@ const breadcrumbs = [
 const CartClient = () => {
   const { data, isLoading, isError } = useGetCartList();
   const updatedCartMut = useupdatedCart();
-  const removeCartMut = useRemoveFromCart(); // 👈 Hook initialized here
+  const removeCartMut = useRemoveFromCart(); 
 
-  // 👇 API response ka shape yahan map kar rahe hain UI ke expected format me
-  //    Apne actual response ke hisaab se yeh mapping adjust kar lena
   const [items, setItems] = useState([]);
-  const [openSection, setOpenSection] = useState(null); // "coupon" | "shipping" | "gift" | null
-
+  const [openSection, setOpenSection] = useState(null); 
+  
   useEffect(() => {
     const list = data?.items || [];
     setItems(
@@ -37,11 +35,12 @@ const CartClient = () => {
         return {
           id: item.cart_id,
           image: product.image
-            ? `${IMAGE_BASE_URL}/${product.image}` // 👈 apna actual image CDN/base path daal dena
+            ? `${IMAGE_BASE_URL}/${product.image}`
             : "/products/placeholder.webp",
           name: product.name,
           model: product.model ?? product.sku ?? String(product.product_id ?? ""),
           qty: item.quantity ?? 1,
+          slug:product?.slug,
           unitPrice: parseFloat(price) || 0,
         };
       })
@@ -157,7 +156,7 @@ const CartClient = () => {
                         </td>
                         <td className="px-4 py-4">
                           <Link
-                            href={`/product/${item.id}`}
+                            href={`/${item.slug}`}
                             className="text-[14px] font-hind-madurai font-medium hover:opacity-80 transition-opacity"
                             style={{ color: ACCENT }}
                           >
