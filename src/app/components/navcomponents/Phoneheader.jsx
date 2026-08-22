@@ -61,7 +61,7 @@ const PhoneHeader = () => {
       {/* LEFT — Track Order */}
       <div>
         <Link
-          href="/track-order"
+          href="/track/"
           className="flex items-center gap-1.5 text-white/85 hover:text-white transition-colors duration-200 group"
         >
           <p className="text-[0.8rem] font-medium">Track Order</p>

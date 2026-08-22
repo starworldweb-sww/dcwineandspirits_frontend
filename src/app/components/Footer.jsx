@@ -106,7 +106,7 @@ function GoogleIcon(props) {
 const myAccountLinksLeft = [
   { label: "My Account", href: "/account/" },
   { label: "Order History", href: "/account/order/" },
-  { label: "Affiliates", href: "/affiliates/" },
+  { label: "Affiliates", href: "/affiliate/" },
   { label: "Sitemap", href: "/sitemap/" },
 ];
 
@@ -129,7 +129,11 @@ const customerServiceLinksLeft = [
 const customerServiceLinksRight = [
   { label: "Coupon & Deals", href: "/coupon-and-deals/" },
   { label: "Corporate / Bulk Inquiry", href: "/corporate/" },
-  { label: "Bulk Order Form", href: "/bulk-order-form/" },
+  {
+    label: "Bulk Order Form",
+    href: "/bulk-order-form.xlsx",
+    download: "bulk-order-form.xlsx",
+  },
   { label: "FAQ's", href: "/frequently-asked-questions/" },
   { label: "Contact", href: "/contact/" },
 ];
@@ -145,11 +149,14 @@ const socialLinks = [
 ];
 
 // 4. Small reusable component for a single footer link row
-function FooterLink({ label, href }) {
+// `download` is optional - jab pass hoga tab link file download karega,
+// warna pehle jaisa normal navigation hoga.
+function FooterLink({ label, href, download }) {
   return (
     <li>
       <a
         href={href}
+        {...(download ? { download } : {})}
         className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#8a1538]"
       >
         <ChevronRight size={14} className="text-[#8a1538]" />
@@ -331,12 +338,25 @@ export default function Footer() {
             )}
           </div>
         </div>
+          <p className="mt-4 text-xs text-gray-300">
+          <span className="font-semibold">Trademark Notice: </span>
+          Veuve Clicquot, Dom Pérignon, Moët & Chandon,
+          Caymus, Godiva and all other third-party brand names, product
+          names, logos and trademarks referenced on this website are the
+          property of their respective owners. Such trademarks are used to
+          identify the genuine products offered for sale. DC Wine & Spirits
+          independently curates and assembles its gift baskets and is not
+          sponsored, endorsed, authorized, or affiliated with the respective
+          trademark owners unless expressly stated otherwise.
+        </p>
 
         <p className="mt-4 text-xs text-gray-300">
           We sell, deliver & ship wines where allowed by law. You must be 21
           years of age or older to purchase or receive an alcohol product
           from us. We will verify your ID during delivery process.
         </p>
+
+      
       </div>
     </footer>
     </>
