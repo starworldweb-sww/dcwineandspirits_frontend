@@ -4,99 +4,85 @@ import React, { useState, useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Sumana } from "next/font/google";
 
-// -----------------------------------------------------------------
-// FONT
-// -----------------------------------------------------------------
 const sumana = Sumana({
   weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
 });
 
-// -----------------------------------------------------------------
-// HELPER FUNCTION: stripHtml
-// -----------------------------------------------------------------
-function stripHtml(html) {
-  if (!html) return "";
-  if (typeof document === "undefined") {
-    return html.replace(/<[^>]*>/g, "");
+const decodeHtml = (str) => {
+  if (!str) return "";
+  if (typeof window === "undefined") {
+    return String(str)
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
   }
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || "";
-}
+  const txt = document.createElement("textarea");
+  txt.innerHTML = String(str);
+  return txt.value;
+};
 
-// -----------------------------------------------------------------
-// MOCK DATA #1: FAKE LOGGED-IN USER
-// -----------------------------------------------------------------
 const MOCK_USER = {
   firstname: "John",
   lastname: "Doe",
 };
 
-// -----------------------------------------------------------------
-// MOCK DATA #2: SHIPPING TAB CONTENT
-// -----------------------------------------------------------------
 const SHIPPING_INFO = {
   heading: "Why Choose Our Delivery Service?",
-  intro: "We make gifting simple, fast, and reliable. Here's why customers trust us:",
+  intro:
+    "We make gifting simple, fast, and reliable. Here's why customers trust us:",
   trustPoints: [
-    { title: "Fast & Reliable Delivery:", text: "We work with trusted delivery partners to ensure your wine, champagne, or gift basket arrives safely and on time." },
-    { title: "Premium Selection:", text: "Explore a wide range of fine wines, luxury champagne, prosecco, and gourmet gift baskets from around the world." },
-    { title: "Easy Ordering & Tracking:", text: "Our website offers a smooth shopping experience with secure checkout. Once your order is confirmed, you'll receive tracking details to monitor your delivery in real time." },
+    {
+      title: "Fast & Reliable Delivery:",
+      text: "We work with trusted delivery partners to ensure your wine, champagne, or gift basket arrives safely and on time.",
+    },
+    {
+      title: "Premium Selection:",
+      text: "Explore a wide range of fine wines, luxury champagne, prosecco, and gourmet gift baskets from around the world.",
+    },
+    {
+      title: "Easy Ordering & Tracking:",
+      text: "Our website offers a smooth shopping experience with secure checkout. Once your order is confirmed, you'll receive tracking details to monitor your delivery in real time.",
+    },
   ],
-  fallbackNote: "If a delivery cannot be completed, we offer flexible solutions:",
+  fallbackNote:
+    "If a delivery cannot be completed, we offer flexible solutions:",
   fallbackOptions: [
-    { title: "Hold at UPS Facility:", text: "Request to hold your package at a nearby UPS location for up to one week." },
-    { title: "Reschedule Delivery:", text: "Choose a new delivery date or update the delivery address based on the recipient's availability. You can add your preferred delivery date during checkout in the order comment section, chat with our assistant, or email us directly." },
-    { title: "Refund or Reship Options:", text: "If the package is returned after unsuccessful delivery attempts, you may request a reshipment or receive a refund minus a small handling fee." },
+    {
+      title: "Hold at UPS Facility:",
+      text: "Request to hold your package at a nearby UPS location for up to one week.",
+    },
+    {
+      title: "Reschedule Delivery:",
+      text: "Choose a new delivery date or update the delivery address based on the recipient's availability. You can add your preferred delivery date during checkout in the order comment section, chat with our assistant, or email us directly.",
+    },
+    {
+      title: "Refund or Reship Options:",
+      text: "If the package is returned after unsuccessful delivery attempts, you may request a reshipment or receive a refund minus a small handling fee.",
+    },
   ],
   detailsHeading: "Shipping & Delivery Details",
 };
 
-// -----------------------------------------------------------------
-// MOCK DATA #3: "NEED ASSISTANCE" BOX CONTENT
-// -----------------------------------------------------------------
 const ASSISTANCE_BOX = {
   heading: "Need Assistance with Payments or Bulk Orders?",
-  textBeforeLink: "If you encounter any issues with online payments or wish to place a bulk order, please ",
+  textBeforeLink:
+    "If you encounter any issues with online payments or wish to place a bulk order, please ",
   linkText: "Download Bulk Order Form",
   linkHref: "/bulk-order-form",
   textBetweenLinkAndEmail: ". Complete the form and send it to ",
   email: "contact@dcwineandspirits.com",
   emailHref: "mailto:contact@dcwineandspirits.com",
-  textAfterEmail: ". We will promptly provide you with an invoice for convenient payment.",
+  textAfterEmail:
+    ". We will promptly provide you with an invoice for convenient payment.",
 };
 
-// -----------------------------------------------------------------
-// MOCK DATA #4: STATIC PRODUCT DATA (Replaced Props)
-// -----------------------------------------------------------------
-const STATIC_PRODUCT = {
-  id: "WDG186",
-  description:
-    "<p>This exquisite gift set pairs a bottle of Billecart-Salmon Champagne with a bottle of Silver Oak Cabernet Sauvignon, presented together in an elegant sparkling rhinestone-accented box. Perfect for weddings, anniversaries, or any celebration that calls for both bubbles and bold red wine.</p><p>Each bottle is carefully selected to represent the finest in its category, making this a memorable gift for wine and champagne lovers alike.</p>",
-  reviews: {
-    total: 1,
-    items: [
-      {
-        author: "John D.",
-        date: "2026-06-01",
-        text: "Amazing gift set! Both bottles were excellent and the packaging was beautiful.",
-        rating: 5,
-        images: [],
-      },
-    ],
-  },
-};
-
-// ===================================================================
-// MAIN COMPONENT (Props removed)
-// ===================================================================
-const DescriptionAndReview = () => {
-  // -----------------------------------------------------------------
-  // STEP 1: STATE
-  // -----------------------------------------------------------------
-  const [activeTab, setActiveTab] = useState("description"); 
+const DescriptionAndReview = ({ product = {} }) => {
+  const [activeTab, setActiveTab] = useState("description");
   const [rating, setRating] = useState(0);
   const [selectedImages, setSelectedImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -108,16 +94,11 @@ const DescriptionAndReview = () => {
   const user = MOCK_USER;
   const isUserLoggedIn = Boolean(user);
 
-  // -----------------------------------------------------------------
-  // STEP 2: DERIVED VALUES (Using static data instead of props)
-  // -----------------------------------------------------------------
-  const description = stripHtml(STATIC_PRODUCT.description);
-  const reviews = STATIC_PRODUCT.reviews?.items || [];
-  const totalReviews = STATIC_PRODUCT.reviews?.total || 0;
+  const rawDescription = product.description || "";
+  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
+  const reviews = Array.isArray(product.reviews) ? product.reviews : [];
+  const totalReviews = product.review_count ?? reviews.length;
 
-  // -----------------------------------------------------------------
-  // STEP 3: EVENT HANDLERS
-  // -----------------------------------------------------------------
   const handleImageChange = (e) => {
     const newFiles = Array.from(e.target.files);
     if (selectedImages.length + newFiles.length > 5) {
@@ -131,10 +112,10 @@ const DescriptionAndReview = () => {
 
   const removeImage = (indexToRemove) => {
     setSelectedImages((prevImages) =>
-      prevImages.filter((_, index) => index !== indexToRemove)
+      prevImages.filter((_, index) => index !== indexToRemove),
     );
     setPreviews((prevPreviews) =>
-      prevPreviews.filter((_, index) => index !== indexToRemove)
+      prevPreviews.filter((_, index) => index !== indexToRemove),
     );
   };
 
@@ -145,9 +126,6 @@ const DescriptionAndReview = () => {
       return;
     }
     setIsSubmitting(true);
-
-   
-
     setTimeout(() => {
       alert("Thank You For Your Review! (this is a fake/mock submit)");
       e.target.reset();
@@ -158,9 +136,6 @@ const DescriptionAndReview = () => {
     }, 600);
   };
 
-  // -----------------------------------------------------------------
-  // STEP 4: SMALL HELPER FOR TAB BUTTON STYLING
-  // -----------------------------------------------------------------
   const getTabButtonClass = (tabName) => {
     const isActive = activeTab === tabName;
     return `relative hover:cursor-pointer flex flex-row items-center justify-center h-[33.75px] pb-[10px] font-['cambriaregular',Cambria,Georgia,serif] text-[19px] font-bold leading-[23.75px] capitalize transition-all duration-75 ease-out ${
@@ -170,9 +145,6 @@ const DescriptionAndReview = () => {
     }`;
   };
 
-  // -----------------------------------------------------------------
-  // STEP 5: UI (JSX)
-  // -----------------------------------------------------------------
   return (
     <main className="px-3 2xl:px-32 py-3">
       <div className="flex items-center gap-6 border-y border-gray-200 justify-center pt-4">
@@ -181,6 +153,13 @@ const DescriptionAndReview = () => {
           className={getTabButtonClass("description")}
         >
           Description
+        </button>
+
+        <button
+          onClick={() => setActiveTab("specifications")}
+          className={getTabButtonClass("specifications")}
+        >
+          Specifications
         </button>
 
         <button
@@ -200,9 +179,42 @@ const DescriptionAndReview = () => {
 
       {activeTab === "description" && (
         <section className="py-4 mt-1 px-2 lg:px-0">
-          <p className="text-[15px] leading-7 text-zinc-700 whitespace-pre-line">
-            {description}
-          </p>
+          <div
+            className="product-description-text text-[15px] leading-7 text-zinc-700"
+            dangerouslySetInnerHTML={{ __html: decodeHtml(rawDescription) }}
+          />
+        </section>
+      )}
+
+      {activeTab === "specifications" && (
+        <section className="py-6 mt-1">
+          <h2
+            className={`${sumana.className} text-2xl font-bold text-black mb-4`}
+          >
+            Specifications
+          </h2>
+          {attributes.length === 0 ? (
+            <p className="text-gray-500">
+              No specifications available for this product.
+            </p>
+          ) : (
+            <div className="border border-gray-200 rounded-sm overflow-hidden">
+              <table className="w-full text-[15px]">
+                <tbody className="divide-y divide-gray-200">
+                  {attributes.map((attr, i) => (
+                    <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
+                      <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
+                        {decodeHtml(attr.name)}
+                      </th>
+                      <td className="px-4 py-3 text-zinc-700 align-top">
+                        {decodeHtml(attr.text)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       )}
 
@@ -234,12 +246,16 @@ const DescriptionAndReview = () => {
       )}
 
       {activeTab === "reviews" && (
-        <section ref={reviewSectionRef} className="py-4 mt-1">
+        <section
+          id="product-review-section"
+          ref={reviewSectionRef}
+          className="py-4 mt-1"
+        >
           {reviews.length > 0 ? (
             <div className="mb-8 flex flex-col gap-0 border border-gray-200">
               {reviews.map((review, index) => (
                 <div
-                  key={index}
+                  key={review.review_id || index}
                   className="p-5 border-b border-gray-200 bg-white last:border-b-0"
                 >
                   <div className="flex justify-between items-center mb-2">
@@ -247,33 +263,18 @@ const DescriptionAndReview = () => {
                       {review.author}
                     </h3>
                     <span className="text-gray-400 text-[13px]">
-                      {new Date(review.date).toLocaleDateString("en-GB")}
+                      {review.date_added
+                        ? new Date(review.date_added).toLocaleDateString("en-GB")
+                        : ""}
                     </span>
                   </div>
                   <p className="text-[15px] text-gray-700 mb-3">{review.text}</p>
-                  {review.images && review.images.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {review.images.map((imageUrl, imgIndex) => (
-                        <div
-                          key={imgIndex}
-                          className="w-16 h-16 border border-gray-200 rounded-sm overflow-hidden cursor-pointer"
-                        >
-                          <img
-                            src={imageUrl}
-                            alt={`Review ${imgIndex}`}
-                            className="w-full h-full object-cover"
-                            onClick={() => window.open(imageUrl, "_blank")}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((starNumber) => (
                       <span
                         key={starNumber}
                         className={
-                          starNumber <= review.rating
+                          starNumber <= (review.rating || 0)
                             ? "text-[#bd8f3a] text-lg"
                             : "text-gray-300 text-lg"
                         }
@@ -299,11 +300,17 @@ const DescriptionAndReview = () => {
             <div className="text-[#8a6d3b] mb-10">
               <p className="text-[15px] mb-4">
                 Please{" "}
-                <a href="/login" className="font-bold underline hover:text-black transition-colors">
+                <a
+                  href="/login"
+                  className="font-bold underline hover:text-black transition-colors"
+                >
                   login
                 </a>{" "}
                 or{" "}
-                <a href="/register" className="font-bold underline hover:text-black transition-colors">
+                <a
+                  href="/register"
+                  className="font-bold underline hover:text-black transition-colors"
+                >
                   register
                 </a>{" "}
                 to write a review.
@@ -347,7 +354,8 @@ const DescriptionAndReview = () => {
               </div>
 
               <p className="text-[14px] text-gray-500 mb-6">
-                <span className="text-red-500 font-semibold">Note:</span> HTML is not translated!
+                <span className="text-red-500 font-semibold">Note:</span> HTML is
+                not translated!
               </p>
 
               <div className="mb-8">
@@ -361,7 +369,10 @@ const DescriptionAndReview = () => {
                 >
                   <Upload size={24} className="text-black" />
                   <p className="text-[15px] font-medium text-black">
-                    Choose a file <span className="font-normal text-gray-500">or drag it here.</span>
+                    Choose a file{" "}
+                    <span className="font-normal text-gray-500">
+                      or drag it here.
+                    </span>
                   </p>
                   <input
                     type="file"
@@ -438,21 +449,78 @@ const DescriptionAndReview = () => {
       )}
 
       <div className="bg-[#f8f8f8] mt-6 py-8 px-6 text-center">
-        <h3 className="text-lg font-bold text-black mb-4">
-          {ASSISTANCE_BOX.heading}
-        </h3>
+        <h3 className="text-lg font-bold text-black mb-4">{ASSISTANCE_BOX.heading}</h3>
         <p className="max-w-3xl mx-auto">
           {ASSISTANCE_BOX.textBeforeLink}
-          <a href={ASSISTANCE_BOX.linkHref} className="text-[#98022e] hover:underline">
+          <a
+            href={ASSISTANCE_BOX.linkHref}
+            className="text-[#98022e] hover:underline"
+          >
             {ASSISTANCE_BOX.linkText}
           </a>
           {ASSISTANCE_BOX.textBetweenLinkAndEmail}
-          <a href={ASSISTANCE_BOX.emailHref} className="text-[#98022e] hover:underline">
+          <a
+            href={ASSISTANCE_BOX.emailHref}
+            className="text-[#98022e] hover:underline"
+          >
             {ASSISTANCE_BOX.email}
           </a>
           {ASSISTANCE_BOX.textAfterEmail}
         </p>
       </div>
+
+      <style jsx global>{`
+        .product-description-text h2 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-top: 1.5rem;
+          margin-bottom: 0.6rem;
+        }
+        .product-description-text h3 {
+          font-size: 17px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-top: 1.25rem;
+          margin-bottom: 0.5rem;
+        }
+        .product-description-text p {
+          margin-bottom: 0.85rem;
+        }
+        .product-description-text ul,
+        .product-description-text ol {
+          margin: 0.9rem 0 0.9rem 1.5rem;
+          list-style: disc;
+        }
+        .product-description-text ol {
+          list-style: decimal;
+        }
+        .product-description-text li {
+          margin-bottom: 0.35rem;
+        }
+        .product-description-text img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 4px;
+          margin: 0.8rem 0;
+        }
+        .product-description-text blockquote {
+          border-left: 3px solid #98022e;
+          padding: 0.5rem 1rem;
+          background: #faf5f6;
+          margin: 1rem 0;
+          font-style: italic;
+          color: #555;
+        }
+        .product-description-text a {
+          color: #98022e;
+          text-decoration: underline;
+        }
+        .product-description-text strong,
+        .product-description-text b {
+          font-weight: 700;
+        }
+      `}</style>
     </main>
   );
 };

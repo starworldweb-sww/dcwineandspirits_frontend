@@ -1,63 +1,117 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { Sumana } from "next/font/google";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 
-// -----------------------------------------------------------------
-// FONT
-// -----------------------------------------------------------------
 const sumana = Sumana({
   weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
 });
 
-// -----------------------------------------------------------------
-// STEP 1: MOCK PRODUCT DATA
-// -----------------------------------------------------------------
-const RELATED_PRODUCTS = [
-  { id: 1, name: "Moet & Chandon Imperial Brut Champagne", price: "89.00", image: "/images/products/moet-chandon-imperial-brut.jpg" },
-  { id: 2, name: "Veuve Clicquot Champagne Gift Basket", price: "129.00", image: "/images/products/veuve-clicquot-gift-basket-1.jpg" },
-  { id: 3, name: "Veuve Clicquot Champagne and Glasses Set", price: "159.00", specialPrice: "139.00", badge: "-13%", isHot: true, image: "/images/products/veuve-clicquot-glasses-set.jpg" },
-  { id: 4, name: "Moet & Chandon Imperial Brut Champagne", price: "89.00", image: "/images/products/moet-chandon-imperial-brut.jpg" },
-  { id: 5, name: "Veuve Clicquot Champagne Gift Basket", price: "129.00", image: "/images/products/veuve-clicquot-gift-basket-2.jpg" },
-  { id: 6, name: "Dom Perignon Vintage Champagne", price: "219.00", image: "/images/products/dom-perignon-vintage.jpg" },
-];
+const IMAGE_BASE = "https://www.dcwineandspirits.com/image/";
 
-const LATEST_PRODUCTS = [
-  { id: 7, name: "Billecart-Salmon Rose Champagne", price: "99.00", image: "/images/products/billecart-salmon-rose.jpg" },
-  { id: 8, name: "Silver Oak Cabernet Sauvignon", price: "79.00", image: "/images/products/silver-oak-cabernet.jpg" },
-  { id: 9, name: "Ruinart Blanc de Blancs Champagne", price: "109.00", image: "/images/products/ruinart-blanc-de-blancs.jpg" },
-  { id: 10, name: "Perrier-Jouet Grand Brut Champagne", price: "69.00", image: "/images/products/perrier-jouet-grand-brut.jpg" },
-];
+const decodeHtml = (str) => {
+  if (!str) return "";
+  if (typeof window === "undefined") {
+    return String(str)
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+  }
+  const txt = document.createElement("textarea");
+  txt.innerHTML = String(str);
+  return txt.value;
+};
 
-const BEST_SELLER_PRODUCTS = [
-  { id: 11, name: "Veuve Clicquot Yellow Label Brut", price: "59.00", image: "/images/products/veuve-clicquot-yellow-label.jpg" },
-  { id: 12, name: "Moet & Chandon Rose Imperial", price: "95.00", image: "/images/products/moet-chandon-rose-imperial.jpg" },
-  { id: 13, name: "Dom Perignon Gift Box Set", price: "249.00", badge: "-10%", image: "/images/products/dom-perignon-gift-box.jpg" },
-  { id: 14, name: "Billecart-Salmon Brut Reserve", price: "85.00", image: "/images/products/billecart-salmon-brut-reserve.jpg" },
-];
+const getImageUrl = (path) => {
+  if (!path) return "/prosecco-gift-800x800.webp";
+  if (path.startsWith("http")) return path;
+  const cleanBase = (IMAGE_BASE || "").replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+  return `${cleanBase}/${cleanPath}`;
+};
 
-// -----------------------------------------------------------------
-// STEP 2: TABS CONFIG
-// -----------------------------------------------------------------
-const TABS = [
-  { key: "related", label: "Related Products", products: RELATED_PRODUCTS },
-  { key: "latest", label: "Latest", products: LATEST_PRODUCTS },
-  { key: "bestsellers", label: "Best Sellers", products: BEST_SELLER_PRODUCTS },
-];
+const normalizeProduct = (p) => {
+  if (!p) return null;
+  const price = Number(p.price ?? 0);
+  const specialPrice =
+    p.special_price != null && p.special_price !== "" ? Number(p.special_price) : null;
+  const hasDiscount = specialPrice != null && specialPrice < price;
+  const discountPercent = hasDiscount
+    ? Math.round(((price - specialPrice) / price) * 100)
+    : 0;
+  return {
+    ...p,
+    displayName: decodeHtml(p.name || p.title || ""),
+    image: getImageUrl(typeof p.image === "string" ? p.image : p.image?.src),
+    price,
+    specialPrice,
+    hasDiscount,
+    discountPercent,
+    seo_url: p.seo_url || p.slug || "",
+    product_id: p.product_id || p.id || p.productId,
+    in_stock: p.in_stock !== false,
+  };
+};
 
-export default function RecommendedProducts() {
+export default function RecommendedProducts({ product = {} }) {
   const [activeTab, setActiveTab] = useState("related");
   const sliderRef = useRef(null);
   const addToCartMut = useAddtoCart();
 
+  const relatedRaw = Array.isArray(product.related_products)
+    ? product.related_products
+    : [];
+  const LATEST_PRODUCTS = Array.isArray(product.latest_products)
+    ? product.latest_products
+    : [];
+  const BEST_SELLER_PRODUCTS = Array.isArray(product.bestseller_products)
+    ? product.bestseller_products
+    : [];
+
+  const relatedProducts = relatedRaw
+    .map(normalizeProduct)
+    .filter(Boolean);
+
+  const latestProducts = LATEST_PRODUCTS.map(normalizeProduct).filter(Boolean);
+  const bestSellerProducts = BEST_SELLER_PRODUCTS.map(normalizeProduct).filter(Boolean);
+
+  const TABS = React.useMemo(() => {
+    return [
+      {
+        key: "related",
+        label: "Related Products",
+        products: relatedProducts,
+      },
+      {
+        key: "latest",
+        label: "Latest",
+        products: latestProducts,
+      },
+      {
+        key: "bestsellers",
+        label: "Best Sellers",
+        products: bestSellerProducts,
+      },
+    ].filter((tab) => tab.products.length > 0);
+  }, [relatedProducts, latestProducts, bestSellerProducts]);
+
   const activeProducts =
     TABS.find((tab) => tab.key === activeTab)?.products || [];
 
+  useEffect(() => {
+    if (TABS.length > 0 && !TABS.some((tab) => tab.key === activeTab)) {
+      setActiveTab(TABS[0].key);
+    }
+  }, [activeTab, TABS]);
   const scrollLeft = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: -280, behavior: "smooth" });
@@ -70,22 +124,21 @@ export default function RecommendedProducts() {
     }
   };
 
-  const handleAddToCart = async (e, product) => {
+  const handleAddToCart = async (e, productCard) => {
     e.stopPropagation();
-    const productId = product?.product_id || product?.id;
+    const productId = productCard?.product_id;
     if (!productId || addToCartMut.isPending) return;
     try {
-      const res = await addToCartMut.mutateAsync({ product_id: productId, quantity: 1 });
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: 1,
+      });
       if (res?.success) toast.success(res.message || "Added to cart!");
-    } catch (e) {}
+    } catch (err) { }
   };
 
   return (
     <section className="w-full bg-[#f8f8f8] px-3 2xl:px-32 py-10">
-      
-      {/* ============================================================
-          TABS ROW - Updated with absolute pink line overlapping
-      ============================================================ */}
       <div className="w-full mb-8">
         <div className="flex justify-start sm:justify-center overflow-x-auto no-scrollbar border-b border-gray-200 w-full">
           <div className="flex gap-6 sm:gap-14 items-center sm:w-auto sm:min-w-max">
@@ -95,13 +148,10 @@ export default function RecommendedProducts() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`${sumana.className} relative flex items-center pb-3 shrink-0 whitespace-nowrap text-base sm:text-xl font-bold uppercase tracking-wide transition-colors cursor-pointer rounded-none ${
-                    isActive ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-                  }`}
+                  className={`${sumana.className} relative flex items-center pb-3 shrink-0 whitespace-nowrap text-base sm:text-xl font-bold uppercase tracking-wide transition-colors cursor-pointer rounded-none ${isActive ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+                    }`}
                 >
                   {tab.label}
-
-                  {/* Overlapping Pink Line Logic */}
                   {isActive && (
                     <div className="absolute -bottom-[1px] left-0 w-full h-[2px] bg-[#98022e]" />
                   )}
@@ -112,9 +162,6 @@ export default function RecommendedProducts() {
         </div>
       </div>
 
-      {/* ============================================================
-          PRODUCT SLIDER (with left/right arrow buttons)
-      ============================================================ */}
       <div className="relative">
         <button
           onClick={scrollLeft}
@@ -132,66 +179,88 @@ export default function RecommendedProducts() {
           <ChevronRight size={20} />
         </button>
 
-        <div
-          ref={sliderRef}
-          className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth"
-        >
-          {activeProducts.map((product) => (
-            <div
-              key={product.id}
-              className="flex-shrink-0 w-[45%] xs:w-[42%] sm:w-[240px] lg:w-[260px] bg-white border border-gray-100"
-            >
-              <div className="relative w-full aspect-square bg-white flex items-center justify-center overflow-hidden">
-                {product.badge && (
-                  <span className="absolute top-2 right-2 z-10 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full">
-                    {product.badge}
-                  </span>
-                )}
-                {product.isHot && (
-                  <span className="absolute top-11 right-2 z-10 bg-[#f5c95d] text-black text-xs font-bold px-2 py-1 rounded-full">
-                    HOT
-                  </span>
-                )}
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-contain object-center p-4"
-                />
-              </div>
-
-              <div className="p-3 text-center">
-                <p className="text-sm text-black truncate">
-                  {product.name}
-                </p>
-                <div className="mt-1 flex items-center justify-center gap-2">
-                  {product.specialPrice ? (
-                    <>
-                      <span className="text-sm text-gray-400 line-through">
-                        ${product.price}
-                      </span>
-                      <span className="text-sm font-bold text-[#98022e]">
-                        ${product.specialPrice}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-sm font-bold text-black">
-                      ${product.price}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => handleAddToCart(e, product)}
-                  disabled={addToCartMut.isPending}
-                  className="mt-3 w-full bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-bold uppercase tracking-wide py-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        {activeProducts.length === 0 ? (
+          <div className="py-16 text-center text-gray-500 text-sm">
+            No products available in this section.
+          </div>
+        ) : (
+          <div
+            ref={sliderRef}
+            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth"
+          >
+            {activeProducts.map((p) => {
+              const href = p.seo_url ? `/product/${p.seo_url}` : "#";
+              const isHot =
+                p.hasDiscount &&
+                p.discountPercent >= 5 &&
+                activeTab === "related";
+              return (
+                <div
+                  key={p.product_id || p.id || p.displayName}
+                  className="flex-shrink-0 w-[45%] xs:w-[42%] sm:w-[240px] lg:w-[260px] bg-white border border-gray-100"
                 >
-                  {addToCartMut.isPending ? "ADDING..." : "ADD TO CART"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <Link href={href} className="block">
+                    <div className="relative w-full aspect-square bg-white flex items-center justify-center overflow-hidden">
+                      {p.hasDiscount && p.discountPercent > 0 && (
+                        <span className="absolute top-2 right-2 z-10 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full">
+                          -{p.discountPercent}%
+                        </span>
+                      )}
+                      {!p.in_stock && (
+                        <span className="absolute top-2 left-2 z-10 bg-gray-700 text-white text-[11px] font-bold px-2 py-1 rounded-full">
+                          OUT OF STOCK
+                        </span>
+                      )}
+                      {isHot && (
+                        <span className="absolute top-11 right-2 z-10 bg-[#f5c95d] text-black text-xs font-bold px-2 py-1 rounded-full">
+                          HOT
+                        </span>
+                      )}
+                      <img
+                        src={p.image}
+                        alt={p.displayName}
+                        className="w-full h-full object-contain object-center p-4"
+                      />
+                    </div>
+                  </Link>
+
+                  <div className="p-3 text-center">
+                    <Link href={href} className="block">
+                      <p className="text-sm text-black truncate hover:text-[#98022e] transition-colors">
+                        {p.displayName}
+                      </p>
+                    </Link>
+                    <div className="mt-1 flex items-center justify-center gap-2">
+                      {p.hasDiscount ? (
+                        <>
+                          <span className="text-sm text-gray-400 line-through">
+                            ${p.price.toFixed(2)}
+                          </span>
+                          <span className="text-sm font-bold text-[#98022e]">
+                            ${p.specialPrice.toFixed(2)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-bold text-black">
+                          ${p.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleAddToCart(e, p)}
+                      disabled={addToCartMut.isPending || !p.in_stock}
+                      className="mt-3 w-full bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-bold uppercase tracking-wide py-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {addToCartMut.isPending ? "ADDING..." : "ADD TO CART"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Check,
   Dot,
@@ -15,11 +15,12 @@ import {
   Download,
   HelpCircle,
   Star,
+  Tag,
+  Upload,
 } from "lucide-react";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import ProductsHeader from "../../components/TittleAndBreadcrumb";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
-
 import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -39,46 +40,79 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
+const IMAGE_BASE = "https://www.dcwineandspirits.com/image/";
+
+const getImageUrl = (path) => {
+  if (!path) return "/prosecco-gift-800x800.webp";
+  if (path.startsWith("http")) return path;
+  const cleanBase = (IMAGE_BASE || "").replace(/\/$/, "");
+  const cleanPath = path.replace(/^\//, "");
+  return `${cleanBase}/${cleanPath}`;
+};
+
+const decodeHtml = (str) => {
+  if (typeof window === "undefined" || !str) return str ?? "";
+  const txt = document.createElement("textarea");
+  txt.innerHTML = String(str);
+  return txt.value;
+};
+
 export default function ProductMain({ product }) {
   const [stock] = useState(product.quantity > 0);
-  const productImage = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
-    : "/prosecco-gift-800x800.webp";
+  const productImage = getImageUrl(product.image);
   const [mainImage, setMainImage] = useState(productImage);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("center center");
-  const [giftMessage, setGiftMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
 
-  // wishlist popup ke liye state
-  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
+  const rawOptions = Array.isArray(product.options) ? product.options : [];
 
+  const initialOptionValues = useMemo(() => {
+    const init = {};
+    rawOptions.forEach((opt) => {
+      const key = String(opt.product_option_id);
+      const hasValues = Array.isArray(opt.values) && opt.values.length > 0;
+      if (hasValues) {
+        const firstValue = opt.values[0];
+        init[key] =
+          firstValue?.product_option_value_id != null
+            ? String(firstValue.product_option_value_id)
+            : "";
+      } else {
+        init[key] = opt.text_value != null ? String(opt.text_value) : "";
+      }
+    });
+    return init;
+  }, [rawOptions]);
+
+  const [optionValues, setOptionValues] = useState(initialOptionValues);
+  const [fileNames, setFileNames] = useState({});
+
+  useEffect(() => {
+    setOptionValues(initialOptionValues);
+  }, [initialOptionValues]);
+
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const addToCartMut = useAddtoCart();
   const isAddingToCart = addToCartMut.isPending;
 
   const productId = product?.product_id || product?.id;
-
   const addToWishlistMut = useAddToWishlist();
   const isAddingToWishlist = addToWishlistMut.isPending;
 
-  // agar product already wishlist mein hai toh poora button pink dikhega
   const { data: wishlistCheckData } = useCheckWishlist(productId);
   const isInWishlist = Boolean(
     wishlistCheckData?.data?.isInWishlist ?? wishlistCheckData?.isInWishlist,
   );
 
-  const reviews = product.reviews || [];
-  const reviewCount = reviews.length;
+  const reviews = Array.isArray(product.reviews) ? product.reviews : [];
+  const reviewCount = product.review_count ?? reviews.length;
   const averageRating = product.average_rating || 0;
 
   const productImages =
     product.images
-      ?.map((img) =>
-        img.image
-          ? `https://www.dcwineandspirits.com/image/${img.image}`
-          : null,
-      )
-      .filter(Boolean) || [];
+      ?.map((img) => getImageUrl(typeof img === "string" ? img : img.image))
+      .filter((u) => u && u !== "/prosecco-gift-800x800.webp") || [];
 
   const allImages = productImages.length
     ? [productImage, ...productImages]
@@ -88,19 +122,27 @@ export default function ProductMain({ product }) {
 
   const originalPrice = product.price;
   const specialPrice = product.special_price;
-  const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined;
+  const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined && specialPrice !== "";
 
-  // discount % badge ke liye
   const discountPercent = hasSpecialPrice
-    ? Math.round(((originalPrice - specialPrice) / originalPrice) * 100)
+    ? Math.round(
+        ((Number(originalPrice) - Number(specialPrice)) / Number(originalPrice)) * 100,
+      )
     : 0;
 
   const brandName = product.manufacturer?.name || "";
   const brandurl = product.manufacturer?.manufacturer_seo_url || "";
   const brandImage = product.manufacturer?.image
-    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.manufacturer.image}`
+    ? getImageUrl(product.manufacturer.image)
     : "";
-  console.log("product",product)
+
+  const tagsRaw = product.tag
+    ? String(product.tag)
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+    : [];
+
   const handleImageChange = (clickedImage) => {
     setMainImage(clickedImage);
     setIsImageHovered(false);
@@ -114,26 +156,103 @@ export default function ProductMain({ product }) {
     setZoomOrigin(`${mouseXPercent}% ${mouseYPercent}%`);
   };
 
+  const setOptionValue = (productOptionId, value) => {
+    setOptionValues((prev) => ({
+      ...prev,
+      [String(productOptionId)]: value == null ? "" : String(value),
+    }));
+  };
+
+  const buildOptionPayload = () => {
+    const payload = {};
+    rawOptions.forEach((opt) => {
+      const key = String(opt.product_option_id);
+      const userValue = optionValues[key];
+      const hasValues = Array.isArray(opt.values) && opt.values.length > 0;
+      const optionType = String(opt.type || opt.option_type || "")
+        .toLowerCase()
+        .trim();
+
+      if (optionType === "checkbox" && hasValues) {
+        const ids = Array.isArray(userValue)
+          ? userValue.map((v) => String(v))
+          : userValue
+            ? String(userValue).split(",").filter(Boolean)
+            : [];
+        const selectedItems = opt.values.filter((v) =>
+          ids.includes(String(v.product_option_value_id)),
+        );
+        if (selectedItems.length > 0) {
+          payload[key] = selectedItems.map((v) => v.name).join(", ")
+        }
+        return;
+      }
+
+      if (optionType === "radio" && hasValues) {
+        if (!userValue) return;
+        const selected = opt.values.find(
+          (v) => String(v.product_option_value_id) === String(userValue),
+        );
+        payload[key] = userValue
+        return;
+      }
+
+      if (optionType === "select" || (optionType === "" && hasValues)) {
+        if (!userValue) return;
+        const selected = opt.values.find(
+          (v) => String(v.product_option_value_id) === String(userValue),
+        );
+        payload[key] = userValue
+        return;
+      }
+
+      if (optionType === "file") {
+        if (!userValue) return;
+        payload[key] = userValue
+        return;
+      }
+
+      if (userValue != null && String(userValue).trim() !== "") {
+        payload[key] = userValue
+      }
+    });
+    return payload;
+  };
+
+  const validateOptions = () => {
+    for (const opt of rawOptions) {
+      if (opt.required) {
+        const key = String(opt.product_option_id);
+        const v = optionValues[key];
+        if (v == null || String(v).trim() === "") {
+          toast.error(`${opt.name} is required`);
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleAddToCartClick = async () => {
     if (!productId || isAddingToCart || !stock) return;
+    if (!validateOptions()) return;
 
     try {
+      const optionPayload = buildOptionPayload();
+      console.log("optionPayload",optionPayload)
       const res = await addToCartMut.mutateAsync({
         product_id: productId,
         quantity: Math.max(1, Number(quantity) || 1),
-        option: giftMessage.trim()
-          ? JSON.stringify({ gift_message: giftMessage.trim() })
-          : "[]",
+        option: optionPayload,
       });
       if (res?.success) {
         toast.success(res.message || "Added to cart!");
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const handleAddToWishlistClick = async () => {
     if (!productId || isAddingToWishlist || isInWishlist) return;
-
     try {
       await addToWishlistMut.mutateAsync(productId);
       setShowWishlistPopup(true);
@@ -143,20 +262,22 @@ export default function ProductMain({ product }) {
   };
 
   const handleWriteReviewClick = () => {
-    console.log("Write a review clicked for", product.product_id);
+    const reviewSection = document.getElementById("product-review-section");
+    if (reviewSection) reviewSection.scrollIntoView({ behavior: "smooth" });
   };
-
 
   useEffect(() => {
     if (product?.product_id) {
       addRecentProduct(product);
     }
-  }, [product])
+  }, [product]);
+
+  const sanitizedName = decodeHtml(product.name);
+
   return (
     <>
-      <ProductsHeader categoryName={product.name} />
+      <ProductsHeader categoryName={sanitizedName} />
 
-      {/* Add to Wishlist popup */}
       <AddToWishlistPopup
         isOpen={showWishlistPopup}
         onClose={() => setShowWishlistPopup(false)}
@@ -173,10 +294,11 @@ export default function ProductMain({ product }) {
                     <div
                       key={`${imageUrl}-${index}`}
                       onClick={() => handleImageChange(imageUrl)}
-                      className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${mainImage === imageUrl
+                      className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
+                        mainImage === imageUrl
                           ? "border-[#98022e]"
                           : "border-gray-200"
-                        }`}
+                      }`}
                     >
                       <img
                         src={imageUrl}
@@ -195,8 +317,9 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
-                  }`}
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full ${
+                  hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
+                }`}
               >
                 {hasSpecialPrice && discountPercent > 0 && (
                   <>
@@ -227,7 +350,7 @@ export default function ProductMain({ product }) {
 
                 <img
                   src={mainImage}
-                  alt={product.name}
+                  alt={sanitizedName}
                   draggable={false}
                   className="w-full h-full object-cover object-center select-none will-change-transform"
                   style={{
@@ -335,23 +458,277 @@ export default function ProductMain({ product }) {
                   )}
                 </div>
 
-                <div className="w-full mt-5 mb-5">
-                  <label
-                    htmlFor="gift-message"
-                    className="block text-base font-semibold text-gray-800 mb-2"
-                  >
-                    Message On Gift Card
-                  </label>
+                {rawOptions.length > 0 && (
+                  <div className="w-full mt-5 mb-5 space-y-5">
+                    {rawOptions.map((opt) => {
+                      const key = String(opt.product_option_id);
+                      const hasValues =
+                        Array.isArray(opt.values) && opt.values.length > 0;
+                      const optionType = String(opt.type || opt.option_type || "")
+                        .toLowerCase()
+                        .trim();
+                      const label = (
+                        <label
+                          htmlFor={`option-${key}`}
+                          className="block text-base font-semibold text-gray-800 mb-2"
+                        >
+                          {opt.name}
+                          {opt.required && (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </label>
+                      );
+                      const baseInputClass =
+                        "block w-full p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none text-gray-700 bg-white";
 
-                  <textarea
-                    id="gift-message"
-                    rows={4}
-                    value={giftMessage}
-                    onChange={(e) => setGiftMessage(e.target.value)}
-                    placeholder="Message On Gift Card"
-                    className="block w-full min-h-[110px] sm:min-h-[120px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
-                  />
-                </div>
+                      if (optionType === "select" || (optionType === "" && hasValues)) {
+                        const value = optionValues[key] || "";
+                        return (
+                          <div key={key}>
+                            {label}
+                            <select
+                              id={`option-${key}`}
+                              value={value}
+                              onChange={(e) =>
+                                setOptionValue(key, e.target.value)
+                              }
+                              className={baseInputClass}
+                            >
+                              {opt.values.map((v) => {
+                                const priceDiff = Number(v.price || 0);
+                                const labelText =
+                                  priceDiff > 0
+                                    ? `${v.name} (+$${priceDiff.toFixed(2)})`
+                                    : v.name;
+                                return (
+                                  <option
+                                    key={v.product_option_value_id}
+                                    value={v.product_option_value_id}
+                                  >
+                                    {labelText}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        );
+                      }
+
+                      if (optionType === "radio" && hasValues) {
+                        const value = optionValues[key] || "";
+                        return (
+                          <div key={key}>
+                            {label}
+                            <div className="flex flex-wrap gap-4">
+                              {opt.values.map((v) => {
+                                const priceDiff = Number(v.price || 0);
+                                const labelText =
+                                  priceDiff > 0
+                                    ? `${v.name} (+$${priceDiff.toFixed(2)})`
+                                    : v.name;
+                                const vid = `${key}-${v.product_option_value_id}`;
+                                return (
+                                  <label
+                                    key={v.product_option_value_id}
+                                    htmlFor={vid}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <input
+                                      id={vid}
+                                      type="radio"
+                                      name={`opt-${key}`}
+                                      value={v.product_option_value_id}
+                                      checked={
+                                        String(value) ===
+                                        String(v.product_option_value_id)
+                                      }
+                                      onChange={() =>
+                                        setOptionValue(key, v.product_option_value_id)
+                                      }
+                                      className="w-4 h-4 accent-[#98022e] cursor-pointer"
+                                    />
+                                    <span className="text-sm text-gray-700">
+                                      {labelText}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (optionType === "checkbox" && hasValues) {
+                        const rawValue = optionValues[key];
+                        const selectedArr = Array.isArray(rawValue)
+                          ? rawValue.map((v) => String(v))
+                          : rawValue
+                            ? String(rawValue).split(",").filter(Boolean)
+                            : [];
+                        const toggleCheckbox = (povId) => {
+                          const id = String(povId);
+                          const next = selectedArr.includes(id)
+                            ? selectedArr.filter((x) => x !== id)
+                            : [...selectedArr, id];
+                          setOptionValue(key, next.join(","));
+                        };
+                        return (
+                          <div key={key}>
+                            {label}
+                            <div className="flex flex-wrap gap-4">
+                              {opt.values.map((v) => {
+                                const priceDiff = Number(v.price || 0);
+                                const labelText =
+                                  priceDiff > 0
+                                    ? `${v.name} (+$${priceDiff.toFixed(2)})`
+                                    : v.name;
+                                const vid = `${key}-${v.product_option_value_id}`;
+                                const isChecked = selectedArr.includes(
+                                  String(v.product_option_value_id),
+                                );
+                                return (
+                                  <label
+                                    key={v.product_option_value_id}
+                                    htmlFor={vid}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <input
+                                      id={vid}
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() =>
+                                        toggleCheckbox(v.product_option_value_id)
+                                      }
+                                      className="w-4 h-4 accent-[#98022e] cursor-pointer rounded"
+                                    />
+                                    <span className="text-sm text-gray-700">
+                                      {labelText}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (optionType === "textarea") {
+                        const currentValue = optionValues[key] || "";
+                        return (
+                          <div key={key}>
+                            {label}
+                            <textarea
+                              id={`option-${key}`}
+                              rows={4}
+                              value={currentValue}
+                              onChange={(e) =>
+                                setOptionValue(key, e.target.value)
+                              }
+                              placeholder={opt.name}
+                              className="block w-full min-h-[110px] sm:min-h-[120px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (optionType === "file") {
+                        const currentValue = optionValues[key] || "";
+                        const fileName = fileNames[key] || "";
+                        return (
+                          <div key={key}>
+                            {label}
+                            <div className="flex items-center gap-3">
+                              <label
+                                className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${
+                                  currentValue ? "text-[#98022e]" : "text-gray-700"
+                                }`}
+                              >
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) {
+                                      setOptionValue(key, f);
+                                      setFileNames((prev) => ({
+                                        ...prev,
+                                        [key]: f.name,
+                                      }));
+                                    }
+                                  }}
+                                />
+                                <Upload size={16} />
+                                <span>
+                                  {fileName ||
+                                    (typeof currentValue === "string" && currentValue
+                                      ? "File chosen"
+                                      : "Choose file")}
+                                </span>
+                              </label>
+                              {(currentValue || fileName) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOptionValue(key, "");
+                                    setFileNames((prev) => {
+                                      const next = { ...prev };
+                                      delete next[key];
+                                      return next;
+                                    });
+                                  }}
+                                  className="text-sm text-red-500 hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (
+                        optionType === "date" ||
+                        optionType === "time" ||
+                        optionType === "datetime"
+                      ) {
+                        const currentValue = optionValues[key] || "";
+                        const htmlType =
+                          optionType === "datetime" ? "datetime-local" : optionType;
+                        return (
+                          <div key={key}>
+                            {label}
+                            <input
+                              id={`option-${key}`}
+                              type={htmlType}
+                              value={currentValue}
+                              onChange={(e) =>
+                                setOptionValue(key, e.target.value)
+                              }
+                              className={baseInputClass}
+                            />
+                          </div>
+                        );
+                      }
+
+                      const currentValue = optionValues[key] || "";
+                      return (
+                        <div key={key}>
+                          {label}
+                          <input
+                            id={`option-${key}`}
+                            type="text"
+                            value={currentValue}
+                            onChange={(e) =>
+                              setOptionValue(key, e.target.value)
+                            }
+                            placeholder={opt.name}
+                            className={baseInputClass + " italic text-gray-600"}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <div className="w-full pb-4 border-b border-gray-200 ">
                   <div className="flex items-stretch gap-3">
@@ -407,15 +784,18 @@ export default function ProductMain({ product }) {
                       type="button"
                       onClick={handleAddToWishlistClick}
                       disabled={isAddingToWishlist || isInWishlist}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${isInWishlist
+                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${
+                        isInWishlist
                           ? "text-[#98022e]"
                           : "text-gray-700 hover:text-[#98022e]"
-                        }`}
+                      }`}
                     >
                       <Heart
                         size={16}
                         className={
-                          isInWishlist ? "fill-[#98022e] text-[#98022e]" : ""
+                          isInWishlist
+                            ? "fill-[#98022e] text-[#98022e]"
+                            : ""
                         }
                       />
                       {isInWishlist
@@ -467,6 +847,26 @@ export default function ProductMain({ product }) {
                     Write a review
                   </p>
                 </div>
+
+                {tagsRaw.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-gray-200">
+                    <span className="flex items-center gap-1 text-sm font-semibold text-gray-800">
+                      <Tag size={14} className="text-[#98022e]" />
+                      Tags:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {tagsRaw.map((t, i) => (
+                        <Link
+                          key={`${t}-${i}`}
+                          href={`/search?tag=${encodeURIComponent(t)}`}
+                          className="inline-flex items-center rounded-full bg-[#1c1c26] hover:bg-[#98022e] text-white text-[12px] font-medium px-3 py-1 transition-colors"
+                        >
+                          {t}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
