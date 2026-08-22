@@ -15,15 +15,18 @@ const HeroPic = () => {
   const imageUrl = banner?.image;
   const altText = banner?.alt;
   const titleText = banner?.title;
+  const customUrl = banner?.custom_url;
 
-  
+  // 1. FIX: seo_url ho to wahi use karo, warna custom_url pe fallback, warna "/"
+  const bannerLink = slug ? `/${slug}` : customUrl || "/";
+
   return (
     <section 
       className="w-full lg:px-3 2xl:px-32 lg:py-4" 
       aria-label="Top Banner"
     >
       <Link
-      href="/"
+      href={bannerLink}
       >
 
       <img

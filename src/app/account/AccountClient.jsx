@@ -17,6 +17,7 @@ import {
   History,
 } from "lucide-react";
 import ProductsHeader from "../components/TittleAndBreadcrumb";
+import AccountSidebar from "../components/AccountSidebar";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
@@ -118,29 +119,7 @@ const AccountClient = () => {
 
         {/* Right Column: Sidebar */}
         <div className="hidden lg:block lg:h-auto lg:w-[1px] lg:bg-[#e3e3e3] self-stretch" />
-        <div className="w-full lg:w-[260px] shrink-0">
-          <div className="bg-white border border-[#e5e5e5] rounded-[6px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <ul className="divide-y divide-[#eeeeee]">
-              {sidebarLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="group flex items-center gap-1.5 py-3 text-[15px] text-[#333333] transition-colors duration-300 focus-visible:outline-none focus-visible:text-[#8c1a3c]"
-                  >
-                    <ChevronRight
-                      size={16}
-                      className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
-                      style={{ color: ACCENT }}
-                    />
-                    <span className="transition-colors duration-300 group-hover:text-[#8c1a3c]">
-                      {link.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+       <AccountSidebar/>
       </div>
     </div>
   );

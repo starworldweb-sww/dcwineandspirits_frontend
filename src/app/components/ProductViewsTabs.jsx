@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Sarabun, Hind_Madurai, Sumana } from "next/font/google";
 import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import AddToCartPopup from "./popups/AddToCartPopUp";
 import { useMostViewedProducts } from "../api/hooks/useMostViewedProducts";
 import { getRecentProducts } from "@/libs/recentProducts";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 // 1. Fonts - product name uses Sarabun, price uses Hind Madurai
 const sarabun = Sarabun({
@@ -49,6 +51,7 @@ const resolveImage = (image) =>
 const mapMostViewedProduct = (product) => ({
   id: product.product_id,
   slug: product.slug,
+  seo_url: product.seo_url,
   name: product.name,
   image: resolveImage(product.image),
   price: product.original_price ?? product.price,
@@ -60,6 +63,7 @@ const mapMostViewedProduct = (product) => ({
 const mapRecentProduct = (product) => ({
   id: product.product_id,
   slug: product.slug,
+  seo_url: product.seo_url,
   name: product.name,
   image: resolveImage(product.image),
   price: product.original_price ?? product.price,
@@ -67,6 +71,7 @@ const mapRecentProduct = (product) => ({
 });
 
 // 3. Single product card - shows image, name, price, cart + wishlist buttons.
+// Wrapped in a Link (href = product slug) so it's crawlable and navigable.
 function ProductCard({ product }) {
   const isDiscounted = hasDiscount(product.special_price);
 
@@ -86,6 +91,7 @@ function ProductCard({ product }) {
 
   const handleAddToCartClick = async (e) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!product.id || isAddingToCart) return;
 
     try {
@@ -101,6 +107,7 @@ function ProductCard({ product }) {
 
   const handleAddToWishlistClick = async (e) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!product.id || isAddingToWishlist || isInWishlist) return;
 
     try {
@@ -125,13 +132,14 @@ function ProductCard({ product }) {
         product={product}
       />
 
-      <article
+      <Link
+        href={`/${product.seo_url || product.slug}`}
         className="flex h-[93px] w-[280px] flex-shrink-0 cursor-pointer items-center gap-3 overflow-hidden border border-gray-100 bg-white p-2 shadow-sm transition hover:shadow-md snap-center md:w-full md:max-w-[327px]"
       >
         <div className="flex h-[78px] w-[78px] flex-shrink-0 items-center justify-center overflow-hidden">
           <img
             src={product.image}
-            alt={product.name}
+            alt={decodeHtml(product.name)}
             loading="lazy"
             className="max-h-full max-w-full object-contain"
           />
@@ -139,11 +147,11 @@ function ProductCard({ product }) {
 
         <div className="min-w-0 flex-1">
           <h3
-            title={product.name}
+            title={decodeHtml(product.name)}
             className="truncate text-[13px] font-semibold leading-tight text-[#1A202C]"
             style={{ fontFamily: "var(--font-sarabun)" }}
           >
-            {product.name}
+            {decodeHtml(product.name)}
           </h3>
 
           <div
@@ -189,7 +197,7 @@ function ProductCard({ product }) {
             </button>
           </div>
         </div>
-      </article>
+      </Link>
     </>
   );
 }
@@ -219,7 +227,7 @@ export default function ProductViewTabs() {
     data: mostViewedData,
     isLoading: isMostViewedLoading,
     isError: isMostViewedError,
-  } = useMostViewedProducts({ limit: 4 });
+  } = useMostViewedProducts({ limit: 12 });
 
   const mostViewedProducts = (mostViewedData ?? []).map(mapMostViewedProduct);
 
@@ -249,6 +257,16 @@ export default function ProductViewTabs() {
     const id = requestAnimationFrame(updateScrollButtons);
     return () => cancelAnimationFrame(id);
   }, [activeTab, currentData.length, updateScrollButtons]);
+
+  // 3. FIX: jab canScrollLeft/canScrollRight badalta hai, container ko
+  //    pl-10/pr-10 padding milti/hatati hai — jo khud scrollWidth badal deta
+  //    hai. Ye extra pass us padding-shift ke baad ek aur measurement leta
+  //    hai taaki left arrow turant sahi state mein aaye, sirf agle scroll
+  //    event ka wait na kare.
+  useEffect(() => {
+    const id = requestAnimationFrame(updateScrollButtons);
+    return () => cancelAnimationFrame(id);
+  }, [canScrollLeft, canScrollRight, updateScrollButtons]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -309,9 +327,9 @@ export default function ProductViewTabs() {
             <button
               type="button"
               onClick={() => scrollByAmount("left")}
-              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-[#334155] hover:bg-[#1e293b] text-white py-6 px-2"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
             >
-              <ChevronLeft size={22} />
+              <ChevronLeft size={16} />
             </button>
           )}
 
@@ -330,8 +348,10 @@ export default function ProductViewTabs() {
               ref={scrollRef}
               className={
                 isSlider
-                  ? "flex gap-4 overflow-x-auto scroll-smooth px-10 pb-2 snap-x snap-mandatory"
-                  : "flex gap-4 overflow-visible px-0 pb-2 md:grid md:grid-cols-4"
+                  ? `flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+                      canScrollLeft ? "pl-10" : "pl-0"
+                    } ${canScrollRight ? "pr-10" : "pr-0"}`
+                  : "flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:overflow-visible md:px-0 md:grid md:grid-cols-4"
               }
             >
               {currentData.map((product) => (
@@ -344,9 +364,9 @@ export default function ProductViewTabs() {
             <button
               type="button"
               onClick={() => scrollByAmount("right")}
-              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-[#334155] hover:bg-[#1e293b] text-white py-6 px-2"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
             >
-              <ChevronRight size={22} />
+              <ChevronRight size={16} />
             </button>
           )}
         </div>

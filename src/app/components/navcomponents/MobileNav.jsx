@@ -7,8 +7,9 @@ import Image from 'next/image';
 import { ShoppingCart, Search, X, Mic } from 'lucide-react';
 import PhoneLeftMenu from '../phone-components/PhoneLeftMenu';
 import { useSearchAllProducts } from "@/app/api/hooks/useSearchAllProducts";
+import { decodeHtml } from '@/libs/decodeHtml';
 
-// ======================== CONSTANTS (search wala logic desktop SearchBar se copy kiya hai) ========================
+// ======================== CONSTANTS ========================
 const DEBOUNCE_DELAY = 400;
 const DROPDOWN_VISIBLE_LIMIT = 4;
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
@@ -96,14 +97,10 @@ const MobileNavbar = () => {
   }, [])
   // -------------------------------------------------------------
   // SEARCH TOGGLE STATE
-  // Ye state sirf PHONE width (md se neeche) pe matter karta hai.
-  // Tablet/iPad (md aur upar) pe search hamesha khula hi rahega,
-  // isse ignore kar denge - niche classes me "md:" prefix se
-  // hum manually force kar rahe hain ki tablet pe sab kuch dikhe.
   // -------------------------------------------------------------
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // 1) Search input + debounce state (jaise desktop SearchBar mein hai)
+  // 1) Search input + debounce state
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -120,7 +117,17 @@ const MobileNavbar = () => {
     stopListening,
   } = useVoiceSearch({ lang: "en-IN" });
 
-  // 3) Real API call - mock suggestions ki jagah ab yahi live data dega
+  // 2a. Voice error input ke andar overlay ki tarah dikhega aur 2 second
+  // baad khud gayab ho jayega.
+  const [showVoiceError, setShowVoiceError] = useState(false);
+  useEffect(() => {
+    if (!voiceError) return;
+    setShowVoiceError(true);
+    const timer = setTimeout(() => setShowVoiceError(false), 2000);
+    return () => clearTimeout(timer);
+  }, [voiceError]);
+
+  // 3) Real API call - dropdown suggestions ke liye
   const { data, isLoading, isFetching } = useSearchAllProducts(
     { data: debouncedValue, page: 1, limit: 8 },
     { enabled: debouncedValue.length > 0 }
@@ -133,18 +140,9 @@ const MobileNavbar = () => {
     [results]
   );
 
-  // 4) Ghost text suggestion (input ke andar halka grey autocomplete)
-  const ghostSuggestion = useMemo(() => {
-    if (!searchQuery) return "";
-    const match = results.find((p) =>
-      p.name?.toLowerCase().startsWith(searchQuery.toLowerCase())
-    );
-    return match?.name ?? "";
-  }, [searchQuery, results]);
-
-  const ghostRemainder = ghostSuggestion
-    ? ghostSuggestion.slice(searchQuery.length)
-    : "";
+  // NOTE: Ghost-text autocomplete (halka grey overlay text jo input ke
+  // andar aage se dikhta tha) hata diya gaya hai — user ko wo overlapping/
+  // garbled lag raha tha. Dropdown suggestions (neeche wali list) rakhi hai.
 
   // 5) Debounce - typing rukne ke 400ms baad hi API call trigger hogi
   useEffect(() => {
@@ -198,18 +196,8 @@ const MobileNavbar = () => {
     router.push(`/productsDynamic?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  // 8) Tab/Right-arrow se ghost suggestion accept karna (cursor end pe ho tabhi)
+  // 8) Escape se dropdown band karna (Tab/ArrowRight ghost-accept logic hata diya, ghost text hi nahi hai ab)
   const handleKeyDown = (e) => {
-    const cursorAtEnd = e.target.selectionStart === searchQuery.length;
-    if (
-      (e.key === "Tab" || e.key === "ArrowRight") &&
-      ghostRemainder &&
-      cursorAtEnd
-    ) {
-      e.preventDefault();
-      setSearchQuery(ghostSuggestion);
-      return;
-    }
     if (e.key === "Escape") {
       setShowSuggestions(false);
       searchInputRef.current?.blur();
@@ -273,9 +261,6 @@ const MobileNavbar = () => {
 
       {/* =============================================================
           LOGO
-          - Phone, search band: FULL logo dikhega
-          - Phone, search khula: CHHOTA icon logo dikhega
-          - Tablet (md aur upar): hamesha FULL logo, state se koi farak nahi padta
       ============================================================= */}
 
       {/* Full/wide logo */}
@@ -312,11 +297,8 @@ const MobileNavbar = () => {
 
       {/* =============================================================
           SEARCH BAR
-          - Phone, search band: dikhta hi nahi (spacer div uski jagah leta hai)
-          - Phone, search khula: poora expand hota hai, saath me "X" close button
-          - Tablet (md aur upar): hamesha dikhega, "X" button yahan zaroorat
-            nahi hai isliye md:hidden laga diya hai usme
-          - Ab isme real API search + ghost text + voice mic bhi hai
+          - Ghost-text autocomplete hata diya (garbled/overlapping lag raha tha)
+          - Dropdown suggestions (product list) rakhi hai
       ============================================================= */}
       <div
         ref={searchWrapperRef}
@@ -325,17 +307,6 @@ const MobileNavbar = () => {
       >
         <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-2">
           <div className="relative flex-1 min-w-0 flex items-center border border-gray-300 focus-within:border-[#98022e] rounded px-3 py-2 bg-white h-[40px]">
-
-            {/* Ghost text overlay - halka grey autocomplete text input ke peeche */}
-            {ghostRemainder && (
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 flex items-center pl-3 pr-16 text-sm whitespace-pre"
-              >
-                <span className="invisible">{searchQuery}</span>
-                <span className="text-gray-400">{ghostRemainder}</span>
-              </div>
-            )}
 
             <input
               ref={searchInputRef}
@@ -385,10 +356,15 @@ const MobileNavbar = () => {
               <Search size={18} strokeWidth={2} />
             </button>
 
-            {/* Suggestions Dropdown - is bordered input box ke andar hi rakha hai
-                (form/close-button wale outer wrapper ke bahar nahi) taaki
-                dropdown ki width EXACTLY input jitni ho, close button ka
-                extra space isme add na ho */}
+            {/* Voice error - input box ke andar overlay ki tarah dikhta hai,
+                2 second baad khud gayab ho jaata hai */}
+            {showVoiceError && voiceError && (
+              <div className="absolute inset-0 flex items-center px-3 bg-white rounded pointer-events-none">
+                <span className="text-xs text-red-500 truncate">{voiceError}</span>
+              </div>
+            )}
+
+            {/* Suggestions Dropdown - product results list, input box ke andar hi */}
             {showSuggestions && (
               <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white border border-gray-200 rounded shadow-md z-50 max-h-72 overflow-y-auto">
                 {(isLoading || isFetching) ? (
@@ -423,7 +399,7 @@ const MobileNavbar = () => {
                         {/* Product Info with Highlighted Text */}
                         <div className="min-w-0 flex-1">
                           <p className="text-sm text-gray-800 truncate">
-                            {highlightMatch(product.name, debouncedValue)}
+                            {highlightMatch(decodeHtml(product.name), debouncedValue)}
                           </p>
                           <p className="text-xs text-gray-500">
                             {product.special_price ? (
@@ -461,8 +437,7 @@ const MobileNavbar = () => {
             )}
           </div>
 
-          {/* Close button - sirf phone ke liye. Tablet pe search hamesha
-              khula rehta hai isliye ise band karne ki zaroorat nahi. */}
+          {/* Close button - sirf phone ke liye. */}
           <button
             type="button"
             onClick={handleCloseSearch}
@@ -472,26 +447,13 @@ const MobileNavbar = () => {
             <X size={20} strokeWidth={2} />
           </button>
         </form>
-
-        {/* Voice error message */}
-        {voiceError && (
-          <p className="absolute left-3 top-[calc(100%+4px)] text-xs text-red-500 z-10">
-            {voiceError}
-          </p>
-        )}
       </div>
 
-      {/* Spacer - jab phone pe search band ho, tab search bar ki jagah
-          ye khaali jagah bhar deta hai. Tablet pe search hamesha dikhta
-          hai isliye is spacer ki zaroorat nahi (md:hidden). */}
+      {/* Spacer */}
       {!isSearchOpen && <div className="flex-1 md:hidden" />}
 
       {/* =============================================================
           RIGHT SIDE - Search icon (phone only) + Cart + Menu
-          - Phone, search khula: sirf yehi block poora hide ho jayega
-            (kyunki search input already "X" close button de raha hai)
-          - Tablet (md aur upar): Cart aur Menu hamesha dikhenge,
-            search-toggle icon ki zaroorat nahi (md:hidden)
       ============================================================= */}
       <div
         className={`items-center gap-2 shrink-0 h-[40px] ${isSearchOpen ? "hidden md:flex" : "flex"
