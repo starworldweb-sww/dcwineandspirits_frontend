@@ -27,7 +27,12 @@ const SmallDescAndSubcategory = ({ smalldesc, subCategories = [] }) => {
   if (!smalldesc && (!subCategories || subCategories.length === 0)) return null
 
   return (
-    <div className={`px-2 py-2 ${sumana.variable} ${hindMadurai.variable}`}>
+    // 5. FIX: "min-w-0 w-full" add kiya — isse yeh div apne parent (flex/grid layout)
+    //    ko force nahi karega wide hone ke liye. Bina min-w-0 ke, flex items ka
+    //    default min-width "auto" hota hai, jo andar ke pills ke natural width
+    //    tak shrink hone se rokta hai — isi wajah se page pe horizontal scroll
+    //    aa raha tha aur last pill viewport se bahar cut ho rahi thi.
+    <div className={`w-full min-w-0 px-2 py-2 ${sumana.variable} ${hindMadurai.variable}`}>
       {smalldesc && (
         // 3. small-description-content class isliye taaki backend ke inline styles/tags
         //    hamare Tailwind ke sath conflict na karein
@@ -41,12 +46,18 @@ const SmallDescAndSubcategory = ({ smalldesc, subCategories = [] }) => {
 
       {/* ---- Subcategory pills (solid brand color, text inside, no images) ---- */}
       {subCategories && subCategories.length > 0 && (
-        <div className="relative mt-6">
+        // 6. FIX: "min-w-0" yahan bhi zaroori hai — outer div se inherited overflow
+        //    ko yeh wrapper bhi contain kare, taaki scroll sirf pills row ke andar
+        //    ho, page ke andar nahi
+        <div className="relative mt-6 w-full">
           {/* edge fade — right side pe hint deta hai ki aur items scroll karne ko hain */}
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-14" />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6" />
 
-          <div className="scrollbar-none flex snap-x snap-mandatory flex-nowrap gap-3 overflow-x-auto px-1 pb-3">
+          {/* 7. FIX: "min-w-0" is scroll container pe bhi — yeh actual element hai
+              jo overflow-x-auto kar raha hai, isliye isko bhi apne aap ko
+              shrink karne dena zaroori hai */}
+          <div className="scrollbar-none flex min-w-0 snap-x snap-mandatory flex-nowrap gap-3 overflow-x-auto px-1 pb-3">
             {subCategories.map((sub) => (
               <Link
                 key={sub.category_id}

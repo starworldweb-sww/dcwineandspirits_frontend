@@ -284,7 +284,15 @@ const ProductsDynamicMain = ({
     // const displayedProducts = sortedProducts.slice(0, showNum);
 
     return (
-      <section className="w-full bg-white flex-1">
+      // 8. FIX: "min-w-0" add kiya "flex-1" ke sath. "flex-1" wale items ka bhi
+      //    default min-width "auto" hota hai — matlab yeh <section> (jo filter
+      //    sidebar ke bagal mein flex row ka child hai) andar ke content
+      //    (subcategory pills row) ki natural width tak khud ko shrink nahi
+      //    hone deta tha. Isi wajah se pura page horizontally scroll ho raha
+      //    tha, sirf pehle wale component-level fix se poora fix nahi hua —
+      //    yeh section hi asli parent hai jahan overflow upar tak leak ho
+      //    raha tha.
+      <section className="w-full min-w-0 bg-white flex-1">
         <SmallDescAndSubcategory
           smalldesc={data.smalldesc}
           subCategories={data.subCategories}

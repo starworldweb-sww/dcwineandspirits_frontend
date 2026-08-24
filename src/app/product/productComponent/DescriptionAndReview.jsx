@@ -222,7 +222,7 @@ const DescriptionAndReview = ({ product = {} }) => {
 
       {activeTab === "shipping" && (
         <section className="py-6 mt-1 text-[15px] leading-7 text-zinc-800">
-          <h2 className={`${sumana.className} text-2xl font-bold text-black mb-4`}>
+          <h2 className={`${sumana.className} text-xl lg:text-2xl font-bold text-black mb-4 font-hind-madurai`}>
             {SHIPPING_INFO.heading}
           </h2>
           <p className="mb-4">{SHIPPING_INFO.intro}</p>

@@ -1,6 +1,6 @@
 "use client";
-import { Menu, X, Plus, Minus } from "lucide-react";
-import React, { useState } from "react";
+import { Menu, X, ChevronDown, Search, LogIn, UserPlus, Phone, Download } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useMobileCategory } from "@/app/api/hooks/useMobileCategory"; // apna actual path daal dena
 import Link from "next/link";
 import { decodeHtml } from "@/libs/decodeHtml";
@@ -17,9 +17,38 @@ const getItemHref = (item) => {
 };
 
 // ============================================================
+// HELPER: Search query ke hisaab se menu tree ko filter karta hai
+// - Agar item ka apna title match kare, toh uske saare children
+//   bhi (unfiltered) dikhaye jaate hain
+// - Agar sirf koi descendant match kare, toh sirf wahi matching
+//   descendants dikhte hain (pruned tree)
+// ============================================================
+const filterMenuTree = (items, query) => {
+  if (!query) return items;
+  const q = query.toLowerCase();
+
+  return items.reduce((acc, item) => {
+    const titleMatches = decodeHtml(item.title).toLowerCase().includes(q);
+    const childMatches = item.children ? filterMenuTree(item.children, query) : [];
+
+    if (titleMatches) {
+      acc.push({ ...item, children: item.children || [] });
+    } else if (childMatches.length > 0) {
+      acc.push({ ...item, children: childMatches });
+    }
+    return acc;
+  }, []);
+};
+
+// ============================================================
 // COMPONENT: MenuNode
 // Recursive <li> row — kitni bhi nesting depth API se aaye,
 // yeh khud ko baar baar call karke handle kar leta hai.
+//
+// Accordion animation ab CSS grid-template-rows trick use karti
+// hai (0fr <-> 1fr) — max-height hack se zyada smooth aur
+// content ki actual height ke hisaab se accurate hoti hai, kitni
+// bhi lambi list ho.
 //
 // SEO/Accessibility notes:
 // - <ul>/<li> ka use karke browser aur crawlers ko clear
@@ -27,9 +56,10 @@ const getItemHref = (item) => {
 // - aria-expanded batata hai screen readers ko ki submenu
 //   khula hai ya band
 // ============================================================
-const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu }) => {
+const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearching }) => {
   const hasChildren = item.children && item.children.length > 0;
-  const isOpen = openItems.has(path);
+  // Search active hone par sab matching branches force-open rehte hain
+  const isOpen = isSearching ? hasChildren : openItems.has(path);
   const submenuId = `submenu-${path}`;
 
   return (
@@ -40,7 +70,7 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu }) => {
           href={getItemHref(item)}
           onClick={!hasChildren ? closeMenu : undefined}
           style={{ paddingLeft: depth > 0 ? depth * 12 : 0 }}
-          className={`flex-1 text-[#2c3e50] ${
+          className={`flex-1 text-[#2c3e50] transition-colors duration-200 hover:text-[#98022e] ${
             depth === 0
               ? "font-bold text-[15px]"
               : "font-font text-[14px] text-gray-600"
@@ -49,45 +79,51 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu }) => {
           {decodeHtml(item.title)}
         </Link>
 
-        {hasChildren && (
+        {/* Search ke dauraan sab kuch already open hai, isliye toggle button
+            chhupa dete hain taaki confusing na lage */}
+        {hasChildren && !isSearching && (
           <button
             type="button"
             onClick={() => toggleItem(path)}
             aria-expanded={isOpen}
             aria-controls={submenuId}
             aria-label={isOpen ? `Collapse ${item.title} menu` : `Expand ${item.title} menu`}
-            className="shrink-0 border rounded-full border-[#2c3e50] py-[1px] px-[1px]"
+            className="shrink-0 p-1.5 -mr-1.5 rounded-full active:bg-gray-100 transition-colors duration-200"
           >
-            {isOpen ? (
-              <Minus size={14} className="text-[#2c3e50]" strokeWidth={2} />
-            ) : (
-              <Plus size={14} className="text-[#2c3e50]" strokeWidth={2} />
-            )}
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+              className={`text-[#2c3e50] transition-transform duration-300 ease-in-out ${
+                isOpen ? "rotate-180" : "rotate-0"
+              }`}
+            />
           </button>
         )}
       </div>
 
-      {/* ---------- SUBMENU: nested <ul>, sirf tabhi render hoga jab children ho ---------- */}
+      {/* ---------- SUBMENU: grid-rows trick se smooth expand/collapse ---------- */}
       {hasChildren && (
         <div
-          id={submenuId}
-          className={`overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-[3000px]" : "max-h-0"
+          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+            isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           }`}
         >
-          <ul className="pb-1">
-            {item.children.map((child, index) => (
-              <MenuNode
-                key={`${path}-${index}`}
-                item={child}
-                path={`${path}-${index}`}
-                depth={depth + 1}
-                openItems={openItems}
-                toggleItem={toggleItem}
-                closeMenu={closeMenu}
-              />
-            ))}
-          </ul>
+          <div id={submenuId} className="overflow-hidden">
+            <ul className="pb-1">
+              {item.children.map((child, index) => (
+                <MenuNode
+                  key={`${path}-${index}`}
+                  item={child}
+                  path={`${path}-${index}`}
+                  depth={depth + 1}
+                  openItems={openItems}
+                  toggleItem={toggleItem}
+                  closeMenu={closeMenu}
+                  isSearching={isSearching}
+                />
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </li>
@@ -106,9 +142,18 @@ const PhoneLeftMenu = () => {
   // Set-based state — isse multiple accordion items ek saath khule reh sakte hain
   const [openItems, setOpenItems] = useState(new Set());
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { data, isLoading } = useMobileCategory();
   const menuItems = data?.data?.menu || [];
   const heading = data?.data?.heading || "MENU";
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  const filteredMenuItems = useMemo(
+    () => filterMenuTree(menuItems, searchQuery.trim()),
+    [menuItems, searchQuery],
+  );
 
   // Kisi bhi node ka open/close state toggle karta hai
   const toggleItem = (path) => {
@@ -125,6 +170,35 @@ const PhoneLeftMenu = () => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Menu band hone par search reset ho jaye, taaki agli baar khulne pe
+  // poora tree fresh dikhe
+  useEffect(() => {
+    if (!isMenuOpen) {
+      setSearchQuery("");
+    }
+  }, [isMenuOpen]);
+
+  // Menu khule hone par background scroll lock — smoother, distraction-free feel
+  useEffect(() => {
+    if (isMenuOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isMenuOpen]);
+
+  // Escape key se bhi menu close ho jaye
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isMenuOpen]);
+
   return (
     <div>
       {/* ---------- HAMBURGER BUTTON: menu open/close trigger ---------- */}
@@ -133,7 +207,7 @@ const PhoneLeftMenu = () => {
         onClick={() => setIsMenuOpen((prev) => !prev)}
         aria-expanded={isMenuOpen}
         aria-controls="phone-left-menu-drawer"
-        className="w-full h-full flex items-center justify-center text-[#98022e] hover:opacity-80 transition-opacity"
+        className="w-full h-full flex items-center justify-center text-[#98022e] hover:opacity-80 active:scale-90 transition-all duration-200"
         aria-label="Toggle menu"
       >
         {isMenuOpen ? (
@@ -147,7 +221,7 @@ const PhoneLeftMenu = () => {
       <div
         onClick={closeMenu}
         aria-hidden="true"
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] z-40 transition-opacity duration-300 ease-in-out ${
           isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       />
@@ -155,7 +229,7 @@ const PhoneLeftMenu = () => {
       {/* ---------- DRAWER PANEL: left se slide hoke aata hai ---------- */}
       <div
         id="phone-left-menu-drawer"
-        className={`fixed top-0 left-0 h-full w-[85%] max-w-[360px] bg-white z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-[85%] max-w-[360px] bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -164,18 +238,45 @@ const PhoneLeftMenu = () => {
           <span className="font-bold text-sm tracking-wide uppercase text-white">
             MENU
           </span>
-          <button type="button" onClick={closeMenu} aria-label="Close menu">
+          <button
+            type="button"
+            onClick={closeMenu}
+            aria-label="Close menu"
+            className="active:scale-90 transition-transform duration-200"
+          >
             <X size={22} className="text-white" strokeWidth={2} />
           </button>
+        </div>
+
+        {/* ---- Quick search: category names ko client-side filter karta hai ---- */}
+        <div className="px-4 py-3 border-b border-gray-100 shrink-0">
+          <div className="relative">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search categories..."
+              aria-label="Search categories"
+              className="w-full bg-gray-50 border border-gray-200 rounded-full pl-9 pr-3 py-2 text-[14px] text-[#2c3e50] outline-none transition-all duration-200 focus:border-[#98022e] focus:ring-4 focus:ring-[#98022e]/10 focus:bg-white"
+            />
+          </div>
         </div>
 
         {/* ---- Menu list: semantic <nav> + <ul> for SEO/accessibility ---- */}
         <nav className="flex-1 overflow-y-auto" aria-label="Mobile navigation">
           {isLoading ? (
             <p className="px-5 py-6 text-[14px] text-gray-500">Loading menu...</p>
+          ) : filteredMenuItems.length === 0 ? (
+            <p className="px-5 py-6 text-[14px] text-gray-500">
+              No categories found for &quot;{searchQuery}&quot;.
+            </p>
           ) : (
-            <ul>
-              {menuItems.map((item, index) => (
+            <ul key={searchQuery}>
+              {filteredMenuItems.map((item, index) => (
                 <MenuNode
                   key={index}
                   item={item}
@@ -184,11 +285,51 @@ const PhoneLeftMenu = () => {
                   openItems={openItems}
                   toggleItem={toggleItem}
                   closeMenu={closeMenu}
+                  isSearching={isSearching}
                 />
               ))}
             </ul>
           )}
         </nav>
+
+        {/* ---- Bottom action bar: Login/Register, phone, bulk order ---- */}
+        <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-3 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/index.php?route=account/login"
+              onClick={closeMenu}
+              className="flex-1 flex items-center justify-center gap-1.5 border border-[#98022e] text-[#98022e] text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#98022e] hover:text-white active:scale-[0.97]"
+            >
+              <LogIn size={14} />
+              Login
+            </Link>
+            <Link
+              href="/index.php?route=account/register"
+              onClick={closeMenu}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#98022e] text-white text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#7a0225] active:scale-[0.97]"
+            >
+              <UserPlus size={14} />
+              Register
+            </Link>
+          </div>
+
+          <a
+            href="tel:+12024598489"
+            className="flex items-center gap-2 text-[13px] text-gray-700 transition-colors duration-200 hover:text-[#98022e]"
+          >
+            <Phone size={14} className="text-[#98022e] shrink-0" />
+            (202) 459-8489
+          </a>
+
+          <a
+            href="/bulk-order-form.xlsx"
+            download="bulk-order-form.xlsx"
+            className="flex items-center gap-2 text-[13px] text-gray-700 transition-colors duration-200 hover:text-[#98022e]"
+          >
+            <Download size={14} className="text-[#98022e] shrink-0" />
+            Download Bulk Order Form
+          </a>
+        </div>
       </div>
     </div>
   );
