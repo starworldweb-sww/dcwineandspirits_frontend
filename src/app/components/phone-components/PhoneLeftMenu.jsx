@@ -1,7 +1,8 @@
 "use client";
-import { Menu, X, ChevronDown, Search, LogIn, UserPlus, Phone, Download } from "lucide-react";
+import { Menu, X, ChevronDown, Search, LogIn, UserPlus, Phone, Download, User, LogOut } from "lucide-react";
 import React, { useState, useEffect, useMemo } from "react";
 import { useMobileCategory } from "@/app/api/hooks/useMobileCategory"; // apna actual path daal dena
+import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // PhoneHeader wala hi auth hook — login state yahin se milega
 import Link from "next/link";
 import { decodeHtml } from "@/libs/decodeHtml";
 
@@ -148,6 +149,11 @@ const PhoneLeftMenu = () => {
   const menuItems = data?.data?.menu || [];
   const heading = data?.data?.heading || "MENU";
 
+  // Auth state — PhoneHeader jaisa hi pattern: user object aur logout mutation
+  const { data: user, isLoading: isUserLoading } = useUser();
+  const logoutMutation = useLogout();
+  const isLoggedIn = !!user;
+
   const isSearching = searchQuery.trim().length > 0;
 
   const filteredMenuItems = useMemo(
@@ -169,6 +175,12 @@ const PhoneLeftMenu = () => {
   };
 
   const closeMenu = () => setIsMenuOpen(false);
+
+  // Logout par: menu bhi band ho jaye aur mutation trigger ho jaye
+  const handleLogout = () => {
+    closeMenu();
+    logoutMutation.mutate();
+  };
 
   // Menu band hone par search reset ho jaye, taaki agli baar khulne pe
   // poora tree fresh dikhe
@@ -292,25 +304,53 @@ const PhoneLeftMenu = () => {
           )}
         </nav>
 
-        {/* ---- Bottom action bar: Login/Register, phone, bulk order ---- */}
+        {/* ---- Bottom action bar: Login/Register (logged out) ya
+            Account/Logout (logged in), phone, bulk order ---- */}
         <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-3 space-y-2.5">
           <div className="flex items-center gap-2">
-            <Link
-              href="/index.php?route=account/login"
-              onClick={closeMenu}
-              className="flex-1 flex items-center justify-center gap-1.5 border border-[#98022e] text-[#98022e] text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#98022e] hover:text-white active:scale-[0.97]"
-            >
-              <LogIn size={14} />
-              Login
-            </Link>
-            <Link
-              href="/index.php?route=account/register"
-              onClick={closeMenu}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#98022e] text-white text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#7a0225] active:scale-[0.97]"
-            >
-              <UserPlus size={14} />
-              Register
-            </Link>
+            {isLoggedIn ? (
+              // ---- LOGGED IN: "My Account" (naam ke saath) + "Logout" ----
+              <>
+                <Link
+                  href="/account"
+                  onClick={closeMenu}
+                  className="flex-1 flex items-center justify-center gap-1.5 border border-[#98022e] text-[#98022e] text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#98022e] hover:text-white active:scale-[0.97]"
+                >
+                  <User size={14} />
+                  {/* firstname aane tak generic "My Account" dikhta rahega */}
+                  {user?.firstname ? `Hi, ${user.firstname}` : "My Account"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#98022e] text-white text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#7a0225] active:scale-[0.97] disabled:opacity-50"
+                >
+                  <LogOut size={14} />
+                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                </button>
+              </>
+            ) : (
+              // ---- LOGGED OUT: "Login" + "Register" (original behaviour) ----
+              <>
+                <Link
+                  href="/account/login/"
+                  onClick={closeMenu}
+                  className="flex-1 flex items-center justify-center gap-1.5 border border-[#98022e] text-[#98022e] text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#98022e] hover:text-white active:scale-[0.97]"
+                >
+                  <LogIn size={14} />
+                  Login
+                </Link>
+                <Link
+                  href="/register/"
+                  onClick={closeMenu}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#98022e] text-white text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#7a0225] active:scale-[0.97]"
+                >
+                  <UserPlus size={14} />
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           <a

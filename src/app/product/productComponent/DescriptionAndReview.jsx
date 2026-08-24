@@ -173,14 +173,14 @@ const DescriptionAndReview = ({ product = {} }) => {
 
   return (
     <main className="px-3 2xl:px-32 py-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4 font-sumana">
         {visibleTabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={getTabButtonClass(tab.key)}
           >
-            {tab.label}
+           <span className="font-sumana uppercase"> {tab.label}</span>
           </button>
         ))}
       </div>

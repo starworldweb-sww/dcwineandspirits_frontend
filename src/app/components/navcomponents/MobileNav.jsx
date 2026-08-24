@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ShoppingCart, Search, X, Mic } from 'lucide-react';
 import PhoneLeftMenu from '../phone-components/PhoneLeftMenu';
 import { useSearchAllProducts } from "@/app/api/hooks/useSearchAllProducts";
+import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
 import { decodeHtml } from '@/libs/decodeHtml';
 
 // ======================== CONSTANTS ========================
@@ -90,7 +91,8 @@ const MobileNavbar = () => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  const cartCount = 0;
+  const { data: cartlist } = useGetCartList();
+  const cartCount = cartlist?.items?.length || 0;
 
   useEffect(() => {
     setIsClient(true)
@@ -478,7 +480,7 @@ const MobileNavbar = () => {
         >
           <ShoppingCart size={22} strokeWidth={1.5} />
           {cartCount > 0 && (
-            <span className="absolute top-0 right-0 bg-[#98022e] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+            <span className="absolute top-2 right-1 bg-[#98022e] text-white text-[8px] font-bold w-3 h-3 rounded-full flex items-center justify-center">
               {cartCount}
             </span>
           )}
