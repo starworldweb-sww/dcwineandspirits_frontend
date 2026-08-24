@@ -25,6 +25,7 @@ import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 import { toast } from "sonner";
 import Link from "next/link";
 import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
+import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { addRecentProduct } from "@/libs/recentProducts";
 
@@ -93,6 +94,7 @@ export default function ProductMain({ product }) {
   }, [initialOptionValues]);
 
   const [showWishlistPopup, setShowWishlistPopup] = useState(false);
+  const [showCartPopup, setShowCartPopup] = useState(false);
   const addToCartMut = useAddtoCart();
   const isAddingToCart = addToCartMut.isPending;
 
@@ -246,7 +248,7 @@ export default function ProductMain({ product }) {
         option: optionPayload,
       });
       if (res?.success) {
-        toast.success(res.message || "Added to cart!");
+        setShowCartPopup(true);
       }
     } catch (e) {}
   };
@@ -281,6 +283,12 @@ export default function ProductMain({ product }) {
       <AddToWishlistPopup
         isOpen={showWishlistPopup}
         onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: productImage }}
+      />
+
+      <AddToCartPopup
+        isOpen={showCartPopup}
+        onClose={() => setShowCartPopup(false)}
         product={{ ...product, image: productImage }}
       />
 
@@ -893,8 +901,8 @@ export default function ProductMain({ product }) {
 
               <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-200">
-                  <a
-                    
+                  
+                   <a 
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
                   >
                     <Gift size={18} className="text-[#98022e]" />

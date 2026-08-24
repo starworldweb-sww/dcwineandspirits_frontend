@@ -10,6 +10,7 @@ import {
   Repeat,
   ShoppingBag,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -188,7 +189,7 @@ const ProductListRow = ({ product }) => {
 };
 
 const ProductGridCard = ({ product }) => {
-  const { mutate: addtoCart } = useAddtoCart();
+  const { mutate: addtoCart, isPending } = useAddtoCart();
   // 5. Grid card ke liye bhi apna local popup state
   const [showPopup, setShowPopup] = useState(false);
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
@@ -197,7 +198,12 @@ const ProductGridCard = ({ product }) => {
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
-  const handleAddtoCart = (product_id) => {
+  const handleAddtoCart = (e, product_id) => {
+    // 8. Image ke upar wala "+" button bhi isi function ko call karta hai,
+    //    isliye stopPropagation zaroori hai — warna parent <Link> navigate
+    //    kar dega add-to-cart ke bajaye
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
     addtoCart(product_id, {
       onSuccess: (data) => {
 
@@ -217,7 +223,7 @@ const ProductGridCard = ({ product }) => {
 
       <Link
         href={productLink}
-        className="w-full h-[200px] flex items-center justify-center flex-shrink-0"
+        className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
         <img
           src={productImage}
@@ -225,22 +231,38 @@ const ProductGridCard = ({ product }) => {
           loading="lazy"
           className="max-w-full max-h-full object-contain"
         />
+
+        {/* ============================================================
+            NEW: Phone/Tablet ke liye "+" add-to-cart button, image ke
+            right-bottom corner pe — HomeProductSlider wala hi pattern.
+            "lg:hidden" isliye ki desktop pe yeh chhup jaye aur neeche
+            wala text button dikhe.
+        ============================================================ */}
+        <button
+          type="button"
+          onClick={(e) => handleAddtoCart(e, product?.product_id)}
+          disabled={isPending}
+          aria-label="Add to cart"
+          className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md  active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={2.5} />}
+        </button>
       </Link>
 
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
+        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center mb-1 leading-tight">
           {decodeHtml(product.name)}
         </h2>
       </Link>
 
-      <p className={`${hindMadurai.className} mt-2 text-base text-gray-400`}>
+      <p className={`${hindMadurai.className} mt-2 text-base text-gray-700 mt-auto font-semibold  font-sarabun `}>
         ${Number(displayPrice).toFixed(2)}
       </p>
 
       <button
         type="button"
-        onClick={() => handleAddtoCart(product?.product_id)}
-        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
+        onClick={() => handleAddtoCart(null, product?.product_id)}
+        className={`${hindMadurai.className} hidden lg:block mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
       </button>
