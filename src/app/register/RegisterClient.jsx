@@ -24,7 +24,7 @@ const sidebarLinks = [
 ];
 
 const breadcrumbs = [
-  { label: "Home", href: "/" },
+
   { label: "Account", href: "/account" },
   { label: "Register", href: "/account/register" },
 ];

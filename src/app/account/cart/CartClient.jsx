@@ -18,7 +18,7 @@ const ACCENT = "#98022e";
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "";
 
 const breadcrumbs = [
-  { label: "Home", href: "/" },
+
   { label: "Shopping Cart", href: "/cart" },
 ];
 

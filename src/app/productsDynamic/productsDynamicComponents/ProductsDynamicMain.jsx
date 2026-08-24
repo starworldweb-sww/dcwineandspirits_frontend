@@ -128,7 +128,10 @@ const ProductListRow = ({ product }) => {
         )}
 
         <Link href={productLink}>
-          <h2 className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors">
+          <h2
+            title={decodeHtml(product.name)}
+            className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
+          >
             {decodeHtml(product.name)}
           </h2>
         </Link>
@@ -249,8 +252,23 @@ const ProductGridCard = ({ product }) => {
         </button>
       </Link>
 
+      {/* ============================================================
+          FIX: line-clamp leak fix — pehle "min-h" + "leading-snug"
+          use ho raha tha, jiski wajah se clamp box aur actual line-height
+          ka calculation match nahi kar raha tha, aur teesri line ka
+          chhota sa sliver (halka sa dikhna) leak ho raha tha.
+
+          Ab fixed "h-[2.8em]" + explicit "leading-[1.4]" use kiya hai
+          taaki box height exactly "2 lines × 1.4em line-height" ke
+          barabar ho — koi extra space nahi bachega jisme neeche wali
+          line ka top edge leak ho. "overflow-hidden" bhi explicit
+          add kiya hai safety ke liye.
+      ============================================================ */}
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center mb-1 leading-tight">
+        <h2
+          title={decodeHtml(product.name)}
+          className="mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 cursor-pointer"
+        >
           {decodeHtml(product.name)}
         </h2>
       </Link>

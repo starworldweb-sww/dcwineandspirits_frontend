@@ -342,7 +342,7 @@ const PhoneLeftMenu = () => {
                   Login
                 </Link>
                 <Link
-                  href="/register/"
+                  href="/register"
                   onClick={closeMenu}
                   className="flex-1 flex items-center justify-center gap-1.5 bg-[#98022e] text-white text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#7a0225] active:scale-[0.97]"
                 >

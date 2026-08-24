@@ -144,7 +144,7 @@ const GiftsByOccasionHero = ({ data, bannersData, isLoading: propLoading, isErro
       </div>
 
 
-      <div className={`w-full bg-[#fdfaf5] px-3 2xl:px-32 py-4 `}>
+      <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
 
         <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10">
           <h2 className="text-2xl md:text-[24px] font-bold uppercase tracking-widest text-black font-sumana">

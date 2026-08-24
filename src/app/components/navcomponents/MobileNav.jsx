@@ -92,7 +92,7 @@ const MobileNavbar = () => {
   const [isClient, setIsClient] = useState(false);
 
   const { data: cartlist } = useGetCartList();
-  const cartCount = cartlist?.items?.length || 0;
+  const cartCount = cartlist?.total || 0;
 
   useEffect(() => {
     setIsClient(true)
@@ -480,7 +480,7 @@ const MobileNavbar = () => {
         >
           <ShoppingCart size={22} strokeWidth={1.5} />
           {cartCount > 0 && (
-            <span className="absolute top-2 right-1 bg-[#98022e] text-white text-[8px] font-bold w-3 h-3 rounded-full flex items-center justify-center">
+            <span className="absolute top-2 right-1 bg-[#98022e] text-white text-[8px] font-bold w-3 h-3 rounded-full flex items-center justify-center p-1">
               {cartCount}
             </span>
           )}

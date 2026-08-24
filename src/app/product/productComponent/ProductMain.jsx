@@ -104,7 +104,7 @@ export default function ProductMain({ product }) {
 
   const { data: wishlistCheckData } = useCheckWishlist(productId);
   const isInWishlist = Boolean(
-    wishlistCheckData?.data?.isInWishlist ?? wishlistCheckData?.isInWishlist,
+    wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
   );
 
   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
@@ -908,8 +908,8 @@ export default function ProductMain({ product }) {
                     <Gift size={18} className="text-[#98022e]" />
                     Free Gift Card
                   </a>
-                  <a
-                    
+                  
+                  <a  
                     className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors "
                   >
                     <Truck size={18} className="text-[#98022e]" />

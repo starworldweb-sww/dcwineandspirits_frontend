@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ChevronDown } from "lucide-react";
 import { Sumana } from "next/font/google";
 
 const sumana = Sumana({
@@ -101,18 +101,29 @@ const DescriptionAndReview = ({ product = {} }) => {
   ];
   const visibleTabs = TABS.filter((t) => t.visible);
 
+  // ============================================================
+  // Desktop tab state — UNCHANGED, wahi purana behaviour.
+  // ============================================================
   const [activeTab, setActiveTab] = useState(
     () => visibleTabs[0]?.key || "reviews",
   );
 
-  // Agar current active tab kisi wajah se visible list me na ho (e.g. data
-  // baad me change ho), toh pehle available tab par switch kar do.
   useEffect(() => {
     if (!visibleTabs.some((t) => t.key === activeTab)) {
       setActiveTab(visibleTabs[0]?.key || "reviews");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasDescription, hasSpecifications]);
+
+  // ============================================================
+  // NEW: Mobile/Tab accordion state — sab band, sirf "reviews"
+  // default open. Ek time pe ek hi panel open (standard accordion).
+  // ============================================================
+  const [openAccordion, setOpenAccordion] = useState("reviews");
+
+  const toggleAccordion = (key) => {
+    setOpenAccordion((prev) => (prev === key ? null : key));
+  };
 
   const [rating, setRating] = useState(0);
   const [selectedImages, setSelectedImages] = useState([]);
@@ -171,284 +182,378 @@ const DescriptionAndReview = ({ product = {} }) => {
     }`;
   };
 
+  // ============================================================
+  // NEW: Content renderers — desktop tabs aur mobile accordion
+  // dono isi ek function se content lete hain, taaki JSX duplicate
+  // na ho.
+  // ============================================================
+  const renderDescriptionContent = () => (
+    <div
+      className="product-description-text text-[15px] leading-7 text-zinc-700"
+      dangerouslySetInnerHTML={{ __html: decodeHtml(rawDescription) }}
+    />
+  );
+
+  const renderSpecificationsContent = () => (
+    <div className="border border-gray-200 rounded-sm overflow-hidden">
+      <table className="w-full text-[15px]">
+        <tbody className="divide-y divide-gray-200">
+          {attributes.map((attr, i) => (
+            <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
+              <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
+                {decodeHtml(attr.name)}
+              </th>
+              <td className="px-4 py-3 text-zinc-700 align-top">
+                {decodeHtml(attr.text)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderShippingContent = () => (
+    <div className="text-[15px] leading-7 text-zinc-800">
+      <p className="mb-4">{SHIPPING_INFO.intro}</p>
+      <ul className="list-disc pl-6 mb-6 space-y-1">
+        {SHIPPING_INFO.trustPoints.map((point, index) => (
+          <li key={index}>
+            <span className="font-bold">{point.title}</span> {point.text}
+          </li>
+        ))}
+      </ul>
+      <p className="mb-4">{SHIPPING_INFO.fallbackNote}</p>
+      <ul className="list-disc pl-6 mb-8 space-y-1">
+        {SHIPPING_INFO.fallbackOptions.map((option, index) => (
+          <li key={index}>
+            <span className="font-bold">{option.title}</span> {option.text}
+          </li>
+        ))}
+      </ul>
+      <h2 className={`${sumana.className} text-2xl font-bold text-black`}>
+        {SHIPPING_INFO.detailsHeading}
+      </h2>
+    </div>
+  );
+
+  const renderReviewsContent = () => (
+    <div>
+      {reviews.length > 0 ? (
+        <div className="mb-8 flex flex-col gap-0 border border-gray-200">
+          {reviews.map((review, index) => (
+            <div
+              key={review.review_id || index}
+              className="p-5 border-b border-gray-200 bg-white last:border-b-0"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-black text-[15px]">
+                  {review.author}
+                </h3>
+                <span className="text-gray-400 text-[13px]">
+                  {review.date_added
+                    ? new Date(review.date_added).toLocaleDateString("en-GB")
+                    : ""}
+                </span>
+              </div>
+              <p className="text-[15px] text-gray-700 mb-3">{review.text}</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((starNumber) => (
+                  <span
+                    key={starNumber}
+                    className={
+                      starNumber <= (review.rating || 0)
+                        ? "text-[#bd8f3a] text-lg"
+                        : "text-gray-300 text-lg"
+                    }
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[15px] text-gray-700 mb-5">
+          There are no reviews for this product.
+        </p>
+      )}
+
+      <h2 className="font-['cambriaregular',Cambria,Georgia,serif] text-[19px] font-bold uppercase text-[#bd8f3a] mb-6 mt-6 border-t border-gray-300 pt-6">
+        Write a Review
+      </h2>
+
+      {!isUserLoggedIn ? (
+        <div className="text-[#8a6d3b] mb-10">
+          <p className="text-[15px] mb-4">
+            Please{" "}
+            <a
+              href="/login"
+              className="font-bold underline hover:text-black transition-colors"
+            >
+              login
+            </a>{" "}
+            or{" "}
+            <a
+              href="/register"
+              className="font-bold underline hover:text-black transition-colors"
+            >
+              register
+            </a>{" "}
+            to write a review.
+          </p>
+          <div className="flex gap-4">
+            <button className="bg-[#bd8f3a] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
+              Login
+            </button>
+            <button className="border border-[#bd8f3a] text-[#bd8f3a] hover:bg-[#bd8f3a] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
+              Register
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="w-full max-w-[700px]">
+          <div className="mb-5">
+            <label className="block text-[14px] font-semibold text-black mb-2">
+              Your Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="author"
+              placeholder="Your Name"
+              defaultValue={`${user.firstname} ${user.lastname || ""}`.trim()}
+              required
+              className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-[#bd8f3a] text-[15px] bg-white"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="block text-[14px] font-semibold text-black mb-2">
+              Your Review <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="text"
+              rows={6}
+              placeholder="Write your review..."
+              required
+              className="w-full border border-gray-300 px-4 py-3 outline-none resize-none focus:border-[#bd8f3a] text-[15px] bg-white"
+            />
+          </div>
+
+          <p className="text-[14px] text-gray-500 mb-6">
+            <span className="text-red-500 font-semibold">Note:</span> HTML is
+            not translated!
+          </p>
+
+          <div className="mb-8">
+            <label className="block text-[14px] font-semibold text-black mb-2">
+              Image
+            </label>
+
+            <div
+              onClick={() => fileInputRef.current.click()}
+              className="w-full border-2 border-dashed border-gray-200 p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <Upload size={24} className="text-black" />
+              <p className="text-[15px] font-medium text-black">
+                Choose a file{" "}
+                <span className="font-normal text-gray-500">
+                  or drag it here.
+                </span>
+              </p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                multiple
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+
+            {previews.length > 0 && (
+              <div className="flex flex-wrap gap-4 mt-4">
+                {previews.map((previewUrl, index) => (
+                  <div
+                    key={index}
+                    className="relative w-20 h-20 border border-gray-200 rounded-sm overflow-hidden"
+                  >
+                    <img
+                      src={previewUrl}
+                      alt="preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mb-8">
+            <label className="block text-[14px] font-semibold text-black mb-3">
+              Rating <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center gap-4">
+              <span className="text-[15px] text-black">Bad</span>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((starValue) => (
+                  <input
+                    key={starValue}
+                    type="radio"
+                    name="rating"
+                    value={starValue}
+                    checked={rating === starValue}
+                    onChange={() => setRating(starValue)}
+                    required
+                    className="w-4 h-4 accent-[#bd8f3a] cursor-pointer"
+                  />
+                ))}
+              </div>
+              <span className="text-[15px] text-black">Good</span>
+            </div>
+          </div>
+
+          <div className="flex justify-end border-t border-gray-200 pt-6">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-[#f5f5f5] hover:bg-black hover:text-white transition-all text-black px-8 py-3 uppercase font-semibold text-[14px] tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? "Submitting..." : "Continue"}
+              {!isSubmitting && <span>→</span>}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+
+  const getAccordionContent = (key) => {
+    switch (key) {
+      case "description":
+        return hasDescription ? renderDescriptionContent() : null;
+      case "specifications":
+        return hasSpecifications ? renderSpecificationsContent() : null;
+      case "shipping":
+        return renderShippingContent();
+      case "reviews":
+        return renderReviewsContent();
+      default:
+        return null;
+    }
+  };
+
   return (
     <main className="px-3 2xl:px-32 py-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4 font-sumana">
-        {visibleTabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={getTabButtonClass(tab.key)}
+      {/* ============================================================
+          DESKTOP — UNCHANGED, purana tabs behaviour "lg" aur upar
+      ============================================================ */}
+      <div className="hidden lg:block">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4 font-sumana">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={getTabButtonClass(tab.key)}
+            >
+              <span className="font-sumana uppercase"> {tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "description" && hasDescription && (
+          <section className="py-4 mt-1 px-2 lg:px-0">
+            {renderDescriptionContent()}
+          </section>
+        )}
+
+        {activeTab === "specifications" && hasSpecifications && (
+          <section className="py-6 mt-1">
+            <h2
+              className={`${sumana.className} text-2xl font-bold text-black mb-4`}
+            >
+              Specifications
+            </h2>
+            {renderSpecificationsContent()}
+          </section>
+        )}
+
+        {activeTab === "shipping" && (
+          <section className="py-6 mt-1">
+            <h2 className={`${sumana.className} text-xl lg:text-2xl font-bold text-black mb-4 font-hind-madurai`}>
+              {SHIPPING_INFO.heading}
+            </h2>
+            {renderShippingContent()}
+          </section>
+        )}
+
+        {activeTab === "reviews" && (
+          <section
+            id="product-review-section"
+            ref={reviewSectionRef}
+            className="py-4 mt-1"
           >
-           <span className="font-sumana uppercase"> {tab.label}</span>
-          </button>
-        ))}
+            {renderReviewsContent()}
+          </section>
+        )}
       </div>
 
-      {activeTab === "description" && hasDescription && (
-        <section className="py-4 mt-1 px-2 lg:px-0">
-          <div
-            className="product-description-text text-[15px] leading-7 text-zinc-700"
-            dangerouslySetInnerHTML={{ __html: decodeHtml(rawDescription) }}
-          />
-        </section>
-      )}
+      {/* ============================================================
+          NEW: MOBILE/TAB — accordion, sirf "lg" se neeche dikhega.
+          Order: Description, Specifications, Shipping, Reviews
+          (visibleTabs already isi order me hai). Sab band, sirf
+          "reviews" default open.
+      ============================================================ */}
+      <div className="lg:hidden">
+        {visibleTabs.map((tab) => {
+          const isOpen = openAccordion === tab.key;
+          return (
+            <div key={tab.key} className="border-b border-gray-200">
+              <button
+                type="button"
+                onClick={() => toggleAccordion(tab.key)}
+                className="w-full flex items-center justify-between py-4 text-left cursor-pointer"
+                aria-expanded={isOpen}
+              >
+                <span
+                  className={`font-sumana uppercase text-[15px] font-bold tracking-wide ${
+                    isOpen ? "text-[#98022e]" : "text-black"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                <ChevronDown
+                  size={18}
+                  className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${
+                    isOpen ? "rotate-180 text-[#98022e]" : ""
+                  }`}
+                />
+              </button>
 
-      {activeTab === "specifications" && hasSpecifications && (
-        <section className="py-6 mt-1">
-          <h2
-            className={`${sumana.className} text-2xl font-bold text-black mb-4`}
-          >
-            Specifications
-          </h2>
-          <div className="border border-gray-200 rounded-sm overflow-hidden">
-            <table className="w-full text-[15px]">
-              <tbody className="divide-y divide-gray-200">
-                {attributes.map((attr, i) => (
-                  <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
-                    <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
-                      {decodeHtml(attr.name)}
-                    </th>
-                    <td className="px-4 py-3 text-zinc-700 align-top">
-                      {decodeHtml(attr.text)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {activeTab === "shipping" && (
-        <section className="py-6 mt-1 text-[15px] leading-7 text-zinc-800">
-          <h2 className={`${sumana.className} text-xl lg:text-2xl font-bold text-black mb-4 font-hind-madurai`}>
-            {SHIPPING_INFO.heading}
-          </h2>
-          <p className="mb-4">{SHIPPING_INFO.intro}</p>
-          <ul className="list-disc pl-6 mb-6 space-y-1">
-            {SHIPPING_INFO.trustPoints.map((point, index) => (
-              <li key={index}>
-                <span className="font-bold">{point.title}</span> {point.text}
-              </li>
-            ))}
-          </ul>
-          <p className="mb-4">{SHIPPING_INFO.fallbackNote}</p>
-          <ul className="list-disc pl-6 mb-8 space-y-1">
-            {SHIPPING_INFO.fallbackOptions.map((option, index) => (
-              <li key={index}>
-                <span className="font-bold">{option.title}</span> {option.text}
-              </li>
-            ))}
-          </ul>
-          <h2 className={`${sumana.className} text-2xl font-bold text-black`}>
-            {SHIPPING_INFO.detailsHeading}
-          </h2>
-        </section>
-      )}
-
-      {activeTab === "reviews" && (
-        <section
-          id="product-review-section"
-          ref={reviewSectionRef}
-          className="py-4 mt-1"
-        >
-          {reviews.length > 0 ? (
-            <div className="mb-8 flex flex-col gap-0 border border-gray-200">
-              {reviews.map((review, index) => (
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  isOpen ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
                 <div
-                  key={review.review_id || index}
-                  className="p-5 border-b border-gray-200 bg-white last:border-b-0"
+                  id={tab.key === "reviews" ? "product-review-section-mobile" : undefined}
+                  className="pb-5 px-1"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-bold text-black text-[15px]">
-                      {review.author}
-                    </h3>
-                    <span className="text-gray-400 text-[13px]">
-                      {review.date_added
-                        ? new Date(review.date_added).toLocaleDateString("en-GB")
-                        : ""}
-                    </span>
-                  </div>
-                  <p className="text-[15px] text-gray-700 mb-3">{review.text}</p>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((starNumber) => (
-                      <span
-                        key={starNumber}
-                        className={
-                          starNumber <= (review.rating || 0)
-                            ? "text-[#bd8f3a] text-lg"
-                            : "text-gray-300 text-lg"
-                        }
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
+                  {getAccordionContent(tab.key)}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[15px] text-gray-700 mb-5">
-              There are no reviews for this product.
-            </p>
-          )}
-
-          <h2 className="font-['cambriaregular',Cambria,Georgia,serif] text-[19px] font-bold uppercase text-[#bd8f3a] mb-6 mt-6 border-t border-gray-300 pt-6">
-            Write a Review
-          </h2>
-
-          {!isUserLoggedIn ? (
-            <div className="text-[#8a6d3b] mb-10">
-              <p className="text-[15px] mb-4">
-                Please{" "}
-                <a
-                  href="/login"
-                  className="font-bold underline hover:text-black transition-colors"
-                >
-                  login
-                </a>{" "}
-                or{" "}
-                <a
-                  href="/register"
-                  className="font-bold underline hover:text-black transition-colors"
-                >
-                  register
-                </a>{" "}
-                to write a review.
-              </p>
-              <div className="flex gap-4">
-                <button className="bg-[#bd8f3a] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
-                  Login
-                </button>
-                <button className="border border-[#bd8f3a] text-[#bd8f3a] hover:bg-[#bd8f3a] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
-                  Register
-                </button>
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="w-full max-w-[700px]">
-              <div className="mb-5">
-                <label className="block text-[14px] font-semibold text-black mb-2">
-                  Your Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="author"
-                  placeholder="Your Name"
-                  defaultValue={`${user.firstname} ${user.lastname || ""}`.trim()}
-                  required
-                  className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-[#bd8f3a] text-[15px] bg-white"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-[14px] font-semibold text-black mb-2">
-                  Your Review <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="text"
-                  rows={6}
-                  placeholder="Write your review..."
-                  required
-                  className="w-full border border-gray-300 px-4 py-3 outline-none resize-none focus:border-[#bd8f3a] text-[15px] bg-white"
-                />
-              </div>
-
-              <p className="text-[14px] text-gray-500 mb-6">
-                <span className="text-red-500 font-semibold">Note:</span> HTML is
-                not translated!
-              </p>
-
-              <div className="mb-8">
-                <label className="block text-[14px] font-semibold text-black mb-2">
-                  Image
-                </label>
-
-                <div
-                  onClick={() => fileInputRef.current.click()}
-                  className="w-full border-2 border-dashed border-gray-200 p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <Upload size={24} className="text-black" />
-                  <p className="text-[15px] font-medium text-black">
-                    Choose a file{" "}
-                    <span className="font-normal text-gray-500">
-                      or drag it here.
-                    </span>
-                  </p>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                  />
-                </div>
-
-                {previews.length > 0 && (
-                  <div className="flex flex-wrap gap-4 mt-4">
-                    {previews.map((previewUrl, index) => (
-                      <div
-                        key={index}
-                        className="relative w-20 h-20 border border-gray-200 rounded-sm overflow-hidden"
-                      >
-                        <img
-                          src={previewUrl}
-                          alt="preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-0 right-0 bg-red-500 text-white p-1 hover:bg-red-600 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-8">
-                <label className="block text-[14px] font-semibold text-black mb-3">
-                  Rating <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center gap-4">
-                  <span className="text-[15px] text-black">Bad</span>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((starValue) => (
-                      <input
-                        key={starValue}
-                        type="radio"
-                        name="rating"
-                        value={starValue}
-                        checked={rating === starValue}
-                        onChange={() => setRating(starValue)}
-                        required
-                        className="w-4 h-4 accent-[#bd8f3a] cursor-pointer"
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[15px] text-black">Good</span>
-                </div>
-              </div>
-
-              <div className="flex justify-end border-t border-gray-200 pt-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-[#f5f5f5] hover:bg-black hover:text-white transition-all text-black px-8 py-3 uppercase font-semibold text-[14px] tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isSubmitting ? "Submitting..." : "Continue"}
-                  {!isSubmitting && <span>→</span>}
-                </button>
-              </div>
-            </form>
-          )}
-        </section>
-      )}
+          );
+        })}
+      </div>
 
       <div className="bg-[#f8f8f8] mt-6 py-8 px-6 text-center">
         <h3 className="text-lg font-bold text-black mb-4">{ASSISTANCE_BOX.heading}</h3>

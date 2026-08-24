@@ -31,27 +31,14 @@ const PhoneHeader = () => {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12)
-      return { text: "Good morning", Icon: Sunrise, color: "text-amber-400" };
-    if (hour >= 12 && hour < 17)
-      return { text: "Good afternoon", Icon: Sun, color: "text-yellow-400" };
-    if (hour >= 17 && hour < 21)
-      return { text: "Good evening", Icon: WiSunset, color: "text-orange-400" };
-    return { text: "Good night", Icon: GiNightSleep, color: "text-indigo-300" };
-  };
+
 
   const handleLogout = () => {
     setIsProfileOpen(false);
     logoutMutation.mutate();
   };
 
-  const {
-    text: greetingText,
-    Icon: GreetingIcon,
-    color: greetingColor,
-  } = getGreeting();
+
 
   return (
     // HEIGHT FIX: py-2 -> py-1.5 taaki overall bar thodi compact ho
@@ -94,14 +81,6 @@ const PhoneHeader = () => {
                 <WavingEmoji isLoggedIn={isLoggedIn} size={12} />
               </div>
               <div className="flex flex-col items-start leading-none gap-1">
-                <span className="flex items-center gap-1 text-[0.6rem] text-white/45 font-medium leading-none tracking-wide uppercase">
-                  <GreetingIcon
-                    size={10}
-                    strokeWidth={2.5}
-                    className={greetingColor}
-                  />
-                  {greetingText}
-                </span>
                 <span className="text-[0.82rem] text-white leading-none tracking-tight">
                   {user?.firstname}
                 </span>

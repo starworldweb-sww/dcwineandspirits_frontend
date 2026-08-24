@@ -46,9 +46,8 @@ const Stickynav = () => {
     href: item.title === "Deals & Sale" ? "/deals-sales" : `/${toSlug(item.title)}`,
     hasDropdown: item.title !== "Deals & Sale",
   }));
-
   const cartItems = cartlist?.items || [];
-  const cartItemCount = cartItems.length;
+  const cartItemCount = cartlist?.total || [];
 
   // 6. Price/qty math for the mini-cart panel
   const getUnitPrice = (product) => {
