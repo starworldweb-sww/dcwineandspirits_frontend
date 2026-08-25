@@ -46,7 +46,6 @@ const ACCENT = "#8c1a3c";
 const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 const breadcrumbs = [
-  { label: "Home", href: "/" },
   { label: "Shopping Cart", href: "/cart/" },
   { label: "Checkout", href: "/checkout/" },
 ];
