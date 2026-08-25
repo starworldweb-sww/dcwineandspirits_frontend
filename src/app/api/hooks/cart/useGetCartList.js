@@ -1,10 +1,12 @@
-import { cartKeys } from "@/libs/queryKeys"
-import { useQuery } from "@tanstack/react-query"
-import { cartServices } from "../../services/cartServices"
+// useGetCartList.js
+import { useQuery } from "@tanstack/react-query";
+import { cartServices } from "../../services/cartServices";
 
-export const useGetCartList =  ()=>{
-    return useQuery({
-        queryKey:cartKeys.getCartList(),
-        queryFn:()=>cartServices.getCartList()
-    })
-}
+
+export const useGetCartList = (page = 1, limit = 12) => {
+  return useQuery({
+    queryKey: ["cart-list", page, limit],
+    queryFn: () => cartServices.getCartList(page, limit),
+    keepPreviousData: true, 
+  });
+};

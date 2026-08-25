@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Plus, Minus, RefreshCw, X, ShoppingBag, Loader2 } from "lucide-react";
+import { Home, Plus, Minus, RefreshCw, X, ShoppingBag, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
@@ -16,14 +16,17 @@ import { shippingRateService } from "@/app/api/services/shippingRateService";
 
 const ACCENT = "#98022e";
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "";
+const PAGE_LIMIT = 12;
 
 const breadcrumbs = [
-
   { label: "Shopping Cart", href: "/cart" },
 ];
 
 const CartClient = () => {
-  const { data, isLoading, isError } = useGetCartList();
+  // 1. Pagination state — current page number
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data, isLoading, isError, isFetching } = useGetCartList(currentPage, PAGE_LIMIT);
   const updatedCartMut = useupdatedCart();
   const removeCartMut = useRemoveFromCart();
   const { data: countries = [] } = useCountryget();
@@ -61,6 +64,18 @@ const CartClient = () => {
       })
     );
   }, [data]);
+
+  // 2. Total pages from API response, fallback to 1
+  const totalPages = data?.totalPages || 1;
+  const totalCartItems = data?.total || 0;
+
+  // 3. Page change handler — clamps between 1 and totalPages, scrolls to top of cart list
+  const goToPage = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
+    setCurrentPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const toggleSection = (section) =>
     setOpenSection((prev) => (prev === section ? null : section));
 
@@ -133,7 +148,6 @@ const CartClient = () => {
     }
   };
 
-  // Update quantity: syncs UI state and fires useupdatedCart mutation
   const updateQty = (id, delta) => {
     const target = items.find((item) => item.id === id);
     if (!target) return;
@@ -147,7 +161,6 @@ const CartClient = () => {
     updatedCartMut.mutate({ cart_id: id, quantity: newQty });
   };
 
-  // Remove cart item: updates UI and calls useRemoveFromCart mutation
   const removeItem = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
     removeCartMut.mutate(id);
@@ -159,9 +172,57 @@ const CartClient = () => {
   const shippingCost = selectedShippingOption?.price ?? estimatedShipping?.price ?? 0;
   const total = subTotal + tax + shippingCost;
 
+  // 4. Reusable pagination bar — shown below both desktop table and mobile cards
+  const PaginationBar = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+        <span className="text-[12px] font-hind-madurai text-[#888]">
+          Page {currentPage} of {totalPages} &middot; {totalCartItems} item(s)
+        </span>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1 || isFetching}
+            className="flex items-center justify-center w-8 h-8 border border-[#d9d9d9] rounded-[3px] hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Previous page"
+          >
+            <ChevronLeft size={14} />
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => goToPage(pageNum)}
+              disabled={isFetching}
+              className={`min-w-[32px] h-8 px-2 text-[13px] font-hind-madurai rounded-[3px] transition-colors disabled:cursor-not-allowed cursor-pointer ${
+                pageNum === currentPage
+                  ? "text-white"
+                  : "border border-[#d9d9d9] hover:bg-gray-50"
+              }`}
+              style={pageNum === currentPage ? { backgroundColor: ACCENT } : undefined}
+            >
+              {pageNum}
+            </button>
+          ))}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages || isFetching}
+            className="flex items-center justify-center w-8 h-8 border border-[#d9d9d9] rounded-[3px] hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Next page"
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
-      {/* Header / Breadcrumb — reuse existing component if available */}
       {ProductsHeader ? (
         <ProductsHeader categoryName="Shopping Cart" breadcrumbs={breadcrumbs} />
       ) : (
@@ -262,7 +323,6 @@ const CartClient = () => {
                               </div>
                             )}
                           </div>
-
                         </td>
                         <td className="px-4 py-4 text-[14px] font-hind-madurai text-[#555]">
                           {item.model}
@@ -318,6 +378,8 @@ const CartClient = () => {
                     ))}
                   </tbody>
                 </table>
+
+                <PaginationBar />
               </div>
 
               {/* MOBILE CARDS — hidden on desktop */}
@@ -402,6 +464,8 @@ const CartClient = () => {
                     </div>
                   </div>
                 ))}
+
+                <PaginationBar />
               </div>
             </>
           )}
@@ -414,11 +478,8 @@ const CartClient = () => {
               What would you like to do next?
             </h2>
 
-            {/* Accordion Rows */}
             {[
-              // { key: "coupon", label: "Use Coupon Code" },
               { key: "shipping", label: "Estimate Shipping & Taxes" },
-              // { key: "gift", label: "Use Gift Certificate" },
             ].map((section) => (
               <div key={section.key} className="border-b border-gray-200">
                 <button
@@ -432,18 +493,6 @@ const CartClient = () => {
                 </button>
                 {openSection === section.key && (
                   <div className="pb-4 text-[13px] font-hind-madurai text-[#666]">
-                    {section.key === "coupon" && (
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Enter coupon code"
-                          className="flex-1 border border-[#d9d9d9] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#98022e]"
-                        />
-                        <button className="bg-black text-white text-[12px] font-semibold uppercase px-4 rounded-[3px] hover:bg-[#1a1a1a] transition-colors">
-                          Apply
-                        </button>
-                      </div>
-                    )}
                     {section.key === "shipping" && (
                       <div className="space-y-3">
                         <p className="mb-2">Enter your destination to estimate shipping & taxes.</p>
@@ -601,24 +650,11 @@ const CartClient = () => {
                         )}
                       </div>
                     )}
-                    {section.key === "gift" && (
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Enter gift certificate code"
-                          className="flex-1 border border-[#d9d9d9] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#98022e]"
-                        />
-                        <button className="bg-black text-white text-[12px] font-semibold uppercase px-4 rounded-[3px] hover:bg-[#1a1a1a] transition-colors">
-                          Apply
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
             ))}
 
-            {/* Totals */}
             <div className="mt-5 bg-white rounded-[4px] overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
                 <span className="text-[13px] font-hind-madurai font-semibold uppercase text-[#333]">
