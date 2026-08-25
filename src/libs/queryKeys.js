@@ -74,16 +74,22 @@ export const productKeys = {
   // 3. getSingleProductDetails ke liye (Maps to: GET /single-product/:slug)
   singleProductDetail: (slug) => [...productKeys.details(), slug],
 
-
   // search
-   searchAllProducts: (params = {}) => [...productKeys.lists(), "search", params],
+  searchAllProducts: (params = {}) => [
+    ...productKeys.lists(),
+    "search",
+    params,
+  ],
 
-
-   searchResults: (params) => [...productKeys.all, "search-results", params],
+  searchResults: (params) => [...productKeys.all, "search-results", params],
   //  most viewed..
 
-    // most viewed
-  mostViewedProducts: (params = {}) => [...productKeys.lists(), "most-viewed", params],
+  // most viewed
+  mostViewedProducts: (params = {}) => [
+    ...productKeys.lists(),
+    "most-viewed",
+    params,
+  ],
 };
 export const customerKeys = {
   // Base keys
@@ -160,17 +166,13 @@ export const shippingRateKeys = {
   ],
 };
 
-
-
 export const wishlistKeys = {
   all: ["wishlist"],
-  list: () => [...wishlistKeys.all, "list"],
+  list: (page = 1, limit = 12) => [...wishlistKeys.all, "list", page, limit],
   check: (product_id) => [...wishlistKeys.all, "check", product_id],
   addToWishlist: () => [...wishlistKeys.all, "add"],
   removeFromWishlist: () => [...wishlistKeys.all, "remove"],
 };
-
-
 
 // queryKeys/order.queryKeys.js
 
@@ -181,8 +183,6 @@ export const orderKeys = {
   track: (payload) => [...orderKeys.all, "track", payload],
 };
 
-
-
 export const blogKeys = {
   all: ["blog"],
   posts: (params) => [...blogKeys.all, "posts", params], // params = { page, limit }
@@ -192,15 +192,17 @@ export const blogKeys = {
   search: (params) => [...blogKeys.all, "search", params],
 };
 
-
-
 export const manufacturerKeys = {
   // Base keys
   all: ["manufacturers"],
   lists: () => [...manufacturerKeys.all, "list"],
 
   // getAllManufacturers ke liye (Maps to: GET /manufacturer)
-  allManufacturers: (params = {}) => [...manufacturerKeys.lists(), "all-data", params],
+  allManufacturers: (params = {}) => [
+    ...manufacturerKeys.lists(),
+    "all-data",
+    params,
+  ],
 };
 
 export const sitemapKeys = {

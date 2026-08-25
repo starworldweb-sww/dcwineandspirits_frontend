@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, X } from "lucide-react";
+import { ShoppingBag, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
@@ -14,6 +14,7 @@ import { decodeHtml } from "@/libs/decodeHtml";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
+const PAGE_LIMIT = 12;
 
 const breadcrumbs = [
   { label: "Account", href: "/account" },
@@ -26,17 +27,21 @@ const getImageUrl = (path) =>
     : "/prosecco-gift-800x800.webp";
 
 const WishlistClient = () => {
-  const { data, isLoading, isError, error } = useGetWishlist();
+  // 1. Pagination state — current page number
+  const [currentPage, setCurrentPage] = useState(1);
 
-console.log({ data, isLoading, isError, error });
+  const { data, isLoading, isError, error, isFetching } = useGetWishlist(
+    currentPage,
+    PAGE_LIMIT
+  );
+
+  console.log({ data, isLoading, isError, error });
   const removeMutation = useRemoveFromWishlist();
   const addToCartMut = useAddtoCart();
 
-
-
   // backend response shape: { success, message, data: { items: { total, page, limit, items: [...], totalPages } } }
   const rawItems = data?.data?.items?.items || [];
-  console.log("raw items", rawItems)
+  console.log("raw items", rawItems);
 
   const wishlistItems = rawItems.map((item) => ({
     id: item.product_id,
@@ -49,6 +54,17 @@ console.log({ data, isLoading, isError, error });
       ? `$${Number(item.spacial_price).toFixed(2)}`
       : `$${Number(item.price).toFixed(2)}`,
   }));
+
+  // 2. Pagination meta from the nested response
+  const totalPages = data?.data?.items?.totalPages || 1;
+  const totalWishlistItems = data?.data?.items?.total || 0;
+
+  // 3. Page change handler — clamps between 1 and totalPages, scrolls to top of list
+  const goToPage = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
+    setCurrentPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleRemove = (id) => {
     removeMutation.mutate(id, {
@@ -70,6 +86,55 @@ console.log({ data, isLoading, isError, error });
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to add to cart");
     }
+  };
+
+  // 4. Reusable pagination bar — shown below the wishlist table
+  const PaginationBar = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-4 px-5 py-4 border-t border-[#d9d9d9]">
+        <span className="text-[12px] font-hind-madurai text-[#666]">
+          Page {currentPage} of {totalPages} &middot; {totalWishlistItems} item(s)
+        </span>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1 || isFetching}
+            className="flex items-center justify-center w-8 h-8 border border-[#d9d9d9] rounded-[3px] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Previous page"
+          >
+            <ChevronLeft size={14} />
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => goToPage(pageNum)}
+              disabled={isFetching}
+              className={`min-w-[32px] h-8 px-2 text-[13px] font-hind-madurai rounded-[3px] transition-colors disabled:cursor-not-allowed ${
+                pageNum === currentPage
+                  ? "text-white"
+                  : "border border-[#d9d9d9] hover:bg-white"
+              }`}
+              style={pageNum === currentPage ? { backgroundColor: ACCENT } : undefined}
+            >
+              {pageNum}
+            </button>
+          ))}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages || isFetching}
+            className="flex items-center justify-center w-8 h-8 border border-[#d9d9d9] rounded-[3px] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Next page"
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -172,6 +237,8 @@ console.log({ data, isLoading, isError, error });
                     </div>
                   ))}
                 </div>
+
+                <PaginationBar />
               </div>
 
               <Link href="/">

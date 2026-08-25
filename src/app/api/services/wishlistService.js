@@ -5,8 +5,10 @@ import axiosInstance from "@/config/axiosConfig";
 const BASE_URL = '/wishlist';
 
 // GET /api/v1/wishlist/
-export const getWishlist = async () => {
-  const { data } = await axiosInstance.get(`${BASE_URL}/`);
+export const getWishlist = async (page = 1, limit = 12) => {
+  const { data } = await axiosInstance.get(`${BASE_URL}`, {
+    params: { page, limit },
+  });
   return data;
 };
 

@@ -1,6 +1,6 @@
 "use client";
 import { Menu, X, ChevronDown, Search, LogIn, UserPlus, Phone, Download, User, LogOut } from "lucide-react";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import { useMobileCategory } from "@/app/api/hooks/useMobileCategory"; // apna actual path daal dena
 import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // PhoneHeader wala hi auth hook — login state yahin se milega
 import Link from "next/link";
@@ -42,6 +42,37 @@ const filterMenuTree = (items, query) => {
 };
 
 // ============================================================
+// HELPER: Matching text ko highlight karta hai (bold + accent color)
+// - query ko case-insensitive tareeke se text mein dhoondhta hai
+// - matching part ko <mark> mein wrap karta hai
+// ============================================================
+const highlightMatch = (text, query) => {
+  if (!query) return decodeHtml(text);
+
+  const decoded = decodeHtml(text);
+  const lowerText = decoded.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const matchIndex = lowerText.indexOf(lowerQuery);
+
+  // Query is text mein nahi mila (parent match hua tha, isme nahi) — plain text hi dikhao
+  if (matchIndex === -1) return decoded;
+
+  const before = decoded.slice(0, matchIndex);
+  const match = decoded.slice(matchIndex, matchIndex + query.length);
+  const after = decoded.slice(matchIndex + query.length);
+
+  return (
+    <>
+      {before}
+      <mark className="bg-[#98022e]/15 text-[#98022e] font-semibold rounded-sm">
+        {match}
+      </mark>
+      {after}
+    </>
+  );
+};
+
+// ============================================================
 // COMPONENT: MenuNode
 // Recursive <li> row — kitni bhi nesting depth API se aaye,
 // yeh khud ko baar baar call karke handle kar leta hai.
@@ -57,7 +88,7 @@ const filterMenuTree = (items, query) => {
 // - aria-expanded batata hai screen readers ko ki submenu
 //   khula hai ya band
 // ============================================================
-const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearching }) => {
+const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearching, searchQuery }) => {
   const hasChildren = item.children && item.children.length > 0;
   // Search active hone par sab matching branches force-open rehte hain
   const isOpen = isSearching ? hasChildren : openItems.has(path);
@@ -77,7 +108,8 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearc
               : "font-font text-[14px] text-gray-600"
           } {}`}
         >
-          {decodeHtml(item.title)}
+          {/* isSearching hone par highlight, warna plain decoded text */}
+          {isSearching ? highlightMatch(item.title, searchQuery) : decodeHtml(item.title)}
         </Link>
 
         {/* Search ke dauraan sab kuch already open hai, isliye toggle button
@@ -121,6 +153,7 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearc
                   toggleItem={toggleItem}
                   closeMenu={closeMenu}
                   isSearching={isSearching}
+                  searchQuery={searchQuery}
                 />
               ))}
             </ul>
@@ -145,6 +178,13 @@ const PhoneLeftMenu = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Search input ka ref — menu khulte hi isipe focus karenge
+  const searchInputRef = useRef(null);
+
+  // Bade menu tree ke liye typing lag avoid karta hai — filtering
+  // ek frame "deferred" ho jaati hai taaki input typing hamesha smooth rahe
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
   const { data, isLoading } = useMobileCategory();
   const menuItems = data?.data?.menu || [];
   const heading = data?.data?.heading || "MENU";
@@ -154,12 +194,24 @@ const PhoneLeftMenu = () => {
   const logoutMutation = useLogout();
   const isLoggedIn = !!user;
 
-  const isSearching = searchQuery.trim().length > 0;
+  const isSearching = deferredSearchQuery.trim().length > 0;
 
   const filteredMenuItems = useMemo(
-    () => filterMenuTree(menuItems, searchQuery.trim()),
-    [menuItems, searchQuery],
+    () => filterMenuTree(menuItems, deferredSearchQuery.trim()),
+    [menuItems, deferredSearchQuery],
   );
+
+  // Total matching leaf-level results count karta hai — user ko "N results" dikhane ke liye
+  const resultCount = useMemo(() => {
+    const countLeaves = (items) =>
+      items.reduce((sum, item) => {
+        if (item.children && item.children.length > 0) {
+          return sum + countLeaves(item.children);
+        }
+        return sum + 1;
+      }, 0);
+    return countLeaves(filteredMenuItems);
+  }, [filteredMenuItems]);
 
   // Kisi bhi node ka open/close state toggle karta hai
   const toggleItem = (path) => {
@@ -187,6 +239,18 @@ const PhoneLeftMenu = () => {
   useEffect(() => {
     if (!isMenuOpen) {
       setSearchQuery("");
+    }
+  }, [isMenuOpen]);
+
+  // Menu khulte hi search input pe autofocus — user seedha type kar sake
+  useEffect(() => {
+    if (isMenuOpen) {
+      // Slide-in animation ke baad focus karo, warna transition ke beech
+      // focus jump se thoda jerky lagega
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 350);
+      return () => clearTimeout(timer);
     }
   }, [isMenuOpen]);
 
@@ -268,14 +332,37 @@ const PhoneLeftMenu = () => {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search categories..."
               aria-label="Search categories"
-              className="w-full bg-gray-50 border border-gray-200 rounded-full pl-9 pr-3 py-2 text-[14px] text-[#2c3e50] outline-none transition-all duration-200 focus:border-[#98022e] focus:ring-4 focus:ring-[#98022e]/10 focus:bg-white"
+              className="w-full bg-gray-50 border border-gray-200 rounded-full pl-9 pr-9 py-2 text-[14px] text-[#2c3e50] outline-none transition-all duration-200 focus:border-[#98022e] focus:ring-4 focus:ring-[#98022e]/10 focus:bg-white"
             />
+
+            {/* Clear (X) button — sirf tab dikhta hai jab kuch type ho */}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  searchInputRef.current?.focus();
+                }}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#98022e] transition-colors duration-200"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
+
+          {/* Result count — sirf searching ke dauraan dikhta hai */}
+          {isSearching && !isLoading && (
+            <p className="text-[12px] text-gray-500 mt-1.5 px-1">
+              {resultCount} {resultCount === 1 ? "result" : "results"} found
+            </p>
+          )}
         </div>
 
         {/* ---- Menu list: semantic <nav> + <ul> for SEO/accessibility ---- */}
@@ -283,9 +370,20 @@ const PhoneLeftMenu = () => {
           {isLoading ? (
             <p className="px-5 py-6 text-[14px] text-gray-500">Loading menu...</p>
           ) : filteredMenuItems.length === 0 ? (
-            <p className="px-5 py-6 text-[14px] text-gray-500">
-              No categories found for &quot;{searchQuery}&quot;.
-            </p>
+            // Better empty state — icon ke saath, aur "clear search" shortcut
+            <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+              <Search size={28} className="text-gray-300 mb-2" />
+              <p className="text-[14px] text-gray-500 mb-3">
+                No categories found for &quot;{searchQuery}&quot;.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-[13px] font-semibold text-[#98022e] hover:underline"
+              >
+                Clear search
+              </button>
+            </div>
           ) : (
             <ul key={searchQuery}>
               {filteredMenuItems.map((item, index) => (
@@ -298,6 +396,7 @@ const PhoneLeftMenu = () => {
                   toggleItem={toggleItem}
                   closeMenu={closeMenu}
                   isSearching={isSearching}
+                  searchQuery={deferredSearchQuery.trim()}
                 />
               ))}
             </ul>
@@ -352,8 +451,8 @@ const PhoneLeftMenu = () => {
               </>
             )}
           </div>
-
-          <a
+           <a
+          
             href="tel:+12024598489"
             className="flex items-center gap-2 text-[13px] text-gray-700 transition-colors duration-200 hover:text-[#98022e]"
           >
