@@ -79,7 +79,7 @@ const ProductListRow = ({ product }) => {
         quantity: Math.max(1, Number(qty) || 1),
       });
       if (res?.success) {
-       
+
         // 3. Success hote hi popup dikhao
         setShowPopup(true);
       }
@@ -267,113 +267,113 @@ const ProductsDynamicMain = ({
   // fetch the next page once it's in view. Guarded so we never fire while
   // already fetching, or once there's nothing left to fetch.
   useEffect(() => {
-    
-      const node = sentinelRef.current;
-      if (!node || !hasNextPage) return;
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        },
-        { rootMargin: "400px" } // start loading a bit before the user hits bottom
-      );
-    },[])
+    const node = sentinelRef.current;
+    if (!node || !hasNextPage) return;
 
-    // const displayedProducts = sortedProducts.slice(0, showNum);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "400px" } // start loading a bit before the user hits bottom
+    );
+  }, [])
 
-    return (
-      <section className="w-full bg-white flex-1">
-        <SmallDescAndSubcategory
-          smalldesc={data.smalldesc}
-          subCategories={data.subCategories}
-        />
+  // const displayedProducts = sortedProducts.slice(0, showNum);
 
-        <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
-          <div className="flex items-center gap-3">
-            <button
-              title="Grid View"
-              type="button"
-              onClick={() => setLayout("grid")}
-              aria-label="Grid view"
-              className={`cursor-pointer transition-colors ${layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-                }`}
-            >
-              <RiGridFill size={20} />
-            </button>
-            <button
-              title="List View"
-              type="button"
-              onClick={() => setLayout("list")}
-              aria-label="List view"
-              className={`cursor-pointer transition-colors ${layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-                }`}
-            >
-              <Logs size={20} />
-            </button>
-          </div>
+  return (
+    <section className="w-full bg-white flex-1">
+      <SmallDescAndSubcategory
+        smalldesc={data.smalldesc}
+        subCategories={data.subCategories}
+      />
 
-          <div className="flex items-center gap-4 sm:gap-6">
-            <div className="flex items-center gap-2">
-              <label className="text-gray-600 text-sm hidden sm:inline-block">
-                Sort By:
-              </label>
-              <select
-                value={sort}
-                onChange={(e) => onSortChange(e.target.value)}
-                className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
-              >
-                {SortOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600 hidden sm:inline-block">
-                Show:
-              </label>
-              <select
-                value={limit}
-                onChange={(e) => onLimitChange(Number(e.target.value))}
-                className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
-              >
-                {ShowOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+      <div className="w-full py-4 flex justify-between items-center bg-[#f2f2f2] mt-2 px-2 border-gray-200">
+        <div className="flex items-center gap-3">
+          <button
+            title="Grid View"
+            type="button"
+            onClick={() => setLayout("grid")}
+            aria-label="Grid view"
+            className={`cursor-pointer transition-colors ${layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+              }`}
+          >
+            <RiGridFill size={20} />
+          </button>
+          <button
+            title="List View"
+            type="button"
+            onClick={() => setLayout("list")}
+            aria-label="List view"
+            className={`cursor-pointer transition-colors ${layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+              }`}
+          >
+            <Logs size={20} />
+          </button>
         </div>
 
-        {products.length === 0 ? (
-          <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
-            No products found.
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-2">
+            <label className="text-gray-600 text-sm hidden sm:inline-block">
+              Sort By:
+            </label>
+            <select
+              value={sort}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="border border-zinc-300 bg-white px-3 py-1 text-[12px] outline-none hover:cursor-pointer"
+            >
+              {SortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <>
-            {layout === "list" ? (
-              <div>
-                {products.map((product, i) => (
-                  <ProductListRow key={product.product_id ?? i} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
-                {products.map((product, i) => (
-                  <ProductGridCard key={product.product_id ?? i} product={product} />
-                ))}
-              </div>
-            )}
 
-            {/* sentinel — observed to trigger fetchNextPage */}
-            <div ref={sentinelRef} className="h-1 w-full" />
-            {/* 
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 hidden sm:inline-block">
+              Show:
+            </label>
+            <select
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+              className="border border-zinc-300 bg-white px-2 py-1 text-[12px] outline-none hover:cursor-pointer"
+            >
+              {ShowOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {products.length === 0 ? (
+        <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
+          No products found.
+        </div>
+      ) : (
+        <>
+          {layout === "list" ? (
+            <div>
+              {products.map((product, i) => (
+                <ProductListRow key={product.product_id ?? i} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
+              {products.map((product, i) => (
+                <ProductGridCard key={product.product_id ?? i} product={product} />
+              ))}
+            </div>
+          )}
+
+          {/* sentinel — observed to trigger fetchNextPage */}
+          <div ref={sentinelRef} className="h-1 w-full" />
+          {/* 
           {isFetchingNextPage && (
             <div className="w-full py-8 flex items-center justify-center text-gray-400 gap-2">
               <Loader2 size={18} className="animate-spin" />
@@ -381,15 +381,22 @@ const ProductsDynamicMain = ({
             </div>
           )} */}
 
-            {!hasNextPage && products.length > 0 && (
-              <div className="w-full py-8 text-center text-gray-400 text-sm">
-                You've reached the end.
-              </div>
-            )}
-          </>
-        )}
-      </section>
-    );
-  };
+          {!hasNextPage && products.length > 0 && (
+            <div className="w-full py-8 text-center text-gray-400 text-sm">
+              You've reached the end.
+            </div>
+          )}
+        </>
+      )}
 
-  export default ProductsDynamicMain;
+      {data.description && (
+        <div
+          className={`${hindMadurai.className} w-full py-8 px-2 prose prose-sm sm:prose-base max-w-none text-gray-700`}
+          dangerouslySetInnerHTML={{ __html: decodeHtml(data.description) }}
+        />
+      )}
+    </section>
+  );
+};
+
+export default ProductsDynamicMain;
