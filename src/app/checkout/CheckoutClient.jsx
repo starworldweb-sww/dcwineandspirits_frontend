@@ -47,8 +47,8 @@ const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISH
 
 const breadcrumbs = [
   { label: "Home", href: "/" },
-  { label: "Shopping Cart", href: "/account/cart" },
-  { label: "Checkout", href: "/checkout" },
+  { label: "Shopping Cart", href: "/cart/" },
+  { label: "Checkout", href: "/checkout/" },
 ];
 
 const SectionHeader = ({ title }) => (

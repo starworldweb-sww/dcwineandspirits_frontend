@@ -324,7 +324,14 @@ const ProductsDynamicMain = ({
   // const displayedProducts = sortedProducts.slice(0, showNum);
 
   return (
-    <section className="w-full bg-white flex-1">
+    // FIX: "min-w-0" add kiya — is section ko flex-1 diya hua hai upar wale
+    // flex row (ProductsDynamicClient) mein. min-w-0 ke bina, flex item ka
+    // default min-width "auto" hota hai — yani yeh section apne andar ke
+    // content (subcategory pills row) ki natural width tak grow karta rahega
+    // aur SmallDescAndSubcategory ka apna overflow-x-auto kabhi kaam nahi
+    // karega. Isi wajah se page pe horizontal scroll aa raha tha aur last
+    // pill viewport se bahar cut ho rahi thi.
+    <section className="w-full min-w-0 bg-white flex-1">
       <SmallDescAndSubcategory
         smalldesc={data.smalldesc}
         subCategories={data.subCategories}
@@ -429,12 +436,6 @@ const ProductsDynamicMain = ({
         </>
       )}
 
-      {data.description && (
-        <div
-          className={`${hindMadurai.className} w-full py-8 px-2 prose prose-sm sm:prose-base max-w-none text-gray-700`}
-          dangerouslySetInnerHTML={{ __html: decodeHtml(data.description) }}
-        />
-      )}
     </section>
   );
 };

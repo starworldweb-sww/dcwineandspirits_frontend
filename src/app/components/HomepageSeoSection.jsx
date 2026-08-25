@@ -28,7 +28,7 @@ export default function HomepageSeoSection({ data: propData, isLoading: propLoad
 
   if (isLoading) {
     return (
-      <section className="w-full bg-[#F1F1F1] px-3 2xl:px-32 py-12 text-center text-gray-500">
+      <section className="w-full bg-white px-3 2xl:px-32 py-12 text-center text-gray-500">
         Loading SEO Content...
       </section>
     );
@@ -43,8 +43,21 @@ export default function HomepageSeoSection({ data: propData, isLoading: propLoad
   // 3. Clean up the custom newline markers
   const formattedContent = rawContent.replace(/\[~nl~\]/g, "");
 
+  // 4. Cut everything from the "Why Shop with ..." block onward —
+  // that section is already rendered by our own WhyChooseUs component,
+  // so we only want the SEO copy that comes before it.
+  // Prefer cutting from the <br> that precedes the heading (if present)
+  // so we don't leave a dangling <br> at the end; fall back to the <h2> itself.
+  const cutoffMatch =
+    formattedContent.match(/<br\s*\/?>\s*<h2>\s*Why Shop/i) ||
+    formattedContent.match(/<h2>\s*Why Shop/i);
+
+  const displayContent = cutoffMatch
+    ? formattedContent.slice(0, cutoffMatch.index)
+    : formattedContent;
+
   // If no content is found, we render nothing (so the page doesn't break)
-  if (!formattedContent) return null;
+  if (!displayContent) return null;
 
   return (
     <section
@@ -73,12 +86,8 @@ export default function HomepageSeoSection({ data: propData, isLoading: propLoad
               /* Links & Paragraphs */
               [&_a]:text-[#b8225a] [&_a]:hover:underline
               [&_p]:mb-4
-
-              /* Grid Styling for the injected "Why Shop" block */
-              [&_.row]:flex [&_.row]:flex-wrap [&_.row]:gap-4 [&_.row]:mt-6
-              [&_.col-lg-4]:flex-1 [&_.col-lg-4]:min-w-[280px]
             `}
-            dangerouslySetInnerHTML={{ __html: formattedContent }}
+            dangerouslySetInnerHTML={{ __html: displayContent }}
           />
 
           {/* Fading overlay at the bottom when collapsed */}

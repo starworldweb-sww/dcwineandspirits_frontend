@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { SlidersHorizontal, X } from "lucide-react";
 import { p } from "motion/react-client";
+import MainDescription from "./MainDescription";
 
 // merges every fetched page's product items into one flat list, while
 // keeping meta (brands/priceRange/breadcrumbs/subCategories/name/etc) from
@@ -229,8 +230,44 @@ const ProductsDynamicClient = ({ slug }) => {
           hasNextPage={hasNextPage}
         // isFetchingNextPage={isFetchingNextPage}
         />
+
+
+        
       </div>
 
+
+          {hasNextPage && (
+        <div className="flex flex-col items-center pl-7 gap-3 py-5">
+         
+          {isFetchingNextPage ? (
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#98022e]" />
+              Loading more products...
+            </div>
+          ) : (
+            <button
+              onClick={handleLoadMore}
+              className="rounded-md bg-[#98022e] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#7a0225] hover:shadow-md active:scale-95"
+            >
+              Load More Products
+            </button>
+          )}
+
+          {/* Product Count */}
+          <p className="text-sm text-gray-500">
+            Showing{" "}
+            <span className="font-semibold text-gray-700">
+              {data?.products?.items?.length || 0}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-gray-700">
+              {data?.products?.total || 0}
+            </span>{" "}
+            products
+          </p>
+        </div>
+      )}
+<MainDescription description={data.description}/>
       <button
         onClick={() => setIsFilterDrawerOpen(true)}
         className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-[#98022e] bg-[#f3f3f3] px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
@@ -270,37 +307,7 @@ const ProductsDynamicClient = ({ slug }) => {
           </div>
         </div>
       )}
-      {hasNextPage && (
-        <div className="flex flex-col items-center pl-7 gap-3 py-5">
-         
-          {isFetchingNextPage ? (
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#98022e]" />
-              Loading more products...
-            </div>
-          ) : (
-            <button
-              onClick={handleLoadMore}
-              className="rounded-md bg-[#98022e] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#7a0225] hover:shadow-md active:scale-95"
-            >
-              Load More Products
-            </button>
-          )}
-
-          {/* Product Count */}
-          <p className="text-sm text-gray-500">
-            Showing{" "}
-            <span className="font-semibold text-gray-700">
-              {data?.products?.items?.length || 0}
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-gray-700">
-              {data?.products?.total || 0}
-            </span>{" "}
-            products
-          </p>
-        </div>
-      )}
+  
       <style jsx global>{`
         @keyframes slideIn {
           from { transform: translateX(-100%); }

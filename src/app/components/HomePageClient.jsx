@@ -11,6 +11,7 @@ import HeroPic from "./HeroPic";
 import GiftsByOccasionHero from "./GiftsByOccasionHero";
 import { useHomePageAllData } from "@/app/api/hooks/category/useHomePageAllData";
 import { Loader2 } from "lucide-react";
+import WhyChooseUs from "./WhyChooseUs";
 
 
 const HomePageClient = () => {
@@ -41,7 +42,7 @@ const HomePageClient = () => {
         <BulkOrderBanner />
 
         <HomepageSeoSection data={homeData?.homePageText} isLoading={isLoading} isError={isError} />
-
+        <WhyChooseUs/>
         <ProductViewTabs />
       </div>
     </>

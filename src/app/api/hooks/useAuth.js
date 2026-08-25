@@ -11,7 +11,7 @@ import {
   forgotPassword,
   resetPassword,
 } from "@/app/api/services/authService";
-import { cartKeys, customerKeys } from "@/libs/queryKeys";
+import { cartKeys, customerKeys, wishlistKeys } from "@/libs/queryKeys";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -23,6 +23,7 @@ export const useLogin = () => {
       queryClient.setQueryData(customerKeys.profile(), data.data);
       queryClient.invalidateQueries({ queryKey: customerKeys.profile() });
       queryClient.invalidateQueries({ queryKey: cartKeys.getCartList() });
+      queryClient.invalidateQueries({ queryKey: wishlistKeys.all });
       toast.success(`Logged in as ${data?.data?.firstname}`);
       router.refresh();
       router.push("/account");

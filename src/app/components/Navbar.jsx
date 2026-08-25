@@ -1,10 +1,18 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { User, Heart, Download, Edit3, FileText, LogOut, ChevronDown } from 'lucide-react';
-import SearchBar from './navcomponents/SearchBar';
+import React, { useState, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  User,
+  Heart,
+  Download,
+  Edit3,
+  FileText,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import SearchBar from "./navcomponents/SearchBar";
 import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 import { useGetWishlist } from "@/app/api/hooks/wishlist/useGetWishlist";
 
@@ -37,9 +45,8 @@ const Navbar = () => {
 
   return (
     <div className="header hidden lg:flex w-full bg-white flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6 px-3 2xl:px-32 py-2 lg:py-6.5">
-
       {/* Logo */}
-      <Link href="/" className="shrink-0" title='DC Wine & Spirits'>
+      <Link href="/" className="shrink-0" title="DC Wine & Spirits">
         <Image
           src="/dc-wine_logo-360x90.webp"
           loading="eager"
@@ -55,7 +62,6 @@ const Navbar = () => {
 
       {/* Right Side Icons + Button */}
       <div className="flex items-center gap-4 md:gap-5 shrink-0">
-
         {/* Account Icon / Dropdown */}
         {isLoggedIn ? (
           <div
@@ -70,7 +76,11 @@ const Navbar = () => {
               className="flex items-center gap-1.5 text-[#98022e] hover:opacity-80 transition-opacity cursor-pointer"
               title="Account"
             >
-              <User size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
+              <User
+                size={30}
+                className="md:w-[34px] md:h-[34px]"
+                strokeWidth={1}
+              />
               <span className="hidden md:inline text-sm font-semibold tracking-wide">
                 ACCOUNT
               </span>
@@ -123,30 +133,44 @@ const Navbar = () => {
             className="text-[#98022e] hover:opacity-80 transition-opacity"
             title="Login"
           >
-            <User size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
+            <User
+              size={30}
+              className="md:w-[34px] md:h-[34px]"
+              strokeWidth={1}
+            />
           </Link>
         )}
 
         {/* Wishlist Icon with count badge */}
-        <Link href="/account/wishlist" className="relative text-[#98022e] hover:opacity-80 transition-opacity" title='Wishlist'>
-          <Heart size={30} className="md:w-[34px] md:h-[34px]" strokeWidth={1} />
-          <span className="absolute -top-1 -right-1 bg-[#98022e] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-            {wishlistCount}
-          </span>
+        <Link
+          href="/account/wishlist"
+          className="relative text-[#98022e] hover:opacity-80 transition-opacity"
+          title="Wishlist"
+        >
+          <Heart
+            size={30}
+            className="md:w-[34px] md:h-[34px]"
+            strokeWidth={1}
+          />
+          {wishlistCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-[#98022e] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {wishlistCount}
+            </span>
+          )}
         </Link>
 
         {/* Bulk Orders Form Button */}
         <a
-         download={true}
-           href="/bulk-order-form.xlsx"    
+          download={true}
+          href="/bulk-order-form.xlsx"
           className="flex items-center gap-2 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-sm font-semibold px-3 md:px-4 py-3 hover:rounded-md whitespace-nowrap transition-colors"
         >
           <Download size={16} />
-          <span className="hidden md:inline font-sarabun">BULK ORDERS FORM</span>
+          <span className="hidden md:inline font-sarabun">
+            BULK ORDERS FORM
+          </span>
         </a>
-
       </div>
-
     </div>
   );
 };

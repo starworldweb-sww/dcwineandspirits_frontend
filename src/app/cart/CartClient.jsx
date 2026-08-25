@@ -341,7 +341,7 @@ const CartClient = () => {
                         className="text-[14px] font-hind-madurai font-medium leading-snug"
                         style={{ color: ACCENT }}
                       >
-                        {item.name}
+                        {decodeHtml(item.name)}
                       </Link>
                       {item.selectedOptions?.length > 0 && (
                         <div className="mt-1 space-y-0.5">

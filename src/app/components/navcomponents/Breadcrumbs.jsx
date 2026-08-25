@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const Breadcrumbs = ({ breadcrumbs }) => {
   const pathname = usePathname();
@@ -105,7 +106,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
                     className="text-[#444] capitalize font-medium whitespace-nowrap"
                     style={{ userSelect: "text" }}
                   >
-                    {labelToDisplay}
+                    {decodeHtml(labelToDisplay)}
                   </span>
                 ) : (
                   <Link
@@ -113,7 +114,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
                     className="text-[#666] hover:text-black capitalize transition-colors whitespace-nowrap"
                     style={{ userSelect: "text" }}
                   >
-                    {labelToDisplay}
+                    {decodeHtml(labelToDisplay)}
                   </Link>
                 )}
               </li>

@@ -25,7 +25,7 @@ const staticAccountLinks = [
   {
     heading: null,
     items: [
-      { label: "Shopping Cart", href: "/account/cart" },
+      { label: "Shopping Cart", href: "/cart" },
       { label: "Checkout", href: "/checkout" },
       { label: "Search", href: "/search" },
     ],

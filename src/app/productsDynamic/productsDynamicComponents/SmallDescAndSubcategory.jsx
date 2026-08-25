@@ -32,7 +32,7 @@ const SmallDescAndSubcategory = ({ smalldesc, subCategories = [] }) => {
     //    default min-width "auto" hota hai, jo andar ke pills ke natural width
     //    tak shrink hone se rokta hai — isi wajah se page pe horizontal scroll
     //    aa raha tha aur last pill viewport se bahar cut ho rahi thi.
-    <div className={`w-full min-w-0 px-2 py-2 ${sumana.variable} ${hindMadurai.variable}`}>
+    <div className={`w-full min-w-0 px-2 py-2 ${sumana.variable} ${hindMadurai.variable} overflow-x-scroll-scroll`}>
       {smalldesc && (
         // 3. small-description-content class isliye taaki backend ke inline styles/tags
         //    hamare Tailwind ke sath conflict na karein
@@ -49,7 +49,7 @@ const SmallDescAndSubcategory = ({ smalldesc, subCategories = [] }) => {
         // 6. FIX: "min-w-0" yahan bhi zaroori hai — outer div se inherited overflow
         //    ko yeh wrapper bhi contain kare, taaki scroll sirf pills row ke andar
         //    ho, page ke andar nahi
-        <div className="relative mt-6 w-full">
+        <div className="relative mt-6 w-full px-1">
           {/* edge fade — right side pe hint deta hai ki aur items scroll karne ko hain */}
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-14" />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6" />

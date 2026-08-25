@@ -474,7 +474,7 @@ const MobileNavbar = () => {
         }
         {/* Cart Icon with badge */}
         <Link
-          href="/account/cart"
+          href="/cart/"
           className="relative w-[36px] h-[40px] flex items-center justify-center text-[#98022e] hover:opacity-80 transition-opacity"
           title="Cart"
         >

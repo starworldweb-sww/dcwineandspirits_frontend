@@ -6,6 +6,7 @@ import Image from "next/image";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchAllProducts } from "@/app/api/hooks/useSearchAllProducts";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 
 const ROTATING_WORDS = [
@@ -463,7 +464,7 @@ const SearchBar = () => {
                         {/* Product Info with Highlighted Text */}
                         <div className="min-w-0 flex-1">
                           <p className="text-sm text-gray-800 truncate">
-                            {highlightMatch(product.name, debouncedValue)}
+                            {highlightMatch(decodeHtml(product.name), debouncedValue)}
                           </p>
                           <p className="text-xs text-gray-500">
                             {product.special_price ? (

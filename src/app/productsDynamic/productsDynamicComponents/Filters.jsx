@@ -43,7 +43,12 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
   };
 
   return (
-    <Box sx={{ width: "100%", px: 1, pb: 2 }}>
+    // FIX: "minWidth: 0" — yeh outer Box hi container hai jiske andar
+    // Stack (flex row) baithta hai. Bina iske, agar andar koi child apni
+    // natural content-width tak grow karta hai (lambe number input ki
+    // wajah se), toh yeh Box bhi grow ho jayega aur parent Filters
+    // container ki fixed max-width (280px) todke bahar push kar dega.
+    <Box sx={{ width: "100%", minWidth: 0, px: 1, pb: 2 }}>
       <Slider
         value={dragValue}
         onChange={(_, v) => setDragValue(v)}
@@ -65,11 +70,21 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
           "& .MuiSlider-rail": { color: "#e0e0e0" },
         }}
       />
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+      {/* FIX: "minWidth: 0" add kiya Stack pe bhi — flex row ka default
+          min-width "auto" hota hai, jo andar ke Box ko shrink hone se
+          rok raha tha jab number input mein lambe digits aate the. */}
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: "center", justifyContent: "space-between", minWidth: 0, width: "100%" }}
+      >
         {[0, 1].map((idx) => (
           <React.Fragment key={idx}>
             {idx === 1 && (
-              <Typography variant="caption" sx={{ color: "#999", fontFamily: "Sarabun, sans-serif" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "#999", fontFamily: "Sarabun, sans-serif", flexShrink: 0 }}
+              >
                 —
               </Typography>
             )}
@@ -82,9 +97,14 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
                 py: 0.6,
                 borderRadius: "4px",
                 flex: 1,
+                minWidth: 0, // FIX: isse yeh box lambe number input pe bhi apni allotted width se bahar nahi grow karega
+                overflow: "hidden", // safety: agar content phir bhi overflow kare to clip ho, container na todhe
               }}
             >
-              <Typography variant="caption" sx={{ color: "#666", mr: 0.5, fontFamily: "Sarabun, sans-serif" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "#666", mr: 0.5, fontFamily: "Sarabun, sans-serif", flexShrink: 0 }}
+              >
                 $
               </Typography>
               <Input
@@ -102,11 +122,13 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
                 inputProps={{ step: 10, min, max, type: "number" }}
                 sx={{
                   width: "100%",
+                  minWidth: 0, // FIX: Input ke andar ka native <input> bhi shrink ho sake
                   fontSize: "0.85rem",
                   fontFamily: "Sarabun, sans-serif",
                   "& input": {
                     textAlign: "center",
                     padding: 0,
+                    minWidth: 0,
                     "&::-webkit-outer-spin-button, &::-webkit-inner-spin-button": { display: "none" },
                     MozAppearance: "textfield",
                   },
@@ -248,9 +270,12 @@ const Filters = ({
         <>
           <SectionHeader label="Brands" isOpen={brandsOpen} onToggle={() => setBrandsOpen((p) => !p)} />
           {brandsOpen && (
-            <div className="flex flex-col px-4 py-2 h-64 overflow-scroll overflow-x-hidden">
+            <div className="flex flex-col px-4 py-2 h-64 overflow-y-auto overflow-x-hidden">
               {data.brands.map((brand) => (
-                <label key={brand?.manufacturer_id} className="flex items-center gap-3 py-2.5 cursor-pointer">
+                <label
+                  key={brand?.manufacturer_id}
+                  className="flex items-center gap-3 py-2.5 cursor-pointer min-w-0"
+                >
                   <input
                     type="checkbox"
                     checked={selectedBrandIds.includes(brand?.manufacturer_id)}
@@ -258,7 +283,7 @@ const Filters = ({
                     className="w-4 h-4 flex-shrink-0"
                     style={{ accentColor: ACCENT }}
                   />
-                  <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative">
+                  <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative border border-[#e33d889e]">
                     <Image
                       fill
                       loading="lazy"
@@ -267,7 +292,7 @@ const Filters = ({
                       className="object-contain"
                     />
                   </div>
-                  <span className="font-['Sarabun',sans-serif] text-sm text-[#374254]">
+                  <span className="font-sarabun text-sm text-[#374254] min-w-0 flex-1 truncate text-[12px]">
                     {decodeHtml(brand?.name)}
                   </span>
                 </label>

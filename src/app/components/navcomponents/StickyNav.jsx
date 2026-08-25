@@ -23,9 +23,9 @@ const toSlug = (title) =>
 const DROPDOWN_COMPONENTS = {
   "Gifts By": GiftsByDropDown,
   "Shop By Brand": ShopByBrandDropDown,
-  "Personalization": PersonalizedDropDown,
+  Personalization: PersonalizedDropDown,
   "Wine Gifts": WineGiftsDropdown,
-  "Occasion": OcassionsDropDown,
+  Occasion: OcassionsDropDown,
 };
 
 const COMPACT_DROPDOWNS = ["Gifts By"];
@@ -43,7 +43,8 @@ const Stickynav = () => {
   const rawItems = data || [];
   const MENU_ITEMS = rawItems?.map((item) => ({
     label: item.title,
-    href: item.title === "Deals & Sale" ? "/deals-sales" : `/${toSlug(item.title)}`,
+    href:
+      item.title === "Deals & Sale" ? "/deals-sales" : `/${toSlug(item.title)}`,
     hasDropdown: item.title !== "Deals & Sale",
   }));
   const cartItems = cartlist?.items || [];
@@ -53,12 +54,12 @@ const Stickynav = () => {
   const getUnitPrice = (product) => {
     const special = parseFloat(product?.special_price);
     const regular = parseFloat(product?.price);
-    return !isNaN(special) && special > 0 ? special : (regular || 0);
+    return !isNaN(special) && special > 0 ? special : regular || 0;
   };
 
   const subTotal = cartItems.reduce(
     (sum, i) => sum + getUnitPrice(i.product) * (i.quantity || 1),
-    0
+    0,
   );
   const tax = subTotal * TAX_RATE;
   const total = subTotal + tax;
@@ -71,7 +72,6 @@ const Stickynav = () => {
     }
   };
 
-
   const ActiveDropdown = DROPDOWN_COMPONENTS[openMenu];
   const isCompact = COMPACT_DROPDOWNS.includes(openMenu);
 
@@ -79,33 +79,47 @@ const Stickynav = () => {
     <div className="font-sumana relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1">
       <div className="flex items-center justify-around gap-28 w-full h-12">
         <div className="flex items-center h-full gap-3 xl:gap-5 py-6">
-          {isLoading && <span className="text-sm text-gray-400 normal-case"></span>}
-          {isError && <span className="text-sm text-gray-400 normal-case">Menu unavailable</span>}
+          {isLoading && (
+            <span className="text-sm text-gray-400 normal-case"></span>
+          )}
+          {isError && (
+            <span className="text-sm text-gray-400 normal-case">
+              Menu unavailable
+            </span>
+          )}
 
-          {!isLoading && !isError && MENU_ITEMS.map((item, index) => (
-            <div
-              key={item.label}
-              ref={(el) => (itemRefs.current[item.label] = el)}
-              className="relative h-full flex items-center"
-              onMouseEnter={() => item.hasDropdown && handleOpen(item.label)}
-              onMouseLeave={() => item.hasDropdown && setOpenMenu(null)}
-            >
-              <Link
-                href={item.href}
-                className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all "
+          {!isLoading &&
+            !isError &&
+            MENU_ITEMS.map((item, index) => (
+              <div
+                key={item.label}
+                ref={(el) => (itemRefs.current[item.label] = el)}
+                className="relative h-full flex items-center"
+                onMouseEnter={() => item.hasDropdown && handleOpen(item.label)}
+                onMouseLeave={() => item.hasDropdown && setOpenMenu(null)}
               >
-                {index === 0 && (
-                  <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
-                    <path d="M0 1H20" stroke="currentColor" strokeWidth="2" />
-                    <path d="M0 7H20" stroke="currentColor" strokeWidth="2" />
-                    <path d="M0 13H20" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                )}
-                {item.label}
-                {item.hasDropdown && <ChevronDown size={14} className="mt-[2px]" />}
-              </Link>
-            </div>
-          ))}
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all "
+                >
+                  {index === 0 && (
+                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+                      <path d="M0 1H20" stroke="currentColor" strokeWidth="2" />
+                      <path d="M0 7H20" stroke="currentColor" strokeWidth="2" />
+                      <path
+                        d="M0 13H20"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  )}
+                  {item.label}
+                  {item.hasDropdown && (
+                    <ChevronDown size={14} className="mt-[2px]" />
+                  )}
+                </Link>
+              </div>
+            ))}
         </div>
 
         {/* 7. Cart trigger + hover mini-cart wrapper */}
@@ -114,18 +128,22 @@ const Stickynav = () => {
           onMouseEnter={() => setShowCart(true)}
           onMouseLeave={() => setShowCart(false)}
         >
-          <Link href="/account/cart" className="flex items-center gap-3 h-full group">
-            <span className="font-bold text-[12px] text-[rgb(155,0,71)] group-hover:text-[#7e1a3c] transition-colors">
-              {cartItemCount} item(s) - ${subTotal.toFixed(2)}
-            </span>
+          <Link href="/cart/" className="flex items-center gap-3 h-full group">
+            {cartItemCount > 0 && (
+              <span className="font-bold text-[12px] text-[rgb(155,0,71)] group-hover:text-[#7e1a3c] transition-colors">
+                {cartItemCount} item(s) - ${subTotal.toFixed(2)}
+              </span>
+            )}
+
             <span className="relative bg-[#98022e] group-hover:bg-[#7e1a3c] w-11 h-11 flex items-center justify-center transition-colors">
               <ShoppingBag size={20} className="text-white" strokeWidth={1.5} />
-              <span className="absolute -top-1.5 -right-1.5 bg-white text-[#98022e] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#98022e]">
-                {cartItemCount}
-              </span>
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-white text-[#98022e] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#98022e]">
+                  {cartItemCount}
+                </span>
+              )}
             </span>
           </Link>
-
 
           {showCart && cartItemCount > 0 && (
             <div className="absolute top-full right-0 w-[380px] bg-white shadow-2xl border border-gray-200 normal-case z-50">
@@ -139,7 +157,6 @@ const Stickynav = () => {
                     >
                       <div className="w-12 h-12 flex-shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
                         {item?.product?.image ? (
-
                           <img
                             src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${item?.product?.image}`}
                             alt={item?.product?.name || "Product"}
@@ -148,7 +165,10 @@ const Stickynav = () => {
                         ) : null}
                       </div>
 
-                      <Link href={`/${item?.product?.slug}`} className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2">
+                      <Link
+                        href={`/${item?.product?.slug}`}
+                        className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2"
+                      >
                         {decodeHtml(item?.product?.name)}
                       </Link>
 
@@ -164,7 +184,7 @@ const Stickynav = () => {
                         type="button"
                         aria-label="Remove item"
                         className="text-gray-400 hover:text-[#98022e] transition-colors"
-                        onClick={() => { }}
+                        onClick={() => {}}
                       >
                         <X size={16} />
                       </button>
@@ -176,21 +196,29 @@ const Stickynav = () => {
               <div className="px-4 py-3 space-y-2 border-b border-gray-100">
                 <div className="flex items-center justify-between text-[13px]">
                   <span className="text-gray-600 font-normal">Sub-Total</span>
-                  <span className="font-semibold text-black">${subTotal.toFixed(2)}</span>
+                  <span className="font-semibold text-black">
+                    ${subTotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[13px]">
-                  <span className="text-gray-600 font-normal">Tax ({(TAX_RATE * 100).toFixed(2)}%)</span>
-                  <span className="font-semibold text-black">${tax.toFixed(2)}</span>
+                  <span className="text-gray-600 font-normal">
+                    Tax ({(TAX_RATE * 100).toFixed(2)}%)
+                  </span>
+                  <span className="font-semibold text-black">
+                    ${tax.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[15px] pt-1">
                   <span className="text-black font-bold">Total</span>
-                  <span className="font-bold text-black">${total.toFixed(2)}</span>
+                  <span className="font-bold text-black">
+                    ${total.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <div className="p-3 space-y-2 bg-[#eeeeee]">
                 <Link
-                  href="/account/cart"
+                  href="/cart/"
                   className="block w-full text-center py-3 bg-white text-gray-700 font-semibold text-[13px] tracking-wide hover:bg-gray-100 transition-colors"
                 >
                   VIEW CART
@@ -214,7 +242,7 @@ const Stickynav = () => {
           className={isCompact ? "absolute top-full" : ""}
           style={isCompact ? { left: `${compactLeft}px` } : undefined}
         >
-          <ActiveDropdown  onClose={() => setOpenMenu(null)}/>
+          <ActiveDropdown onClose={() => setOpenMenu(null)} />
         </div>
       )}
     </div>

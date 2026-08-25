@@ -11,6 +11,8 @@ import {
   Repeat,
   ShoppingBag,
   Logs,
+  Loader2,
+  Plus,
 } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
@@ -206,6 +208,7 @@ const ProductGridCard = ({ product }) => {
   const displayPrice = product.special_price || product.price;
 
   const handleAddToCart = async (e) => {
+    e?.stopPropagation?.();
     e?.preventDefault?.();
     if (!productId || isPending) return;
     try {
@@ -223,7 +226,7 @@ const ProductGridCard = ({ product }) => {
              dikhein - box aur bottle dono same box mein center hoke fit honge */}
       <Link
         href={productLink}
-        className="w-full h-[200px] flex items-center justify-center flex-shrink-0"
+        className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
         <img
           src={imageUrl}
@@ -231,12 +234,26 @@ const ProductGridCard = ({ product }) => {
           loading="lazy"
           className="max-w-full max-h-full object-contain"
         />
+
+        {/* Phone/Tablet ke liye "+" add-to-cart button, image ke right-bottom
+            corner pe. "lg:hidden" isliye ki desktop pe chhup jaye aur neeche
+            wala text button dikhe. */}
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={isPending || !productId}
+          aria-label="Add to cart"
+          className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={2.5} />}
+        </button>
       </Link>
 
-      {/* 3. Title ke liye 2 lines ki fixed height reserve - 1 line wale aur
-             2 line wale titles ke baad bhi price/button ki position same rahegi */}
+      {/* 3. FIX: line-clamp leak fix — fixed "h-[2.8em]" + explicit
+             "leading-[1.4]" taaki box height exactly "2 lines × 1.4em"
+             ke barabar ho, koi extra sliver leak na ho neeche. */}
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center font-hind-madurai">
+        <h2 className="mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 font-hind-madurai">
           {decodeHtml(product.name)}
         </h2>
       </Link>
@@ -246,12 +263,13 @@ const ProductGridCard = ({ product }) => {
       </p>
 
       {/* 4. mt-auto ab reliably bottom pe hi button rakhega, kyunki upar ki
-             cheezein (image, title) fixed height le chuki hain */}
+             cheezein (image, title) fixed height le chuki hain.
+             Desktop pe text button, mobile/tablet pe "+" icon (upar). */}
       <button
         type="button"
         onClick={handleAddToCart}
         disabled={isPending || !productId}
-        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50`}
+        className={`${hindMadurai.className} hidden lg:block mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50`}
       >
         {isPending ? "Adding..." : "Add to Cart"}
       </button>

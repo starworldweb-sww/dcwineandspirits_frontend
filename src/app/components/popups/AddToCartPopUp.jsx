@@ -191,7 +191,7 @@ const AddToCartPopup = ({
             {/* actions */}
             <div className="flex gap-2 px-4 sm:px-5 py-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] sm:pb-3">
               <Link
-                href="/account/cart/"
+                href="/cart/"
                 className="flex-1 py-2.5 text-center text-[10.5px] tracking-[0.1em] font-bold uppercase text-[#1a1a1a] border border-[#ddd8cd] rounded-lg hover:bg-[#faf8f4] hover:border-[#c99000] transition-colors duration-200"
               >
                 View Cart
