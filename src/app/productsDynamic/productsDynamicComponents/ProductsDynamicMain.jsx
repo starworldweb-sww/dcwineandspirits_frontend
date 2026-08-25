@@ -10,6 +10,7 @@ import {
   Repeat,
   ShoppingBag,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -127,7 +128,10 @@ const ProductListRow = ({ product }) => {
         )}
 
         <Link href={productLink}>
-          <h2 className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors">
+          <h2
+            title={decodeHtml(product.name)}
+            className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
+          >
             {decodeHtml(product.name)}
           </h2>
         </Link>
@@ -188,7 +192,7 @@ const ProductListRow = ({ product }) => {
 };
 
 const ProductGridCard = ({ product }) => {
-  const { mutate: addtoCart } = useAddtoCart();
+  const { mutate: addtoCart, isPending } = useAddtoCart();
   // 5. Grid card ke liye bhi apna local popup state
   const [showPopup, setShowPopup] = useState(false);
   const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
@@ -197,7 +201,12 @@ const ProductGridCard = ({ product }) => {
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
-  const handleAddtoCart = (product_id) => {
+  const handleAddtoCart = (e, product_id) => {
+    // 8. Image ke upar wala "+" button bhi isi function ko call karta hai,
+    //    isliye stopPropagation zaroori hai — warna parent <Link> navigate
+    //    kar dega add-to-cart ke bajaye
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
     addtoCart(product_id, {
       onSuccess: (data) => {
 
@@ -217,7 +226,7 @@ const ProductGridCard = ({ product }) => {
 
       <Link
         href={productLink}
-        className="w-full h-[200px] flex items-center justify-center flex-shrink-0"
+        className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
         <img
           src={productImage}
@@ -225,22 +234,53 @@ const ProductGridCard = ({ product }) => {
           loading="lazy"
           className="max-w-full max-h-full object-contain"
         />
+
+        {/* ============================================================
+            NEW: Phone/Tablet ke liye "+" add-to-cart button, image ke
+            right-bottom corner pe — HomeProductSlider wala hi pattern.
+            "lg:hidden" isliye ki desktop pe yeh chhup jaye aur neeche
+            wala text button dikhe.
+        ============================================================ */}
+        <button
+          type="button"
+          onClick={(e) => handleAddtoCart(e, product?.product_id)}
+          disabled={isPending}
+          aria-label="Add to cart"
+          className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md  active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={2.5} />}
+        </button>
       </Link>
 
+      {/* ============================================================
+          FIX: line-clamp leak fix — pehle "min-h" + "leading-snug"
+          use ho raha tha, jiski wajah se clamp box aur actual line-height
+          ka calculation match nahi kar raha tha, aur teesri line ka
+          chhota sa sliver (halka sa dikhna) leak ho raha tha.
+
+          Ab fixed "h-[2.8em]" + explicit "leading-[1.4]" use kiya hai
+          taaki box height exactly "2 lines × 1.4em line-height" ke
+          barabar ho — koi extra space nahi bachega jisme neeche wali
+          line ka top edge leak ho. "overflow-hidden" bhi explicit
+          add kiya hai safety ke liye.
+      ============================================================ */}
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-[16px] text-[#1c2b4b] hover:text-[#98022e] transition-colors leading-snug line-clamp-2 min-h-[3.2em] flex items-center justify-center">
+        <h2
+          title={decodeHtml(product.name)}
+          className="mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 cursor-pointer"
+        >
           {decodeHtml(product.name)}
         </h2>
       </Link>
 
-      <p className={`${hindMadurai.className} mt-2 text-base text-gray-400`}>
+      <p className={`${hindMadurai.className} mt-2 text-base text-gray-700 mt-auto font-semibold  font-sarabun `}>
         ${Number(displayPrice).toFixed(2)}
       </p>
 
       <button
         type="button"
-        onClick={() => handleAddtoCart(product?.product_id)}
-        className={`${hindMadurai.className} mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
+        onClick={() => handleAddtoCart(null, product?.product_id)}
+        className={`${hindMadurai.className} hidden lg:block mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
       >
         Add to Cart
       </button>

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useRef, useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Award, ShoppingCart, Percent, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Award, ShoppingCart, Percent, Loader2, Plus } from "lucide-react";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
@@ -154,63 +154,138 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
           className="flex flex-nowrap gap-4 md:gap-6 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory md:snap-none"
         >
           {products.length > 0 ? (
-            products.map((item) => (
-              <Link
-                key={item.id}
-                href={`/${item.seo_url}`}
-                className="w-full sm:w-[243px] flex-shrink-0 flex flex-col bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer snap-center sm:snap-start relative rounded-none"
-              >
-                {/* IMAGE */}
-                <div className="w-full sm:w-[243px] h-[260px] sm:h-[240px] flex items-center justify-center p-4 relative bg-[#f9f9f9]">
-                  <img
-                    src={`${IMAGE_BASE_URL}${item.image}`}
-                    alt={decodeHtml(item.name)}
-                    loading="lazy"
-                    className="max-h-full max-w-full object-contain mix-blend-multiply"
-                  />
-                </div>
+            products.map((item) => {
+              // isi product ke liye add-to-cart abhi pending hai ya nahi —
+              // dono buttons (mobile "+" aur desktop text button) isi ek
+              // check ko share karte hain
+              const productId = item?.product_id || item?.id;
+              const isAddingThis = addToCartMut.isPending && addingProductId === productId;
 
-                {/* PRODUCT INFO */}
-                <div className="w-full sm:w-[243px] flex flex-col items-center justify-between p-5 text-center min-h-[151px]">
+              // ============================================================
+              // NEW: stock aur discount badges ke liye checks
+              // - out of stock: item.quantity <= 0 (agar tumhare data mein
+              //   field ka naam alag hai jaise item.stock/item.in_stock,
+              //   yahan replace kar dena)
+              // - discount %: sirf tab dikhega jab special_price ho aur
+              //   original price se kam ho
+              // ============================================================
+              const isOutOfStock = Number(item.quantity) <= 0;
+              const hasSpecialPrice =
+                item.special_price !== null &&
+                item.special_price !== undefined &&
+                item.special_price !== "" &&
+                Number(item.special_price) < Number(item.price);
+              const discountPercent = hasSpecialPrice
+                ? Math.round(
+                    ((Number(item.price) - Number(item.special_price)) /
+                      Number(item.price)) *
+                      100
+                  )
+                : 0;
 
-                  <div className="flex flex-col gap-2 w-full items-center">
-                    {/* NAME */}
-                    <h3 className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]">
-                      {decodeHtml(item.name)}
-                    </h3>
+              return (
+                <Link
+                  key={item.id}
+                  href={`/${item.seo_url}`}
+                  className="w-[calc(50%-8px)] sm:w-[243px] flex-shrink-0 flex flex-col bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer snap-start relative rounded-none"
+                >
+                  {/* IMAGE */}
+                  <div className="w-full sm:w-[243px] h-[190px] sm:h-[240px] flex items-center justify-center p-4 relative bg-[#f9f9f9]">
 
-                    {/* PRICE */}
-                    <div className="flex items-center justify-center gap-2 mt-1">
-                      {item.special_price ? (
-                        <>
-                          <span className="text-[#98022e] text-[15px]">
-                            ${Number(item.special_price).toFixed(2)}
-                          </span>
-                          <span className="text-gray-500 line-through text-[13px]">
-                            ${Number(item.price).toFixed(2)}
-                          </span>
-                        </>
+                    {/* ============================================================
+                        NEW: Badges — hamesha visible, hover ki zaroorat nahi.
+                        - top-left: OUT OF STOCK (agar stock nahi hai)
+                        - top-right: discount % (agar special price hai)
+                    ============================================================ */}
+                    {isOutOfStock && (
+                      <span className="absolute top-2 left-2 z-10 bg-gray-800 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm shadow-sm">
+                        Out of Stock
+                      </span>
+                    )}
+
+                    {discountPercent > 0 && (
+                      <span className="absolute top-2 right-2 z-10 bg-[#98022e] text-white text-[11px] sm:text-[12px] font-bold px-2 py-1 rounded-sm shadow-sm">
+                        {discountPercent}% OFF
+                      </span>
+                    )}
+
+                    <img
+                      src={`${IMAGE_BASE_URL}${item.image}`}
+                      alt={decodeHtml(item.name)}
+                      loading="lazy"
+                      className={`max-h-full max-w-full object-contain mix-blend-multiply ${
+                        isOutOfStock ? "opacity-50" : ""
+                      }`}
+                    />
+
+                    {/* ============================================================
+                        Phone/Tablet ke liye "+" add-to-cart button, image ke
+                        right-bottom corner pe. "lg:hidden" isliye ki desktop
+                        (lg aur upar) pe yeh chhup jaye aur neeche wala text
+                        button dikhe. Out of stock hone par disable.
+                    ============================================================ */}
+                    <button
+                      onClick={(e) => handleAddToCart(e, item)}
+                      disabled={isAddingThis || isOutOfStock}
+                      aria-label="Add to cart"
+                      className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAddingThis ? (
+                        <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <span className="text-gray-600 text-[15px]">
-                          ${Number(item.price).toFixed(2)}
-                        </span>
+                        <Plus size={18} strokeWidth={2.5} />
                       )}
-                    </div>
+                    </button>
                   </div>
 
-                  {/* ADD TO CART BUTTON */}
-                  <button
-                    onClick={(e) => handleAddToCart(e, item)}
-                    disabled={addToCartMut.isPending && addingProductId === (item?.product_id || item?.id)}
-                    className="w-4/5 mt-4 bg-black text-white py-2.5 text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {addingProductId === (item.product_id || item.id)
-                      ? "ADDING..."
-                      : "ADD TO CART"}
-                  </button>
-                </div>
-              </Link>
-            ))
+                  {/* PRODUCT INFO */}
+                  <div className="w-full sm:w-[243px] flex flex-col items-center justify-between p-3 sm:p-5 text-center lg:min-h-[151px]">
+
+                    <div className="flex flex-col gap-2 w-full items-center">
+                      {/* NAME */}
+                      <h3 className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]">
+                        {decodeHtml(item.name)}
+                      </h3>
+
+                      {/* PRICE */}
+                      <div className="flex items-center justify-center gap-2 mt-1 ">
+                        {hasSpecialPrice ? (
+                          <>
+                            <span className="text-[#98022e] text-[15px] font-semibold">
+                              ${Number(item.special_price).toFixed(2)}
+                            </span>
+                            <span className="text-gray-500 line-through text-[13px]">
+                              ${Number(item.price).toFixed(2)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-gray-700 text-[15px] font-semibold">
+                            ${Number(item.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ============================================================
+                        ADD TO CART BUTTON — ab sirf desktop (lg aur upar) pe
+                        dikhega. Phone/tablet pe iski jagah image ke upar wala
+                        "+" button use hota hai. Out of stock hone par disable.
+                    ============================================================ */}
+                    <button
+                      onClick={(e) => handleAddToCart(e, item)}
+                      disabled={isAddingThis || isOutOfStock}
+                      className="hidden lg:block w-4/5 mt-4 bg-black text-white py-2.5 text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isOutOfStock
+                        ? "OUT OF STOCK"
+                        : isAddingThis
+                        ? "ADDING..."
+                        : "ADD TO CART"}
+                    </button>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <div className="w-full text-center py-20 text-gray-400 font-sans">
               No products found in this category.
