@@ -7,19 +7,25 @@ import {
   ChevronUp,
   ChevronDown,
   Heart,
+  Bookmark,
   Repeat,
   ShoppingBag,
   Loader2,
   Plus,
+  ShoppingCart,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+// Replace this with your actua
+
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
 import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
+import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
+import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -33,11 +39,6 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
-// NOTE: "name_desc" has no matching branch in the backend's getCategoryData
-// sort switch (only price_asc/price_desc/name_asc are handled, anything else
-// falls through to the unsorted default). Either add a name_desc branch on
-// the backend, or drop this option until it does — leaving it in as-is means
-// picking "Name (Z - A)" silently does nothing.
 const SortOptions = [
   { value: "", label: "Default" },
   { value: "name_asc", label: "Name (A - Z)" },
@@ -55,66 +56,104 @@ const ShowOptions = [
 
 const ProductListRow = ({ product }) => {
   const addToCartMut = useAddtoCart();
+  const wishlistMut = useAddToWishlist();
   const [qty, setQty] = useState(1);
-  // 2. Popup ke liye local state — sirf isi row ke liye control karta hai
   const [showPopup, setShowPopup] = useState(false);
   const productId = product?.product_id || product?.id;
+
   const isPending = addToCartMut.isPending;
 
-  const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
+  const { data: wishlistCheckData } = useCheckWishlist(productId);
+  const isInWishlist = Boolean(
+    wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
+  );
+
+  const productLink = product.seo_url
+    ? `/${product.seo_url}`
+    : `/${product.product_id}`;
   const productImage = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
-
-
-
+  const hasDiscount =
+    product.special_price &&
+    Number(product.special_price) < Number(product.price);
+  const discountPercent = hasDiscount
+    ? Math.round(
+        ((Number(product.price) - Number(product.special_price)) /
+          Number(product.price)) *
+          100,
+      )
+    : 0;
+  const isOutOfStock = product.in_stock === false;
 
   const handleAddToCart = async (e) => {
     e?.stopPropagation?.();
-    if (!productId || isPending) return;
+    if (!productId || isPending || isOutOfStock) return;
     try {
       const res = await addToCartMut.mutateAsync({
         product_id: productId,
         quantity: Math.max(1, Number(qty) || 1),
       });
       if (res?.success) {
-
-        // 3. Success hote hi popup dikhao
         setShowPopup(true);
       }
-    } catch (e) { }
+    } catch (e) {}
   };
-  // Related products nikalne ka helper — same brand ke 2 products, current ko exclude karke
+
+  const handleAddToWishlist = async (e) => {
+    e?.stopPropagation?.();
+    if (!productId || wishlistMut.isPending || isInWishlist) return;
+    try {
+      await wishlistMut.mutateAsync(productId); // 👈 object hata diya
+      toast.success("Added to wishlist");
+    } catch (e) {
+      toast.error("Couldn't update wishlist — please try again");
+    }
+  };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200">
-      {/* 4. Popup render — fixed positioned hai, layout pe asar nahi padega */}
+    <div className="group flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200 relative">
       <AddToCartPopup
         isOpen={showPopup}
         onClose={() => setShowPopup(false)}
         product={product}
-
-
       />
 
       <Link
         href={productLink}
-        className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group"
+        className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group/img"
       >
         <img
           src={productImage}
           alt={product.name}
           loading="lazy"
-          className="max-w-full max-h-full object-contain"
+          className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
+
+        {isOutOfStock && (
+          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
+            <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
+              Out of Stock
+            </span>
+          </div>
+        )}
+
+        {hasDiscount && !isOutOfStock && (
+          <span className="absolute top-2 left-2 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            -{discountPercent}%
+          </span>
+        )}
+
         <span className="absolute bottom-3 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <Search size={16} />
         </span>
       </Link>
 
-      <div className={`flex-1 flex flex-col justify-center ${hindMadurai.className}`}>
+      <div
+        className={`flex-1 flex flex-col justify-center ${hindMadurai.className}`}
+      >
         {brandName && (
           <p className="text-sm text-gray-700">
             Brand:{" "}
@@ -136,9 +175,18 @@ const ProductListRow = ({ product }) => {
           </h2>
         </Link>
 
-        <p className={`${sumana.className} mt-3 text-2xl font-bold text-black`}>
-          ${Number(displayPrice).toFixed(2)}
-        </p>
+        <div className="mt-3 flex items-center gap-2">
+          <p className={`${sumana.className} text-2xl font-bold text-black`}>
+            ${Number(displayPrice).toFixed(2)}
+          </p>
+          {hasDiscount && (
+            <p
+              className={`${sumana.className} text-base text-gray-400 line-through`}
+            >
+              ${Number(product.price).toFixed(2)}
+            </p>
+          )}
+        </div>
 
         <div className="mt-4 flex items-center gap-2 sm:gap-3 w-full">
           <div className="flex items-center border border-gray-300 bg-white flex-shrink-0">
@@ -172,17 +220,48 @@ const ProductListRow = ({ product }) => {
           <button
             type="button"
             onClick={handleAddToCart}
-            disabled={isPending || !productId}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer disabled:opacity-50"
+            disabled={isPending || !productId || isOutOfStock}
+            className="flex-1 flex items-center justify-center gap-2 bg-[#98022e] hover:bg-[#7a0225] text-white font-bold uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-5 py-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingBag size={16} />
-            {isPending ? "Adding..." : "Add to Cart"}
+            {isOutOfStock
+              ? "Out of Stock"
+              : isPending
+                ? "Adding..."
+                : "Add to Cart"}
           </button>
 
-          <button type="button" aria-label="Add to wishlist" className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer">
-            <Heart size={16} />
+          <button
+            type="button"
+            onClick={handleAddToWishlist}
+            disabled={wishlistMut.isPending || !productId || isInWishlist}
+            aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+            aria-pressed={isInWishlist}
+            title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+            className={`group w-10 h-10 flex-shrink-0 flex items-center justify-center border transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+              isInWishlist
+                ? "bg-[#98022e] border-[#98022e] text-white"
+                : "bg-white border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
+            }`}
+          >
+            {wishlistMut.isPending ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Heart
+                size={16}
+                fill={isInWishlist ? "currentColor" : "none"}
+                className={`transition-transform duration-200 ${
+                  isInWishlist ? "scale-110" : "group-hover:scale-110"
+                }`}
+              />
+            )}
           </button>
-          <button type="button" aria-label="Compare" className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer">
+
+          <button
+            type="button"
+            aria-label="Compare"
+            className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer"
+          >
             <Repeat size={16} />
           </button>
         </div>
@@ -193,36 +272,86 @@ const ProductListRow = ({ product }) => {
 
 const ProductGridCard = ({ product }) => {
   const { mutate: addtoCart, isPending } = useAddtoCart();
-  // 5. Grid card ke liye bhi apna local popup state
+  const wishlistMut = useAddToWishlist();
   const [showPopup, setShowPopup] = useState(false);
-  const productLink = product.seo_url ? `/${product.seo_url}` : `/${product.product_id}`;
+  const productLink = product.seo_url
+    ? `/${product.seo_url}`
+    : `/${product.product_id}`;
   const productImage = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
+  const hasDiscount =
+    product.special_price &&
+    Number(product.special_price) < Number(product.price);
+  const discountPercent = hasDiscount
+    ? Math.round(
+        ((Number(product.price) - Number(product.special_price)) /
+          Number(product.price)) *
+          100,
+      )
+    : 0;
+  const isOutOfStock = product.in_stock === false;
+
+  const { data: wishlistCheckData } = useCheckWishlist(product?.product_id);
+  const isInWishlist = Boolean(
+    wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
+  );
 
   const handleAddtoCart = (e, product_id) => {
-    // 8. Image ke upar wala "+" button bhi isi function ko call karta hai,
-    //    isliye stopPropagation zaroori hai — warna parent <Link> navigate
-    //    kar dega add-to-cart ke bajaye
     e?.stopPropagation?.();
     e?.preventDefault?.();
+    if (isOutOfStock) return;
     addtoCart(product_id, {
       onSuccess: (data) => {
-
         setShowPopup(true);
       },
     });
   };
+  const handleAddToWishlist = async (e) => {
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
+    if (!product?.product_id || wishlistMut.isPending || isInWishlist) return;
+    try {
+      await wishlistMut.mutateAsync(product.product_id); // 👈 object hata diya
+      toast.success("Added to wishlist");
+    } catch (e) {
+      toast.error("Couldn't update wishlist — please try again");
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
-      {/* 7. Popup render */}
+    <div className="group h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5 relative">
       <AddToCartPopup
         isOpen={showPopup}
         onClose={() => setShowPopup(false)}
         product={product}
       />
+
+      {/* Wishlist — Bookmark icon, top-right corner */}
+      <button
+        type="button"
+        onClick={handleAddToWishlist}
+        disabled={wishlistMut.isPending || isInWishlist}
+        aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+        aria-pressed={isInWishlist}
+        title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+        className={`group absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+          isInWishlist
+            ? "bg-[#98022e] text-white scale-105"
+            : "bg-white text-gray-400 hover:text-[#98022e] hover:scale-105 border border-gray-100"
+        }`}
+      >
+        {wishlistMut.isPending ? (
+          <Loader2 size={14} className="animate-spin" />
+        ) : (
+          <Bookmark
+            size={15}
+            fill={isInWishlist ? "currentColor" : "none"}
+            className="transition-transform duration-200"
+          />
+        )}
+      </button>
 
       <Link
         href={productLink}
@@ -232,38 +361,38 @@ const ProductGridCard = ({ product }) => {
           src={productImage}
           alt={decodeHtml(product.name)}
           loading="lazy"
-          className="max-w-full max-h-full object-contain"
+          className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
 
-        {/* ============================================================
-            NEW: Phone/Tablet ke liye "+" add-to-cart button, image ke
-            right-bottom corner pe — HomeProductSlider wala hi pattern.
-            "lg:hidden" isliye ki desktop pe yeh chhup jaye aur neeche
-            wala text button dikhe.
-        ============================================================ */}
-        <button
+        {isOutOfStock && (
+          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
+            <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
+              Out of Stock
+            </span>
+          </div>
+        )}
+
+        {hasDiscount && !isOutOfStock && (
+          <span className="absolute top-3 left-3 z-10 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+            -{discountPercent}%
+          </span>
+        )}
+
+        {/* <button
           type="button"
           onClick={(e) => handleAddtoCart(e, product?.product_id)}
-          disabled={isPending}
+          disabled={isPending || isOutOfStock}
           aria-label="Add to cart"
-          className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md  active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="lg:hidden absolute bottom-2 right-2 w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-md  active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={2.5} />}
-        </button>
+          {isPending ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <ShoppingCart size={18} strokeWidth={2.5} />
+          )}
+        </button> */}
       </Link>
 
-      {/* ============================================================
-          FIX: line-clamp leak fix — pehle "min-h" + "leading-snug"
-          use ho raha tha, jiski wajah se clamp box aur actual line-height
-          ka calculation match nahi kar raha tha, aur teesri line ka
-          chhota sa sliver (halka sa dikhna) leak ho raha tha.
-
-          Ab fixed "h-[2.8em]" + explicit "leading-[1.4]" use kiya hai
-          taaki box height exactly "2 lines × 1.4em line-height" ke
-          barabar ho — koi extra space nahi bachega jisme neeche wali
-          line ka top edge leak ho. "overflow-hidden" bhi explicit
-          add kiya hai safety ke liye.
-      ============================================================ */}
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
         <h2
           title={decodeHtml(product.name)}
@@ -273,16 +402,28 @@ const ProductGridCard = ({ product }) => {
         </h2>
       </Link>
 
-      <p className={`${hindMadurai.className} mt-2 text-base text-gray-700 mt-auto font-semibold  font-sarabun `}>
-        ${Number(displayPrice).toFixed(2)}
-      </p>
+      <div
+        className={`${hindMadurai.className} mt-2 mt-auto flex items-center justify-center gap-2 font-sarabun`}
+      >
+        <p className="text-base text-gray-700 font-semibold">
+          ${Number(displayPrice).toFixed(2)}
+        </p>
+        {hasDiscount && (
+          <p className="text-sm text-gray-400 line-through">
+            ${Number(product.price).toFixed(2)}
+          </p>
+        )}
+      </div>
 
       <button
         type="button"
         onClick={() => handleAddtoCart(null, product?.product_id)}
-        className={`${hindMadurai.className} hidden lg:block mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl`}
+        disabled={isOutOfStock}
+        className={`${hindMadurai.className} mt-2 w-[90%] bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
       >
-        Add to Cart
+        <span className="text-[12px]">
+          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+        </span>
       </button>
     </div>
   );
@@ -303,11 +444,7 @@ const ProductsDynamicMain = ({
 
   const products = data.products?.items || [];
 
-  // infinite scroll: observe a sentinel div at the bottom of the list and
-  // fetch the next page once it's in view. Guarded so we never fire while
-  // already fetching, or once there's nothing left to fetch.
   useEffect(() => {
-
     const node = sentinelRef.current;
     if (!node || !hasNextPage) return;
 
@@ -317,20 +454,11 @@ const ProductsDynamicMain = ({
           fetchNextPage();
         }
       },
-      { rootMargin: "400px" } // start loading a bit before the user hits bottom
+      { rootMargin: "400px" },
     );
-  }, [])
-
-  // const displayedProducts = sortedProducts.slice(0, showNum);
+  }, []);
 
   return (
-    // FIX: "min-w-0" add kiya — is section ko flex-1 diya hua hai upar wale
-    // flex row (ProductsDynamicClient) mein. min-w-0 ke bina, flex item ka
-    // default min-width "auto" hota hai — yani yeh section apne andar ke
-    // content (subcategory pills row) ki natural width tak grow karta rahega
-    // aur SmallDescAndSubcategory ka apna overflow-x-auto kabhi kaam nahi
-    // karega. Isi wajah se page pe horizontal scroll aa raha tha aur last
-    // pill viewport se bahar cut ho rahi thi.
     <section className="w-full min-w-0 bg-white flex-1">
       <SmallDescAndSubcategory
         smalldesc={data.smalldesc}
@@ -344,8 +472,11 @@ const ProductsDynamicMain = ({
             type="button"
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
-            className={`cursor-pointer transition-colors ${layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-              }`}
+            className={`cursor-pointer transition-colors ${
+              layout === "grid"
+                ? "text-[#98022e]"
+                : "text-black hover:text-[#98022e]"
+            }`}
           >
             <RiGridFill size={20} />
           </button>
@@ -354,8 +485,11 @@ const ProductsDynamicMain = ({
             type="button"
             onClick={() => setLayout("list")}
             aria-label="List view"
-            className={`cursor-pointer transition-colors ${layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-              }`}
+            className={`cursor-pointer transition-colors ${
+              layout === "list"
+                ? "text-[#98022e]"
+                : "text-black hover:text-[#98022e]"
+            }`}
           >
             <Logs size={20} />
           </button>
@@ -407,26 +541,24 @@ const ProductsDynamicMain = ({
           {layout === "list" ? (
             <div>
               {products.map((product, i) => (
-                <ProductListRow key={product.product_id ?? i} product={product} />
+                <ProductListRow
+                  key={product.product_id ?? i}
+                  product={product}
+                />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
               {products.map((product, i) => (
-                <ProductGridCard key={product.product_id ?? i} product={product} />
+                <ProductGridCard
+                  key={product.product_id ?? i}
+                  product={product}
+                />
               ))}
             </div>
           )}
 
-          {/* sentinel — observed to trigger fetchNextPage */}
           <div ref={sentinelRef} className="h-1 w-full" />
-          {/* 
-          {isFetchingNextPage && (
-            <div className="w-full py-8 flex items-center justify-center text-gray-400 gap-2">
-              <Loader2 size={18} className="animate-spin" />
-              <span className="text-sm">Loading more...</span>
-            </div>
-          )} */}
 
           {!hasNextPage && products.length > 0 && (
             <div className="w-full py-8 text-center text-gray-400 text-sm">
@@ -435,7 +567,6 @@ const ProductsDynamicMain = ({
           )}
         </>
       )}
-
     </section>
   );
 };

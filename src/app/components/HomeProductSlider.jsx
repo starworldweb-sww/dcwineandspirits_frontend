@@ -3,20 +3,28 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useRef, useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Award, ShoppingCart, Percent, Loader2, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Award,
+  ShoppingCart,
+  Percent,
+  Loader2,
+  Plus,
+  ShoppingCartIcon,
+} from "lucide-react";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
 import { useHomePageProducts } from "../api/hooks/category/useHomePageProducts";
 import AddToCartPopup from "./popups/AddToCartPopUp";
 
-
 const IMAGE_BASE_URL =
   process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ||
   "https://www.admin.dcwineandspirits.com/image/";
 
 const TAB_ICONS = {
-  "Bestsellers": Award,
+  Bestsellers: Award,
   "New Arrivals": ShoppingCart,
   "Special Deals": Percent,
 };
@@ -24,14 +32,21 @@ const TAB_ICONS = {
 // ---------------------------------------------------------------------------
 // COMPONENT
 // ---------------------------------------------------------------------------
-const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: propError }) => {
+const HomeProductSlider = ({
+  data: propData,
+  isLoading: propLoading,
+  isError: propError,
+}) => {
   const router = useRouter();
   const scrollRef = useRef(null);
   const addToCartMut = useAddtoCart();
   const [addingProductId, setAddingProductId] = useState(null);
-  const hookResult = useHomePageProducts({ enabled: propData === undefined && propLoading === undefined });
+  const hookResult = useHomePageProducts({
+    enabled: propData === undefined && propLoading === undefined,
+  });
   const data = propData !== undefined ? propData : hookResult.data;
-  const isLoading = propLoading !== undefined ? propLoading : hookResult.isLoading;
+  const isLoading =
+    propLoading !== undefined ? propLoading : hookResult.isLoading;
   const isError = propError !== undefined ? propError : hookResult.isError;
 
   // ============================================================
@@ -52,7 +67,7 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
 
   const activeItem = useMemo(
     () => items.find((item) => item.title === currentTab),
-    [items, currentTab]
+    [items, currentTab],
   );
 
   const products = activeItem?.products || [];
@@ -106,7 +121,6 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
 
   return (
     <div className="w-full bg-[#fcfcfc] py-8 md:py-10 font-sans">
-
       <div className="w-full mb-6 md:mb-8">
         <div className="flex justify-start sm:justify-center px-3 md:px-12 lg:px-16 2xl:px-32">
           <div className="flex gap-6 md:gap-14 items-center overflow-x-auto no-scrollbar w-full sm:w-auto sm:min-w-max border-b-1 border-gray-200">
@@ -117,8 +131,11 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
                 <button
                   key={item.title}
                   onClick={() => setActiveTab(item.title)}
-                  className={`relative flex items-center gap-2 pb-3 shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer rounded-none ${isActive ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
-                    }`}
+                  className={`relative flex items-center gap-2 pb-3 shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer rounded-none ${
+                    isActive
+                      ? "text-[#98022e]"
+                      : "text-black hover:text-[#98022e]"
+                  }`}
                   style={{
                     fontFamily: "'Sumana', serif",
                     fontSize: "16px",
@@ -139,7 +156,6 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
       </div>
 
       <div className="max-w-screen-2xl mx-auto px-3 md:px-12 lg:px-16 2xl:px-32 relative group">
-
         <button
           onClick={() => scrollByAmount(-300)}
           className="hidden md:flex absolute left-2 lg:left-4 2xl:left-16 top-1/2 -translate-y-1/2 w-9 h-10 bg-[#343a40] text-white items-center justify-center z-10 cursor-pointer shadow-md rounded-none hover:bg-black transition-colors"
@@ -159,7 +175,8 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
               // dono buttons (mobile "+" aur desktop text button) isi ek
               // check ko share karte hain
               const productId = item?.product_id || item?.id;
-              const isAddingThis = addToCartMut.isPending && addingProductId === productId;
+              const isAddingThis =
+                addToCartMut.isPending && addingProductId === productId;
 
               // ============================================================
               // NEW: stock aur discount badges ke liye checks
@@ -179,7 +196,7 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
                 ? Math.round(
                     ((Number(item.price) - Number(item.special_price)) /
                       Number(item.price)) *
-                      100
+                      100,
                   )
                 : 0;
 
@@ -191,7 +208,6 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
                 >
                   {/* IMAGE */}
                   <div className="w-full sm:w-[243px] h-[190px] sm:h-[240px] flex items-center justify-center p-4 relative bg-[#f9f9f9]">
-
                     {/* ============================================================
                         NEW: Badges — hamesha visible, hover ki zaroorat nahi.
                         - top-left: OUT OF STOCK (agar stock nahi hai)
@@ -224,23 +240,22 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
                         (lg aur upar) pe yeh chhup jaye aur neeche wala text
                         button dikhe. Out of stock hone par disable.
                     ============================================================ */}
-                    <button
+                    {/* <button
                       onClick={(e) => handleAddToCart(e, item)}
                       disabled={isAddingThis || isOutOfStock}
                       aria-label="Add to cart"
-                      className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="lg:hidden absolute bottom-2 right-2 w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isAddingThis ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <Plus size={18} strokeWidth={2.5} />
+                        <ShoppingCartIcon size={18} strokeWidth={2.5} />
                       )}
-                    </button>
+                    </button> */}
                   </div>
 
                   {/* PRODUCT INFO */}
                   <div className="w-full sm:w-[243px] flex flex-col items-center justify-between p-3 sm:p-5 text-center lg:min-h-[151px]">
-
                     <div className="flex flex-col gap-2 w-full items-center">
                       {/* NAME */}
                       <h3 className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]">
@@ -274,13 +289,13 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
                     <button
                       onClick={(e) => handleAddToCart(e, item)}
                       disabled={isAddingThis || isOutOfStock}
-                      className="hidden lg:block w-4/5 mt-4 bg-black text-white py-2.5 text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="block w-4/5 mt-4 bg-black text-white py-2  lg:py-2.5  text-[12px] lg:text-[13px] font-[Cambria,Georgia,serif] font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isOutOfStock
                         ? "OUT OF STOCK"
                         : isAddingThis
-                        ? "ADDING..."
-                        : "ADD TO CART"}
+                          ? "ADDING..."
+                          : "ADD TO CART"}
                     </button>
                   </div>
                 </Link>
@@ -301,7 +316,6 @@ const HomeProductSlider = ({ data: propData, isLoading: propLoading, isError: pr
         >
           <ChevronRight size={24} />
         </button>
-
       </div>
 
       {/* ============================================================

@@ -1,10 +1,28 @@
 "use client";
-import { Menu, X, ChevronDown, Search, LogIn, UserPlus, Phone, Download, User, LogOut } from "lucide-react";
-import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  LogIn,
+  UserPlus,
+  Phone,
+  Download,
+  User,
+  LogOut,
+} from "lucide-react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useDeferredValue,
+} from "react";
 import { useMobileCategory } from "@/app/api/hooks/useMobileCategory"; // apna actual path daal dena
 import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // PhoneHeader wala hi auth hook — login state yahin se milega
 import Link from "next/link";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { TfiMenuAlt } from "react-icons/tfi";
 
 // ============================================================
 // HELPER: Menu item ka link banata hai
@@ -30,7 +48,9 @@ const filterMenuTree = (items, query) => {
 
   return items.reduce((acc, item) => {
     const titleMatches = decodeHtml(item.title).toLowerCase().includes(q);
-    const childMatches = item.children ? filterMenuTree(item.children, query) : [];
+    const childMatches = item.children
+      ? filterMenuTree(item.children, query)
+      : [];
 
     if (titleMatches) {
       acc.push({ ...item, children: item.children || [] });
@@ -88,7 +108,16 @@ const highlightMatch = (text, query) => {
 // - aria-expanded batata hai screen readers ko ki submenu
 //   khula hai ya band
 // ============================================================
-const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearching, searchQuery }) => {
+const MenuNode = ({
+  item,
+  path,
+  depth,
+  openItems,
+  toggleItem,
+  closeMenu,
+  isSearching,
+  searchQuery,
+}) => {
   const hasChildren = item.children && item.children.length > 0;
   // Search active hone par sab matching branches force-open rehte hain
   const isOpen = isSearching ? hasChildren : openItems.has(path);
@@ -97,7 +126,9 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearc
   return (
     <li className={depth === 0 ? "border-b border-gray-100" : ""}>
       {/* ---------- ROW: link + expand/collapse button ---------- */}
-      <div className={`w-full flex items-center justify-between px-5 ${depth === 0 ? "py-3" : "py-1"} `}>
+      <div
+        className={`w-full flex items-center justify-between px-5 ${depth === 0 ? "py-3" : "py-1"} `}
+      >
         <Link
           href={getItemHref(item)}
           onClick={!hasChildren ? closeMenu : undefined}
@@ -109,7 +140,9 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearc
           } {}`}
         >
           {/* isSearching hone par highlight, warna plain decoded text */}
-          {isSearching ? highlightMatch(item.title, searchQuery) : decodeHtml(item.title)}
+          {isSearching
+            ? highlightMatch(item.title, searchQuery)
+            : decodeHtml(item.title)}
         </Link>
 
         {/* Search ke dauraan sab kuch already open hai, isliye toggle button
@@ -120,7 +153,11 @@ const MenuNode = ({ item, path, depth, openItems, toggleItem, closeMenu, isSearc
             onClick={() => toggleItem(path)}
             aria-expanded={isOpen}
             aria-controls={submenuId}
-            aria-label={isOpen ? `Collapse ${item.title} menu` : `Expand ${item.title} menu`}
+            aria-label={
+              isOpen
+                ? `Collapse ${item.title} menu`
+                : `Expand ${item.title} menu`
+            }
             className="shrink-0 p-1.5 -mr-1.5 rounded-full active:bg-gray-100 transition-colors duration-200"
           >
             <ChevronDown
@@ -287,9 +324,9 @@ const PhoneLeftMenu = () => {
         aria-label="Toggle menu"
       >
         {isMenuOpen ? (
-          <X size={22} strokeWidth={1.5} />
+          <X size={26} strokeWidth={1.5} />
         ) : (
-          <Menu size={22} strokeWidth={1.5} />
+          <Menu size={26} strokeWidth={1.5} />
         )}
       </button>
 
@@ -368,7 +405,9 @@ const PhoneLeftMenu = () => {
         {/* ---- Menu list: semantic <nav> + <ul> for SEO/accessibility ---- */}
         <nav className="flex-1 overflow-y-auto" aria-label="Mobile navigation">
           {isLoading ? (
-            <p className="px-5 py-6 text-[14px] text-gray-500">Loading menu...</p>
+            <p className="px-5 py-6 text-[14px] text-gray-500">
+              Loading menu...
+            </p>
           ) : filteredMenuItems.length === 0 ? (
             // Better empty state — icon ke saath, aur "clear search" shortcut
             <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
@@ -451,8 +490,7 @@ const PhoneLeftMenu = () => {
               </>
             )}
           </div>
-           <a
-          
+          <a
             href="tel:+12024598489"
             className="flex items-center gap-2 text-[13px] text-gray-700 transition-colors duration-200 hover:text-[#98022e]"
           >

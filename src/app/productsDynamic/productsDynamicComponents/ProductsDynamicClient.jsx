@@ -247,7 +247,7 @@ const ProductsDynamicClient = ({ slug }) => {
           ) : (
             <button
               onClick={handleLoadMore}
-              className="rounded-md bg-[#98022e] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#7a0225] hover:shadow-md active:scale-95"
+              className="rounded-md bg-[#98022e] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#7a0225] hover:shadow-md active:scale-95 cursor-pointer"
             >
               Load More Products
             </button>
@@ -270,10 +270,10 @@ const ProductsDynamicClient = ({ slug }) => {
 <MainDescription description={data.description}/>
       <button
         onClick={() => setIsFilterDrawerOpen(true)}
-        className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-[#98022e] bg-[#f3f3f3] px-6 py-3 rounded-full shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
+        className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-white bg-gray-950 px-8 py-2 rounded-xl shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
       >
-        <SlidersHorizontal size={16} className="text-[#c99000]" />
-        <span className="text-sm font-semibold tracking-wide font-sarabun">Filters</span>
+        <SlidersHorizontal size={16} className="text-white" />
+        <span className="text-sm  tracking-wide font-sumana">Filters</span>
       </button>
 
       {isFilterDrawerOpen && (

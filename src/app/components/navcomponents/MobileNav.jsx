@@ -277,7 +277,7 @@ const MobileNavbar = () => {
           alt="DC Wine & Spirits"
           width={150}
           height={38}
-          className="object-contain w-[130px] h-auto cursor-pointer"
+          className="object-contain w-[140px] h-auto cursor-pointer"
         />
       </Link>
 
@@ -467,18 +467,18 @@ const MobileNavbar = () => {
           type="button"
           onClick={handleOpenSearch}
           aria-label="Open search"
-          className="md:hidden w-[36px] h-[40px] flex items-center justify-center text-[#98022e] hover:opacity-80 transition-opacity"
+          className="md:hidden w-[36px] h-[40px] flex items-center justify-center text-[#2f2f2f] hover:opacity-80 transition-opacity"
         >
-          <Search size={22} strokeWidth={1.5} />
+          <Search size={26} strokeWidth={1.5} />
         </button>
         }
         {/* Cart Icon with badge */}
         <Link
           href="/cart/"
-          className="relative w-[36px] h-[40px] flex items-center justify-center text-[#98022e] hover:opacity-80 transition-opacity"
+          className="relative w-[36px] h-[40px] flex items-center justify-center text-[#2f2f2f] hover:opacity-80 transition-opacity"
           title="Cart"
         >
-          <ShoppingCart size={22} strokeWidth={1.5} />
+          <ShoppingCart size={26} strokeWidth={1.5} />
           {cartCount > 0 && (
             <span className="absolute top-2 right-1 bg-[#98022e] text-white text-[8px] font-bold w-3 h-3 rounded-full flex items-center justify-center p-1">
               {cartCount}

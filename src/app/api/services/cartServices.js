@@ -76,8 +76,17 @@ export const cartServices = {
     return res?.data?.data || [];
   },
 
-  clearCart: async (cartId) => {
+  // Single item removal — hits DELETE /delete/:cart_id
+  removeFromCart: async (cartId) => {
     const res = await axiosInstance.delete(`/cart/delete/${cartId}`);
+    return res?.data || [];
+  },
+
+  // Whole-cart removal — hits DELETE /clear
+  clearCart: async ({ sessionId, customerId } = {}) => {
+    const res = await axiosInstance.delete(`/cart/clear`, {
+      data: { sessionId, customerId },
+    });
     return res?.data || [];
   },
 
@@ -86,11 +95,6 @@ export const cartServices = {
       cart_id,
       quantity,
     });
-    return res?.data || [];
-  },
-
-  clearCart: async (cartId) => {
-    const res = await axiosInstance.delete(`/cart/delete/${cartId}`);
     return res?.data || [];
   },
 };
