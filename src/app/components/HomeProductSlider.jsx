@@ -49,20 +49,13 @@ const HomeProductSlider = ({
     propLoading !== undefined ? propLoading : hookResult.isLoading;
   const isError = propError !== undefined ? propError : hookResult.isError;
 
-  // ============================================================
-  // NEW: AddToCartPopup ke liye state — kaunsa product abhi add
-  // hua hai wo store karte hain, taaki popup usi ka image/name/price
-  // dikha sake.
-  // ============================================================
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupProduct, setPopupProduct] = useState(null);
 
-  // API se items (tabs) nikalna: data.sections[0].items[]
   const items = data?.sections?.[0]?.items || [];
 
   const [activeTab, setActiveTab] = useState(null);
 
-  // Jab data aa jaye, pehla tab default active kar do
   const currentTab = activeTab || items[0]?.title || null;
 
   const activeItem = useMemo(
@@ -72,7 +65,6 @@ const HomeProductSlider = ({
 
   const products = activeItem?.products || [];
 
-  // SCROLL HANDLERS
   const scrollByAmount = (amount) => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
@@ -96,7 +88,6 @@ const HomeProductSlider = ({
       });
 
       if (res?.success) {
-        // NEW: toast ki jagah / saath AddToCartPopup dikhao
         setPopupProduct(product);
         setPopupOpen(true);
       }
@@ -121,9 +112,15 @@ const HomeProductSlider = ({
 
   return (
     <div className="w-full bg-[#fcfcfc] py-8 md:py-10 font-sans">
+      {/* ============================================================
+          TAB SWITCHER:
+          - Mobile (< sm): underline + text colour
+          - Tablet+ (sm and up): pill with border & background tint
+          Icons visible on all screens.
+      ============================================================ */}
       <div className="w-full mb-6 md:mb-8">
         <div className="flex justify-start sm:justify-center px-3 md:px-12 lg:px-16 2xl:px-32">
-          <div className="flex gap-6 md:gap-14 items-center overflow-x-auto no-scrollbar w-full sm:w-auto sm:min-w-max border-b-1 border-gray-200">
+          <div className="flex flex-nowrap gap-2 sm:gap-3 items-center overflow-x-auto overflow-y-hidden no-scrollbar w-full sm:w-auto py-2">
             {items.map((item) => {
               const isActive = currentTab === item.title;
               const Icon = TAB_ICONS[item.title] || Award;
@@ -131,23 +128,29 @@ const HomeProductSlider = ({
                 <button
                   key={item.title}
                   onClick={() => setActiveTab(item.title)}
-                  className={`relative flex items-center gap-2 pb-3 shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer rounded-none ${
-                    isActive
-                      ? "text-[#98022e]"
-                      : "text-black hover:text-[#98022e]"
-                  }`}
-                  style={{
-                    fontFamily: "'Sumana', serif",
-                    fontSize: "16px",
-                    fontWeight: 700,
-                  }}
+                  className={`
+                    flex items-center gap-0 sm:gap-1.5 shrink-0 whitespace-nowrap px-3 py-2 font-semibold transition-colors font-sumana duration-200 cursor-pointer
+                    border-t-2 border-r-2 border-l-2 border-b-2 border-t-transparent border-r-transparent border-l-transparent
+                    ${
+                      isActive
+                        ? "border-b-[#98022e] text-[#98022e]"
+                        : "border-b-transparent text-gray-500 hover:text-gray-700"
+                    }
+                    sm:px-5 sm:py-2 sm:font-bold sm:rounded-full
+                    ${
+                      isActive
+                        ? "sm:border-t-[#98022e] sm:border-r-[#98022e] sm:border-l-[#98022e] sm:border-b-[#98022e] sm:bg-[#98022e]/10"
+                        : "sm:border-t-gray-200 sm:border-r-gray-200 sm:border-l-gray-200 sm:border-b-gray-200 sm:bg-white sm:hover:border-t-gray-300 sm:hover:border-r-gray-300 sm:hover:border-l-gray-300 sm:hover:border-b-gray-300"
+                    }
+                  `}
+                  
                 >
-                  <Icon size={18} strokeWidth={2.5} className="md:w-5 md:h-5" />
-                  <span className="md:text-[20px] uppercase">{item.title}</span>
-
-                  {isActive && (
-                    <div className="absolute -bottom-[1px] left-0 w-full h-[2px] bg-[#98022e]" />
-                  )}
+                  <span className="inline-flex items-center mr-1.5">
+                    <Icon size={18} strokeWidth={2.5} />
+                  </span>
+                  <span className="text-[12px] normal-case sm:text-[16px] sm:uppercase">
+                    {item.title}
+                  </span>
                 </button>
               );
             })}
@@ -171,21 +174,10 @@ const HomeProductSlider = ({
         >
           {products.length > 0 ? (
             products.map((item) => {
-              // isi product ke liye add-to-cart abhi pending hai ya nahi —
-              // dono buttons (mobile "+" aur desktop text button) isi ek
-              // check ko share karte hain
               const productId = item?.product_id || item?.id;
               const isAddingThis =
                 addToCartMut.isPending && addingProductId === productId;
 
-              // ============================================================
-              // NEW: stock aur discount badges ke liye checks
-              // - out of stock: item.quantity <= 0 (agar tumhare data mein
-              //   field ka naam alag hai jaise item.stock/item.in_stock,
-              //   yahan replace kar dena)
-              // - discount %: sirf tab dikhega jab special_price ho aur
-              //   original price se kam ho
-              // ============================================================
               const isOutOfStock = Number(item.quantity) <= 0;
               const hasSpecialPrice =
                 item.special_price !== null &&
@@ -208,11 +200,6 @@ const HomeProductSlider = ({
                 >
                   {/* IMAGE */}
                   <div className="w-full sm:w-[243px] h-[190px] sm:h-[240px] flex items-center justify-center p-4 relative bg-[#f9f9f9]">
-                    {/* ============================================================
-                        NEW: Badges — hamesha visible, hover ki zaroorat nahi.
-                        - top-left: OUT OF STOCK (agar stock nahi hai)
-                        - top-right: discount % (agar special price hai)
-                    ============================================================ */}
                     {isOutOfStock && (
                       <span className="absolute top-2 left-2 z-10 bg-gray-800 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm shadow-sm">
                         Out of Stock
@@ -233,36 +220,15 @@ const HomeProductSlider = ({
                         isOutOfStock ? "opacity-50" : ""
                       }`}
                     />
-
-                    {/* ============================================================
-                        Phone/Tablet ke liye "+" add-to-cart button, image ke
-                        right-bottom corner pe. "lg:hidden" isliye ki desktop
-                        (lg aur upar) pe yeh chhup jaye aur neeche wala text
-                        button dikhe. Out of stock hone par disable.
-                    ============================================================ */}
-                    {/* <button
-                      onClick={(e) => handleAddToCart(e, item)}
-                      disabled={isAddingThis || isOutOfStock}
-                      aria-label="Add to cart"
-                      className="lg:hidden absolute bottom-2 right-2 w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isAddingThis ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <ShoppingCartIcon size={18} strokeWidth={2.5} />
-                      )}
-                    </button> */}
                   </div>
 
                   {/* PRODUCT INFO */}
                   <div className="w-full sm:w-[243px] flex flex-col items-center justify-between p-3 sm:p-5 text-center lg:min-h-[151px]">
                     <div className="flex flex-col gap-2 w-full items-center">
-                      {/* NAME */}
                       <h3 className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]">
                         {decodeHtml(item.name)}
                       </h3>
 
-                      {/* PRICE */}
                       <div className="flex items-center justify-center gap-2 mt-1 ">
                         {hasSpecialPrice ? (
                           <>
@@ -281,11 +247,6 @@ const HomeProductSlider = ({
                       </div>
                     </div>
 
-                    {/* ============================================================
-                        ADD TO CART BUTTON — ab sirf desktop (lg aur upar) pe
-                        dikhega. Phone/tablet pe iski jagah image ke upar wala
-                        "+" button use hota hai. Out of stock hone par disable.
-                    ============================================================ */}
                     <button
                       onClick={(e) => handleAddToCart(e, item)}
                       disabled={isAddingThis || isOutOfStock}
@@ -318,10 +279,6 @@ const HomeProductSlider = ({
         </button>
       </div>
 
-      {/* ============================================================
-          NEW: Add to Cart success popup — top-right corner mein
-          2.5 second ke liye dikhta hai, phir auto-close ho jaata hai.
-      ============================================================ */}
       <AddToCartPopup
         isOpen={popupOpen}
         onClose={() => setPopupOpen(false)}

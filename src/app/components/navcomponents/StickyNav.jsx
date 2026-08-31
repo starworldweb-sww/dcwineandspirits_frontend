@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Sumana } from "next/font/google";
-import { ChevronDown, ShoppingBag, X } from "lucide-react";
+import { ChevronDown, ShoppingBag, X, Loader2 } from "lucide-react";
 import { useTopCategoryHeader } from "@/app/api/hooks/category/useTopCategoryHeader";
 import GiftsByDropDown from "../DropdownComponent/GiftsByDropdown";
 import ShopByBrandDropDown from "../DropdownComponent/ShopByBrandDropdown";
@@ -11,6 +12,7 @@ import PersonalizedDropDown from "../DropdownComponent/PersonalizedDropDown";
 import WineGiftsDropdown from "../DropdownComponent/WineGiftsDropdown";
 import OcassionsDropDown from "../DropdownComponent/OcassionsDropDown";
 import { useGetCartList } from "@/app/api/hooks/cart/useGetCartList";
+import { useRemoveFromCart } from "@/app/api/hooks/cart/useRemoveFromCart";
 import { decodeHtml } from "@/libs/decodeHtml";
 
 const toSlug = (title) =>
@@ -37,8 +39,17 @@ const Stickynav = () => {
   const [compactLeft, setCompactLeft] = useState(0);
   const [showCart, setShowCart] = useState(false);
   const itemRefs = useRef({});
+  const pathname = usePathname();
   const { data, isLoading, isError } = useTopCategoryHeader();
   const { data: cartlist } = useGetCartList();
+  const removeCartMut = useRemoveFromCart();
+  const [removingId, setRemovingId] = useState(null);
+
+  // Close any open dropdown / mini-cart whenever the route changes
+  useEffect(() => {
+    setOpenMenu(null);
+    setShowCart(false);
+  }, [pathname]);
 
   const rawItems = data || [];
   const MENU_ITEMS = rawItems?.map((item) => ({
@@ -70,6 +81,14 @@ const Stickynav = () => {
     if (el) {
       setCompactLeft(el.offsetLeft);
     }
+  };
+
+  const handleRemoveFromMiniCart = (cartId) => {
+    if (!cartId || removeCartMut.isPending) return;
+    setRemovingId(cartId);
+    removeCartMut.mutate(cartId, {
+      onSettled: () => setRemovingId(null),
+    });
   };
 
   const ActiveDropdown = DROPDOWN_COMPONENTS[openMenu];
@@ -150,6 +169,7 @@ const Stickynav = () => {
               <div className="max-h-[210px] overflow-y-auto">
                 {cartItems.map((item, idx) => {
                   const unitPrice = getUnitPrice(item.product);
+                  const isRemoving = removingId === item.cart_id;
                   return (
                     <div
                       key={item?.cart_id || idx}
@@ -167,7 +187,7 @@ const Stickynav = () => {
 
                       <Link
                         href={`/${item?.product?.slug}`}
-                        className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2"
+                        className="flex-1 text-[13px] font-normal text-black leading-snug line-clamp-2 cursor-pointer hover:text-[#98022e]"
                       >
                         {decodeHtml(item?.product?.name)}
                       </Link>
@@ -183,10 +203,15 @@ const Stickynav = () => {
                       <button
                         type="button"
                         aria-label="Remove item"
-                        className="text-gray-400 hover:text-[#98022e] transition-colors"
-                        onClick={() => {}}
+                        disabled={isRemoving}
+                        className="text-gray-400 hover:text-[#98022e] transition-colors disabled:opacity-50 cursor-pointer"
+                        onClick={() => handleRemoveFromMiniCart(item.cart_id)}
                       >
-                        <X size={16} />
+                        {isRemoving ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <X size={16} />
+                        )}
                       </button>
                     </div>
                   );
@@ -219,13 +244,13 @@ const Stickynav = () => {
               <div className="p-3 space-y-2 bg-[#eeeeee]">
                 <Link
                   href="/cart/"
-                  className="block w-full text-center py-3 bg-white text-gray-700 font-semibold text-[13px] tracking-wide hover:bg-gray-100 transition-colors"
+                  className="block w-full text-center py-3 bg-white text-gray-700 font-semibold text-[13px] tracking-wide hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   VIEW CART
                 </Link>
                 <Link
                   href="/checkout"
-                  className="block w-full text-center py-3 bg-[#98022e] text-white font-semibold text-[13px] tracking-wide hover:bg-[#7e1a3c] transition-colors"
+                  className="block w-full text-center py-3 bg-[#98022e] text-white font-semibold text-[13px] tracking-wide hover:bg-[#7e1a3c] transition-colors cursor-pointer"
                 >
                   CHECKOUT
                 </Link>

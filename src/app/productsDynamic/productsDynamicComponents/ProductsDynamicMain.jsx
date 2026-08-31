@@ -13,6 +13,7 @@ import {
   Loader2,
   Plus,
   ShoppingCart,
+  HeartIcon,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -141,7 +142,7 @@ const ProductListRow = ({ product }) => {
         )}
 
         {hasDiscount && !isOutOfStock && (
-          <span className="absolute top-2 left-2 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="absolute top-2 left-2 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full opacity-100 ">
             -{discountPercent}%
           </span>
         )}
@@ -152,7 +153,7 @@ const ProductListRow = ({ product }) => {
       </Link>
 
       <div
-        className={`flex-1 flex flex-col justify-center ${hindMadurai.className}`}
+        className={`flex-1 flex flex-col justify-center ${hindMadurai.className} px-2 lg:px-0`}
       >
         {brandName && (
           <p className="text-sm text-gray-700">
@@ -238,7 +239,7 @@ const ProductListRow = ({ product }) => {
             aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
             aria-pressed={isInWishlist}
             title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-            className={`group w-10 h-10 flex-shrink-0 flex items-center justify-center border transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`group w-10 h-10 flex-shrink-0 flex items-center justify-center border transition-all duration-200 cursor-pointer  disabled:cursor-not-allowed ${
               isInWishlist
                 ? "bg-[#98022e] border-[#98022e] text-white"
                 : "bg-white border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
@@ -269,7 +270,6 @@ const ProductListRow = ({ product }) => {
     </div>
   );
 };
-
 const ProductGridCard = ({ product }) => {
   const { mutate: addtoCart, isPending } = useAddtoCart();
   const wishlistMut = useAddToWishlist();
@@ -308,12 +308,13 @@ const ProductGridCard = ({ product }) => {
       },
     });
   };
+
   const handleAddToWishlist = async (e) => {
     e?.stopPropagation?.();
     e?.preventDefault?.();
     if (!product?.product_id || wishlistMut.isPending || isInWishlist) return;
     try {
-      await wishlistMut.mutateAsync(product.product_id); // 👈 object hata diya
+      await wishlistMut.mutateAsync(product.product_id);
       toast.success("Added to wishlist");
     } catch (e) {
       toast.error("Couldn't update wishlist — please try again");
@@ -328,30 +329,21 @@ const ProductGridCard = ({ product }) => {
         product={product}
       />
 
-      {/* Wishlist — Bookmark icon, top-right corner */}
-      <button
-        type="button"
-        onClick={handleAddToWishlist}
-        disabled={wishlistMut.isPending || isInWishlist}
-        aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-        aria-pressed={isInWishlist}
-        title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-        className={`group absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
-          isInWishlist
-            ? "bg-[#98022e] text-white scale-105"
-            : "bg-white text-gray-400 hover:text-[#98022e] hover:scale-105 border border-gray-100"
-        }`}
-      >
-        {wishlistMut.isPending ? (
-          <Loader2 size={14} className="animate-spin" />
-        ) : (
-          <Bookmark
-            size={15}
-            fill={isInWishlist ? "currentColor" : "none"}
-            className="transition-transform duration-200"
-          />
+
+      {isOutOfStock && (
+          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
+            <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
+              Out of Stock
+            </span>
+          </div>
         )}
-      </button>
+
+
+        {hasDiscount && !isOutOfStock && (
+          <span className="absolute top-2 left-3 z-10 bg-[#98022e] text-white text-[10px] font-semibold px-2 py-1 rounded-xl">
+            -{discountPercent}%
+          </span>
+        )}
 
       <Link
         href={productLink}
@@ -364,33 +356,36 @@ const ProductGridCard = ({ product }) => {
           className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
 
-        {isOutOfStock && (
-          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
-            <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
-              Out of Stock
-            </span>
-          </div>
-        )}
+        
 
-        {hasDiscount && !isOutOfStock && (
-          <span className="absolute top-3 left-3 z-10 bg-[#98022e] text-white text-xs font-bold px-2 py-1 rounded-full opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
-            -{discountPercent}%
-          </span>
-        )}
+        
 
-        {/* <button
+        {/* Wishlist — bottom-right corner badge, mobile & tablet only */}
+        <button
           type="button"
-          onClick={(e) => handleAddtoCart(e, product?.product_id)}
-          disabled={isPending || isOutOfStock}
-          aria-label="Add to cart"
-          className="lg:hidden absolute bottom-2 right-2 w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-md  active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleAddToWishlist}
+          disabled={wishlistMut.isPending || isInWishlist}
+          aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          aria-pressed={isInWishlist}
+          title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          className={`group/heart lg:hidden absolute bottom-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer ${
+            isInWishlist
+              ? "bg-[#98022e] text-white"
+              : "bg-white/90 text-gray-500 hover:text-[#98022e]"
+          }`}
         >
-          {isPending ? (
-            <Loader2 size={16} className="animate-spin" />
+          {wishlistMut.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
           ) : (
-            <ShoppingCart size={18} strokeWidth={2.5} />
+            <Heart
+              size={14}
+              fill={isInWishlist ? "currentColor" : "none"}
+              className={`transition-transform duration-200 ${
+                isInWishlist ? "scale-110" : "group-hover/heart:scale-110"
+              }`}
+            />
           )}
-        </button> */}
+        </button>
       </Link>
 
       <Link href={productLink} className={`${hindMadurai.className} w-full`}>
@@ -403,7 +398,7 @@ const ProductGridCard = ({ product }) => {
       </Link>
 
       <div
-        className={`${hindMadurai.className} mt-2 mt-auto flex items-center justify-center gap-2 font-sarabun`}
+        className={`${hindMadurai.className} mt-2 flex items-center justify-center gap-2 font-sarabun`}
       >
         <p className="text-base text-gray-700 font-semibold">
           ${Number(displayPrice).toFixed(2)}
@@ -415,20 +410,49 @@ const ProductGridCard = ({ product }) => {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => handleAddtoCart(null, product?.product_id)}
-        disabled={isOutOfStock}
-        className={`${hindMadurai.className} mt-2 w-[90%] bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
-      >
-        <span className="text-[12px]">
-          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
-        </span>
-      </button>
+      {/* Button row — desktop shows Add to Cart + Wishlist side by side */}
+      <div className="mt-2 w-[90%] flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => handleAddtoCart(null, product?.product_id)}
+          disabled={isOutOfStock}
+          className={`${hindMadurai.className} flex-1 bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
+        >
+          <span className="text-[12px]">
+            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          </span>
+        </button>
+
+        {/* Wishlist — desktop only, next to Add to Cart */}
+        <button
+          type="button"
+          onClick={handleAddToWishlist}
+          disabled={wishlistMut.isPending || isInWishlist}
+          aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          aria-pressed={isInWishlist}
+          title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          className={`group hidden lg:flex w-9 h-9 flex-shrink-0 items-center justify-center border transition-all duration-200 cursor-pointer disabled:cursor-not-allowed ${
+            isInWishlist
+              ? "bg-[#98022e] border-[#98022e] text-white"
+              : "bg-white border-black text-black hover:border-[#98022e] hover:text-[#98022e]"
+          }`}
+        >
+          {wishlistMut.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Heart
+              size={14}
+              fill={isInWishlist ? "currentColor" : "none"}
+              className={`transition-transform duration-200 ${
+                isInWishlist ? "scale-110" : "group-hover:scale-110"
+              }`}
+            />
+          )}
+        </button>
+      </div>
     </div>
   );
 };
-
 const ProductsDynamicMain = ({
   data,
   sort,

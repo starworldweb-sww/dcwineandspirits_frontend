@@ -18,6 +18,8 @@ import { RiGridFill } from "react-icons/ri";
 import { Sumana, Hind_Madurai } from "next/font/google";
 import { decodeHtml } from "@/libs/decodeHtml";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
+import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
+import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 import { toast } from "sonner";
 
 // -----------------------------------------------------------------
@@ -162,7 +164,9 @@ const ProductListRow = ({ product }) => {
         </span>
       </Link>
 
-      <div className={`flex-1 flex flex-col justify-center ${hindMadurai.className}`}>
+      <div
+        className={`flex-1 flex flex-col justify-center ${hindMadurai.className}`}
+      >
         <p className="text-sm text-gray-700">
           Brand:{" "}
           <Link
@@ -196,10 +200,19 @@ const ProductListRow = ({ product }) => {
 // -----------------------------------------------------------------
 // GRID VIEW CARD
 // -----------------------------------------------------------------
+// -----------------------------------------------------------------
+// GRID VIEW CARD
+// -----------------------------------------------------------------
 const ProductGridCard = ({ product }) => {
   const addToCartMut = useAddtoCart();
+  const wishlistMut = useAddToWishlist();
   const productId = product?.product_id || product?.id;
   const isPending = addToCartMut.isPending;
+
+  const { data: wishlistCheckData } = useCheckWishlist(productId);
+  const isInWishlist = Boolean(
+    wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
+  );
 
   const productLink = `/${product.seo_url || product.custom_url}/`;
   const imageUrl = product.image
@@ -212,15 +225,30 @@ const ProductGridCard = ({ product }) => {
     e?.preventDefault?.();
     if (!productId || isPending) return;
     try {
-      const res = await addToCartMut.mutateAsync({ product_id: productId, quantity: 1 });
+      const res = await addToCartMut.mutateAsync({
+        product_id: productId,
+        quantity: 1,
+      });
       if (res?.success) toast.success(res.message || "Added to cart!");
     } catch (e) {}
+  };
+
+
+  const handleAddToWishlist = async (e) => {
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
+    if (!productId || wishlistMut.isPending || isInWishlist) return;
+    try {
+      await wishlistMut.mutateAsync(productId);
+      toast.success("Added to wishlist");
+    } catch (e) {
+      toast.error("Couldn't update wishlist — please try again");
+    }
   };
 
   return (
     // 1. h-full -> card apni grid cell ka pura height le, taaki row ke saare cards match karein
     <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
-      
       {/* 2. Image ko fixed-height box do (aspect-square ki jagah), taaki alag
              products ke alag intrinsic image sizes ho tab bhi sab ek jaisa
              dikhein - box aur bottle dono same box mein center hoke fit honge */}
@@ -235,17 +263,31 @@ const ProductGridCard = ({ product }) => {
           className="max-w-full max-h-full object-contain"
         />
 
-        {/* Phone/Tablet ke liye "+" add-to-cart button, image ke right-bottom
-            corner pe. "lg:hidden" isliye ki desktop pe chhup jaye aur neeche
-            wala text button dikhe. */}
+        {/* Wishlist — bottom-right corner badge, mobile & tablet only */}
         <button
           type="button"
-          onClick={handleAddToCart}
-          disabled={isPending || !productId}
-          aria-label="Add to cart"
-          className="lg:hidden absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#9a0145] text-white flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleAddToWishlist}
+          disabled={wishlistMut.isPending || isInWishlist}
+          aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          aria-pressed={isInWishlist}
+          title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          className={`group/heart lg:hidden absolute bottom-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer ${
+            isInWishlist
+              ? "bg-[#98022e] text-white"
+              : "bg-white/90 text-gray-500 hover:text-[#98022e]"
+          }`}
         >
-          {isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={18} strokeWidth={2.5} />}
+          {wishlistMut.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Heart
+              size={14}
+              fill={isInWishlist ? "currentColor" : "none"}
+              className={`transition-transform duration-200 ${
+                isInWishlist ? "scale-110" : "group-hover/heart:scale-110"
+              }`}
+            />
+          )}
         </button>
       </Link>
 
@@ -262,21 +304,50 @@ const ProductGridCard = ({ product }) => {
         ${Number(displayPrice || 0).toFixed(2)}
       </p>
 
-      {/* 4. mt-auto ab reliably bottom pe hi button rakhega, kyunki upar ki
-             cheezein (image, title) fixed height le chuki hain.
-             Desktop pe text button, mobile/tablet pe "+" icon (upar). */}
-      <button
-        type="button"
-        onClick={handleAddToCart}
-        disabled={isPending || !productId}
-        className={`${hindMadurai.className} hidden lg:block mt-auto w-full bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-3 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50`}
-      >
-        {isPending ? "Adding..." : "Add to Cart"}
-      </button>
+      {/* 4. Button row — mobile pe sirf Add to Cart (full width),
+             desktop pe Add to Cart + wishlist icon bagal mein. */}
+      <div className="mt-auto w-[90%] flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={isPending || !productId}
+          className={`${hindMadurai.className} flex-1 bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
+        >
+          <span className="text-[12px]">
+            {isPending ? "Adding..." : "Add to Cart"}
+          </span>
+        </button>
+
+        {/* Wishlist — desktop only, next to Add to Cart */}
+        <button
+          type="button"
+          onClick={handleAddToWishlist}
+          disabled={wishlistMut.isPending || isInWishlist}
+          aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          aria-pressed={isInWishlist}
+          title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+          className={`group hidden lg:flex w-9 h-9  flex-shrink-0 items-center justify-center border transition-all duration-200 cursor-pointer disabled:cursor-not-allowed ${
+            isInWishlist
+              ? "bg-[#98022e] border-[#98022e] text-white"
+              : "bg-white border-black text-black hover:border-[#98022e] hover:text-[#98022e]"
+          }`}
+        >
+          {wishlistMut.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Heart
+              size={14}
+              fill={isInWishlist ? "currentColor" : "none"}
+              className={`transition-transform duration-200 ${
+                isInWishlist ? "scale-110" : "group-hover:scale-110"
+              }`}
+            />
+          )}
+        </button>
+      </div>
     </div>
   );
 };
-
 // -----------------------------------------------------------------
 // MAIN COMPONENT (Connected to dynamic props from client)
 // -----------------------------------------------------------------
@@ -291,26 +362,33 @@ const ProductsMain = ({
   showNum,
   setShowNum,
 }) => {
-   
   // 1. Sort the products based on the dropdown selection
   const sortedProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
-    
+
     // Create a copy so we don't mutate the original array
-    const sorted = [...products]; 
+    const sorted = [...products];
 
     switch (sortOption) {
       case "name_asc":
-        return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        return sorted.sort((a, b) =>
+          (a.name || "").localeCompare(b.name || ""),
+        );
       case "name_desc":
-        return sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+        return sorted.sort((a, b) =>
+          (b.name || "").localeCompare(a.name || ""),
+        );
       case "price_asc":
-        return sorted.sort((a, b) => 
-          (parseFloat(a.special_price || a.price) || 0) - (parseFloat(b.special_price || b.price) || 0)
+        return sorted.sort(
+          (a, b) =>
+            (parseFloat(a.special_price || a.price) || 0) -
+            (parseFloat(b.special_price || b.price) || 0),
         );
       case "price_desc":
-        return sorted.sort((a, b) => 
-          (parseFloat(b.special_price || b.price) || 0) - (parseFloat(a.special_price || a.price) || 0)
+        return sorted.sort(
+          (a, b) =>
+            (parseFloat(b.special_price || b.price) || 0) -
+            (parseFloat(a.special_price || a.price) || 0),
         );
       default:
         return sorted; // Default order
@@ -327,7 +405,9 @@ const ProductsMain = ({
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
             className={`cursor-pointer transition-colors ${
-              layout === "grid" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+              layout === "grid"
+                ? "text-[#98022e]"
+                : "text-black hover:text-[#98022e]"
             }`}
           >
             <RiGridFill size={20} />
@@ -337,7 +417,9 @@ const ProductsMain = ({
             onClick={() => setLayout("list")}
             aria-label="List view"
             className={`cursor-pointer transition-colors ${
-              layout === "list" ? "text-[#98022e]" : "text-black hover:text-[#98022e]"
+              layout === "list"
+                ? "text-[#98022e]"
+                : "text-black hover:text-[#98022e]"
             }`}
           >
             <Logs size={20} />
@@ -403,14 +485,20 @@ const ProductsMain = ({
           {layout === "list" ? (
             <div>
               {sortedProducts.map((product, index) => (
-                <ProductListRow key={product.product_id || index} product={product} />
+                <ProductListRow
+                  key={product.product_id || index}
+                  product={product}
+                />
               ))}
             </div>
           ) : (
             // 5. items-stretch added so every card in a row matches the tallest one
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
               {sortedProducts.map((product, index) => (
-                <ProductGridCard key={product.product_id || index} product={product} />
+                <ProductGridCard
+                  key={product.product_id || index}
+                  product={product}
+                />
               ))}
             </div>
           )}

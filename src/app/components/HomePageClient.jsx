@@ -12,6 +12,8 @@ import GiftsByOccasionHero from "./GiftsByOccasionHero";
 import { useHomePageAllData } from "@/app/api/hooks/category/useHomePageAllData";
 import { Loader2 } from "lucide-react";
 import WhyChooseUs from "./WhyChooseUs";
+import ExperimentalComponent from "./ExperimentalComponent";
+import LoveBanner from "./LoveBanner";
 
 
 const HomePageClient = () => {
@@ -30,7 +32,9 @@ const HomePageClient = () => {
       <div className="bg-white">
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
+        <ExperimentalComponent/>
         <CategoryShowcase data={homeData?.topCategories} isLoading={isLoading} isError={isError} />
+        <LoveBanner data={homeData?.loveBanners}/>
         <GiftsByOccasionHero
           data={homeData?.giftByOccasion}
           bannersData={homeData?.loveBanners}

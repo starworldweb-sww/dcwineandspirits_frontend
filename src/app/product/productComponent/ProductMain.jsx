@@ -28,6 +28,8 @@ import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { addRecentProduct } from "@/libs/recentProducts";
+import { useCompareList } from "@/app/api/hooks/useCompareProducts";
+
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -106,6 +108,12 @@ export default function ProductMain({ product }) {
   const isInWishlist = Boolean(
     wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
   );
+
+  // STEP B: Compare list ab SLUG se track hoti hai, productId se nahi —
+  // kyunki compare page single-product API "seo_url" (slug) leke fetch karta hai
+  const { compareIds, addProduct, removeProduct } = useCompareList();
+  const productSlug = product?.seo_url;
+  const isInCompare = compareIds.includes(productSlug);
 
   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
   const reviewCount = product.review_count ?? reviews.length;
@@ -263,6 +271,18 @@ export default function ProductMain({ product }) {
     }
   };
 
+  // STEP C: Compare button click handler — ab productSlug se toggle hota hai
+  const handleToggleCompare = () => {
+    if (!productSlug) return;
+    if (isInCompare) {
+      removeProduct(productSlug);
+      toast.success("Removed from compare");
+    } else {
+      addProduct(productSlug);
+      toast.success("Added to compare");
+    }
+  };
+
   const handleWriteReviewClick = () => {
     const reviewSection = document.getElementById("product-review-section");
     if (reviewSection) reviewSection.scrollIntoView({ behavior: "smooth" });
@@ -374,8 +394,83 @@ export default function ProductMain({ product }) {
 
             <div className="w-full lg:w-1/2 min-w-0 flex flex-col justify-between">
               <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:min-h-[486px]">
-                <div className="flex flex-wrap sm:flex-nowrap items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
-                  <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-4">
+
+                {/* Price + Brand + Stock/Model info */}
+
+                {/* MOBILE ONLY — stacked layout so a long SKU never leaves an
+                    orphan bullet dot floating on its own line */}
+                <div className="sm:hidden pb-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className={`${sumana.className}`}>
+                      {hasSpecialPrice ? (
+                        <div className="flex flex-col">
+                          <span className="relative inline-block w-fit font-semibold text-base text-[#98022e]">
+                            <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-[#98022e]" />
+                            ${Number(originalPrice).toFixed(2)}
+                          </span>
+                          <strong className="font-bold text-2xl text-black">
+                            ${Number(specialPrice).toFixed(2)}
+                          </strong>
+                        </div>
+                      ) : (
+                        <strong className="font-bold text-2xl text-black">
+                          ${Number(originalPrice).toFixed(2)}
+                        </strong>
+                      )}
+                    </div>
+
+                    {brandName && (
+                      <div className="w-[90px] h-[50px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                        <Link
+                          href={`/${brandurl}`}
+                          className="w-full h-full flex items-center justify-center p-1.5"
+                        >
+                          {brandImage ? (
+                            <img
+                              src={brandImage}
+                              alt={brandName}
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          ) : (
+                            <span className="text-[10px] tracking-widest text-gray-700 text-center px-2">
+                              {brandName}
+                            </span>
+                          )}
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 text-sm mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-1">
+                      {stock ? (
+                        <Check className="text-green-500" size={16} strokeWidth={3} />
+                      ) : (
+                        <X className="text-red-500" size={16} strokeWidth={2.5} />
+                      )}
+                      <span
+                        className={
+                          stock ? "text-green-600 font-bold" : "text-red-600 font-bold"
+                        }
+                      >
+                        {stock ? "IN STOCK" : "OUT OF STOCK"}
+                      </span>
+                    </div>
+                    <span className="text-gray-600">Model: {product.model}</span>
+                    {product.sku && (
+                      <span className="text-gray-600 break-words">
+                        SKU: {product.sku}
+                      </span>
+                    )}
+                    {product.upc && (
+                      <span className="text-gray-600">UPC: {product.upc}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* DESKTOP/TABLET — original layout, unchanged */}
+                <div className="hidden sm:flex flex-nowrap items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
+                  <div className="flex flex-nowrap items-stretch gap-4">
                     <div
                       className={`${sumana.className} flex flex-col justify-center`}
                     >
@@ -835,12 +930,21 @@ export default function ProductMain({ product }) {
                           : "Add to Wish List"}
                     </button>
 
+                    {/* STEP D: sirf yahan onClick + conditional text/color/icon add kiya */}
                     <button
                       type="button"
-                      className="flex items-center gap-2 text-gray-700 hover:text-[#98022e] transition-colors cursor-pointer"
+                      onClick={handleToggleCompare}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer ${
+                        isInCompare
+                          ? "text-[#98022e]"
+                          : "text-gray-700 hover:text-[#98022e]"
+                      }`}
                     >
-                      <Repeat size={16} />
-                      Compare this Product
+                      <Repeat
+                        size={16}
+                        className={isInCompare ? "text-[#98022e]" : ""}
+                      />
+                      {isInCompare ? "Added to Compare" : "Compare this Product"}
                     </button>
                   </div>
                 </div>
@@ -872,7 +976,7 @@ export default function ProductMain({ product }) {
 
                   <p
                     onClick={handleWriteReviewClick}
-                    className="text-[#98022e] hover:cursor-pointer hover:underline text-sm font-semibold"
+                    className="text-[#98022e] hover:cursor-pointer hover:underline text-sm font-bold"
                   >
                     Write a review
                   </p>
@@ -899,41 +1003,44 @@ export default function ProductMain({ product }) {
                 )}
               </div>
 
-              <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-200">
-                  
-                   <a 
-                    className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
-                  >
-                    <Gift size={18} className="text-[#98022e]" />
-                    Free Gift Card
-                  </a>
-                  
-                  <a  
-                    className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors "
-                  >
-                    <Truck size={18} className="text-[#98022e]" />
-                    Fast Delivery
-                  </a>
+           <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
+  {/* Step 1: grid-cols-4 hamesha lagaya hai (mobile se hi), 
+      isliye 2x2 wala split hataake ek hi line mein 4 items aayenge */}
+  <div className="grid grid-cols-4 divide-x divide-gray-200">
+    
+    <a 
+      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+    >
+      {/* Step 2: icon size chhoti screen pe thoda chhota rakha hai */}
+      <Gift size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
+      Free Gift Card
+    </a>
+    
+    <a  
+      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+    >
+      <Truck size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
+      Fast Delivery
+    </a>
 
-                  <a
-                    download={true}
-                    href="/bulk-order-form.xlsx"
-                    className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
-                  >
-                    <Download size={18} className="text-[#98022e]" />
-                    Bulk Form
-                  </a>
+    <a
+      download={true}
+      href="/bulk-order-form.xlsx"
+      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+    >
+      <Download size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
+      Bulk Form
+    </a>
 
-                  <a
-                    href="/frequently-asked-questions/"
-                    className="flex items-center justify-center gap-2 py-4 px-2 text-sm font-semibold text-black hover:text-[#98022e] transition-colors"
-                  >
-                    <HelpCircle size={18} className="text-[#98022e]" />
-                    FAQs
-                  </a>
-                </div>
-              </div>
+    <a
+      href="/frequently-asked-questions/"
+      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+    >
+      <HelpCircle size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
+      FAQs
+    </a>
+  </div>
+</div>
             </div>
           </div>
         </section>
