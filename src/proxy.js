@@ -38,7 +38,7 @@ async function checkRedirect(slug, fullUrl) {
             `${BACKEND_URL}/redirect/check?slug=${encodeURIComponent(slug)}&fullUrl=${encodeURIComponent(fullUrl)}`,
             { signal: AbortSignal.timeout(3000) }
         );
-       console.log("resssss",res)
+       
         if (!res.ok) return null;
 
         const { data } = await res.json();
@@ -86,7 +86,7 @@ export async function proxy(request) {
         );
 
         const destination = await checkRedirect(slug, productionUrl);
-        console.log("destination",destination)
+
         if (destination) {
             return NextResponse.redirect(destination, 301);
         }
