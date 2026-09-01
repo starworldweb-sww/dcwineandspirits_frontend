@@ -141,7 +141,6 @@ const GiftsByDropdown = () => {
           return (
             <li
               key={item.title}
-              className="relative"
               onMouseEnter={() => {
                 if (hasSubmenu) setOpenSubmenu(item.title);
               }}
@@ -357,7 +356,6 @@ const GiftsByDropdown = () => {
                               }`}
                             >
                               <span
-                                // name mein &amp; jaisa HTML entity aa raha hai, isliye decode karna padega
                                 dangerouslySetInnerHTML={{
                                   __html: priceItem.name,
                                 }}

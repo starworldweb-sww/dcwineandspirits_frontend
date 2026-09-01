@@ -31,7 +31,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
       <Link
       href={bannerLink}
       >
-
+<h1 className="opacity-0 hidden">DC Wine & Spirits</h1>
       <img
         src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${imageUrl}`}
         title={altText}

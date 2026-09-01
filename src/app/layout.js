@@ -53,6 +53,9 @@ export const metadata = {
   robots: {
     other: "max-snippet:-1, max-image-preview:large, max-video-preview:-1",
   },
+  alternates: {
+    canonical: `https://www.dcwineandspirits.com/`,
+  },
   openGraph: {
     type: "website",
     url: "https://www.dcwineandspirits.com/",
