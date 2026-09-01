@@ -13,13 +13,11 @@ export async function generateMetadata({ params }) {
   const allCategories = await blogService.getAllCategory();
   // const matchedCategory = allCategories?.find((c) => c.slug === slug);
   const meta = await getMetaByType("blog", slug)
-  console.log("meta", meta)
+  
   if (meta) {
     return {
-      title: `${meta?.meta_title} Blogs | DC Wine and Spirits`,
-      description:
-        meta.meta_description ||
-        `Browse all blogs in the ${meta.meta_description} category on DC Wine and Spirits.`,
+      title: `${meta?.meta_title}`,
+      description: meta.meta_description ,
       alternates: {
         canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
       },

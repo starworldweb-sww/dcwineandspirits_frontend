@@ -25,7 +25,7 @@ export async function generateMetadata({ params }) {
   console.log("meta", meta)
   if (meta) {
     return {
-      title: `${meta?.meta_title} Blogs | DC Wine and Spirits`,
+      title: `${meta?.meta_title}`,
       description:
         meta.meta_description ||
         `Browse all blogs in the ${meta.meta_description} category on DC Wine and Spirits.`,
