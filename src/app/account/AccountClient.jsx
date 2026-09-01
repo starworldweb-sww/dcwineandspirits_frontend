@@ -42,11 +42,11 @@ const accountCards = [
 
 const orderCards = [
   { href: "/account/order", icon: ClipboardList, label: "View your order history" },
-  { href: "/account/downloads", icon: CloudDownload, label: "Downloads" },
-  { href: "/account/rewards", icon: PiggyBank, label: "Your Reward Points" },
-  { href: "/account/return-product", icon: Undo2, label: "View your return requests" },
-  { href: "/account/transactions", icon: RefreshCcw, label: "Your Transactions" },
-  { href: "/account/recurring-payments", icon: History, label: "Recurring payments" },
+  // { href: "/account/downloads", icon: CloudDownload, label: "Downloads" },
+  // { href: "/account/rewards", icon: PiggyBank, label: "Your Reward Points" },
+  // { href: "/account/return-product", icon: Undo2, label: "View your return requests" },
+  // { href: "/account/transactions", icon: RefreshCcw, label: "Your Transactions" },
+  // { href: "/account/recurring-payments", icon: History, label: "Recurring payments" },
 ];
 
 const sidebarLinks = [
@@ -110,7 +110,7 @@ const AccountClient = () => {
           <h2 className="text-[26px] tracking-[0.2px] mt-10 font-hind-madurai">My Orders</h2>
           <SectionDivider />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5 gap-4 auto-rows-fr">
+          <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5 gap-4 auto-rows-fr mb-2">
             {orderCards.map((card) => (
               <AccountCard key={card.label} {...card} />
             ))}

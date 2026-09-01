@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useUser, useUpdateAccountInfo } from "@/app/api/hooks/useAuth";
+import AccountSidebar from "@/app/components/AccountSidebar";
 // apna actual path daal dena
 
 // --- BRAND ACCENT ---
@@ -18,7 +19,6 @@ const sidebarLinks = [
   { href: "/account/address", label: "Address Book" },
   { href: "/account/wishlist", label: "Wishlist" },
   { href: "/account/order", label: "Order History" },
-  { href: "/account/transactions", label: "Transactions" },
 ];
 
 const breadcrumbs = [
@@ -185,27 +185,7 @@ const EditAccountClient = () => {
 
         {/* Right Column: Sidebar */}
         <div className="w-full lg:w-[260px] shrink-0 mt-10 lg:mt-0">
-          <div className="bg-[#eeeeee] rounded-[4px] p-5">
-            <ul>
-              {sidebarLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="group flex items-center gap-1.5 py-2.5 text-[15px] font-hind-madurai text-[#333333] transition-colors duration-300"
-                  >
-                    <ChevronRight
-                      size={16}
-                      className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
-                      style={{ color: ACCENT }}
-                    />
-                    <span className="transition-colors duration-300 group-hover:text-[#8c1a3c]">
-                      {link.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <AccountSidebar/>
         </div>
       </div>
     </div>
