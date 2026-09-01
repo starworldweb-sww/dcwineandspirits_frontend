@@ -52,22 +52,13 @@ const WhyChooseUs = () => {
           <div className="mt-2 h-[2px] w-12 rounded-full bg-[#98022e]" />
         </div>
 
-        {/* Feature list — semantic <ul>/<li> with ItemList schema for SEO */}
-        <ul
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 list-none m-0 p-0"
-          itemScope
-          itemType="https://schema.org/ItemList"
-        >
+        {/* Feature list — plain <ul>/<li>, no schema markup */}
+        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 list-none m-0 p-0">
           {FEATURES.map(({ icon: Icon, title, description }, index) => (
             <li
               key={title}
               className="group relative flex flex-col items-center text-center bg-[#f1f1f1] px-4 pt-6 pb-5 border-b-[3px] border-[#98022e] transition-all duration-300 hover:bg-[#98022e] hover:border-black hover:-translate-y-1 cursor-pointer hover:rounded-xl"
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/Thing"
             >
-              <meta itemProp="position" content={String(index + 1)} />
-
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white transition-transform duration-300 group-hover:scale-110">
                 <Icon
                   size={20}
@@ -77,17 +68,11 @@ const WhyChooseUs = () => {
                 />
               </div>
 
-              <h3
-                className="font-sarabun text-gray-800 text-[12px] mb-1 transition-all duration-200 group-hover:text-white font-bold"
-                itemProp="name"
-              >
+              <h3 className="font-sarabun text-gray-800 text-[12px] mb-1 transition-all duration-200 group-hover:text-white font-bold">
                 {title}
               </h3>
 
-              <p
-                className="font-hind-madurai text-gray-500 text-xs leading-snug max-w-[150px] transition-colors duration-200 group-hover:text-white/80"
-                itemProp="description"
-              >
+              <p className="font-hind-madurai text-gray-500 text-xs leading-snug max-w-[150px] transition-colors duration-200 group-hover:text-white/80">
                 {description}
               </p>
             </li>

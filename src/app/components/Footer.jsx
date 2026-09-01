@@ -364,7 +364,7 @@ export default function Footer() {
 
           {/* 9a. Payment method badges - simple text badges instead of trademarked logos */}
           <div className="flex flex-wrap gap-2">
-            {["Visa", "Mastercard", "Amex", "Discover", "PayPal", "Stripe"].map(
+            {["Visa", "Mastercard", "Amex", "Discover", "Stripe"].map(
               (method) => (
                 <span
                   key={method}
