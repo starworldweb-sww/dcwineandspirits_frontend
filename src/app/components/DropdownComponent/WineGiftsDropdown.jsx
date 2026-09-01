@@ -96,7 +96,7 @@ export default function WineGiftsDropdown({ onClose }) {
                   <Link
                     href={`/${slug.replace(/^\//, "")}`}
                     onClick={onClose}
-                    className="text-white normal-case text-[16px] hover:text-black transition-colors duration-200"
+                    className="text-white normal-case text-[16px] hover:underline transition-colors duration-200"
                   >
                     {item.title}
                   </Link>
