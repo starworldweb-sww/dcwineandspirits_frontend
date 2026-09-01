@@ -201,10 +201,10 @@ const ProductsDynamicClient = ({ slug }) => {
 
   return (
     <>
-      <ProductsHeader 
-  categoryName={data?.meta_h1 || data?.name} 
-  breadcrumbs={data?.breadcrumbs}
-/>
+      <ProductsHeader
+        categoryName={data?.meta_h1 || data?.name}
+        breadcrumbs={data?.breadcrumbs}
+      />
 
       <div className="2xl:px-32 flex items-start justify-between gap-6 mt-2">
         <div className="hidden lg:block">
@@ -232,13 +232,13 @@ const ProductsDynamicClient = ({ slug }) => {
         />
 
 
-        
+
       </div>
 
 
-          {hasNextPage && (
+      {hasNextPage && (
         <div className="flex flex-col items-center pl-7 gap-3 py-5">
-         
+
           {isFetchingNextPage ? (
             <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#98022e]" />
@@ -267,10 +267,10 @@ const ProductsDynamicClient = ({ slug }) => {
           </p>
         </div>
       )}
-<MainDescription description={data.description}/>
+      <MainDescription description={data.description} />
       <button
         onClick={() => setIsFilterDrawerOpen(true)}
-        className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 text-white bg-gray-950 px-8 py-2 rounded-xl shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
+        className="lg:hidden fixed bottom-18 left-1/2 -translate-x-1/2 z-[40] flex items-center gap-2 text-white bg-gray-950 px-8 py-2 rounded-xl shadow-lg active:scale-95 transition-transform shadow-[0px_4px_21px_0px_rgba(0,_0,_0,_0.1)]"
       >
         <SlidersHorizontal size={16} className="text-white" />
         <span className="text-sm  tracking-wide font-sumana">Filters</span>
@@ -307,7 +307,7 @@ const ProductsDynamicClient = ({ slug }) => {
           </div>
         </div>
       )}
-  
+
       <style jsx global>{`
         @keyframes slideIn {
           from { transform: translateX(-100%); }

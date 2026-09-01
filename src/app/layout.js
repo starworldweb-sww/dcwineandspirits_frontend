@@ -11,6 +11,10 @@ import Footer from "./components/Footer";
 import Provider from "./components/Provider";
 import { Sumana, Hind_Madurai, Sarabun } from "next/font/google";
 import { Toaster } from "sonner";
+import { getQueryClient } from "@/libs/get-query-client";
+import { getMobileCategories } from "./api/services/mobileCategoryService";
+import { mobileCategoryKeys } from "@/libs/queryKeys";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import ProductViewTabs from "./components/ProductViewsTabs";
 
 const geistSans = Geist({
@@ -73,7 +77,19 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+
+
+export default async function RootLayout({ children }) {
+
+  const queryClient = getQueryClient();
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: mobileCategoryKeys.list(),
+      queryFn: getMobileCategories,
+    }),
+
+  ]);
   return (
     <html
       lang="en"
@@ -88,7 +104,11 @@ export default function RootLayout({ children }) {
           <PhoneHeader />
           <Topline />
           <Navbar />
-          <MobileNavbar />
+
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <MobileNavbar />
+          </HydrationBoundary>
+
           <Stickynav />
           {children}
           <Toaster position="top-right" richColors />
