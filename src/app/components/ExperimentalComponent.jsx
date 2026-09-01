@@ -54,8 +54,11 @@ const ExperimentalComponent = () => {
                 ${!isMobileVisible ? 'hidden sm:flex' : ''}
               `}
             >
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#98022e]/10 sm:h-10 sm:w-10">
-                <Icon size={16} className="text-[#98022e] sm:size-[18px]" strokeWidth={2} />
+              {/* Mobile pe icon circle chhota (h-7/w-7, icon 14px) rakha hai
+                  taaki card ki height kam ho jaaye — sm aur usse upar
+                  original size (h-10/w-10, icon 18px) hi rehta hai */}
+              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#98022e]/10 sm:h-10 sm:w-10">
+                <Icon size={14} className="text-[#98022e] sm:size-[18px]" strokeWidth={2} />
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
