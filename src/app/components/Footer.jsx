@@ -157,10 +157,10 @@ function FooterLink({ label, href, download }) {
       <a
         href={href}
         {...(download ? { download } : {})}
-        className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#8a1538]"
+        className="flex items-center gap-1 text-sm text-gray-700  group  hover:text-[#8a1538]"
       >
         <ChevronRight size={14} className="text-[#8a1538]" />
-        {label}
+       <span  className="visited:text-[#8a1538]"> {label}</span> 
       </a>
     </li>
   );

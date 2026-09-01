@@ -60,7 +60,7 @@ const ProductsClient = () => {
         </div>
       )}
 
-      <ProductViewTabs products={allProducts} />
+     
     </div>
   );
 };

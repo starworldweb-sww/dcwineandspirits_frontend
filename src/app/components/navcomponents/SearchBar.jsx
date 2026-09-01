@@ -130,6 +130,28 @@ const SearchBar = () => {
     stopListening,
   } = useVoiceSearch({ lang: "en-IN" });
 
+  // ---------- Local error with auto‑dismiss after 3s ----------
+  const [displayedError, setDisplayedError] = useState(null);
+  const errorTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    // Clear any existing timeout
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+
+    if (voiceError) {
+      setDisplayedError(voiceError);
+      errorTimeoutRef.current = setTimeout(() => {
+        setDisplayedError(null);
+      }, 3000);
+    } else {
+      setDisplayedError(null);
+    }
+
+    return () => {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    };
+  }, [voiceError]);
+
   // ---------- API hook ----------
   const { data, isLoading, isFetching } = useSearchAllProducts(
     { data: debouncedValue, page: 1, limit: 8 },
@@ -422,10 +444,10 @@ const SearchBar = () => {
           </button>
         </div>
 
-        {/* Voice Error Message */}
-        {voiceError && (
+        {/* Voice Error Message - uses displayedError which auto‑clears after 3s */}
+        {displayedError && (
           <p className="absolute left-5 top-[calc(100%+4px)] text-xs text-red-500 z-10">
-            {voiceError}
+            {displayedError}
           </p>
         )}
 

@@ -20,6 +20,8 @@ import { decodeHtml } from "@/libs/decodeHtml";
 import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
+import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
+import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import { toast } from "sonner";
 
 // -----------------------------------------------------------------
@@ -60,10 +62,22 @@ const ShowOptions = [
 // -----------------------------------------------------------------
 const ProductListActions = ({ product }) => {
   const addToCartMut = useAddtoCart();
+  const wishlistMut = useAddToWishlist();
   const [qty, setQty] = useState(1);
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
 
   const productId = product?.product_id || product?.id;
   const isPending = addToCartMut.isPending;
+
+  const { data: wishlistCheckData } = useCheckWishlist(productId);
+  const isInWishlist = Boolean(
+    wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
+  );
+
+  const imageUrl = product.image
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
+    : "/prosecco-gift-800x800.webp";
 
   const handleAddToCart = async () => {
     if (!productId || isPending) return;
@@ -72,12 +86,34 @@ const ProductListActions = ({ product }) => {
         product_id: productId,
         quantity: Math.max(1, Number(qty) || 1),
       });
-      if (res?.success) toast.success(res.message || "Added to cart!");
+      if (res?.success) setShowCartPopup(true);
     } catch (e) {}
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!productId || wishlistMut.isPending || isInWishlist) return;
+    try {
+      await wishlistMut.mutateAsync(productId);
+      setShowWishlistPopup(true);
+    } catch (e) {
+      toast.error("Couldn't update wishlist — please try again");
+    }
   };
 
   return (
     <div className="mt-4 flex items-center gap-2 sm:gap-3 w-full">
+      <AddToCartPopup
+        isOpen={showCartPopup}
+        onClose={() => setShowCartPopup(false)}
+        product={product}
+      />
+
+      <AddToWishlistPopup
+        isOpen={showWishlistPopup}
+        onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: imageUrl }}
+      />
+
       <div className="flex items-center border border-gray-300 bg-white flex-shrink-0">
         <input
           type="number"
@@ -118,10 +154,22 @@ const ProductListActions = ({ product }) => {
 
       <button
         type="button"
-        aria-label="Add to wishlist"
-        className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black text-white hover:bg-[#98022e] transition-colors cursor-pointer"
+        onClick={handleAddToWishlist}
+        disabled={wishlistMut.isPending || !productId || isInWishlist}
+        aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+        aria-pressed={isInWishlist}
+        title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
+        className={`w-10 h-10 flex-shrink-0 flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed ${
+          isInWishlist
+            ? "bg-[#98022e] text-white"
+            : "bg-black text-white hover:bg-[#98022e]"
+        }`}
       >
-        <Heart size={16} />
+        {wishlistMut.isPending ? (
+          <Loader2 size={16} className="animate-spin" />
+        ) : (
+          <Heart size={16} fill={isInWishlist ? "currentColor" : "none"} />
+        )}
       </button>
 
       <button
@@ -208,6 +256,8 @@ const ProductGridCard = ({ product }) => {
   const wishlistMut = useAddToWishlist();
   const productId = product?.product_id || product?.id;
   const isPending = addToCartMut.isPending;
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
 
   const { data: wishlistCheckData } = useCheckWishlist(productId);
   const isInWishlist = Boolean(
@@ -229,7 +279,7 @@ const ProductGridCard = ({ product }) => {
         product_id: productId,
         quantity: 1,
       });
-      if (res?.success) toast.success(res.message || "Added to cart!");
+      if (res?.success) setShowCartPopup(true);
     } catch (e) {}
   };
 
@@ -240,7 +290,7 @@ const ProductGridCard = ({ product }) => {
     if (!productId || wishlistMut.isPending || isInWishlist) return;
     try {
       await wishlistMut.mutateAsync(productId);
-      toast.success("Added to wishlist");
+      setShowWishlistPopup(true);
     } catch (e) {
       toast.error("Couldn't update wishlist — please try again");
     }
@@ -249,6 +299,18 @@ const ProductGridCard = ({ product }) => {
   return (
     // 1. h-full -> card apni grid cell ka pura height le, taaki row ke saare cards match karein
     <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
+      <AddToCartPopup
+        isOpen={showCartPopup}
+        onClose={() => setShowCartPopup(false)}
+        product={product}
+      />
+
+      <AddToWishlistPopup
+        isOpen={showWishlistPopup}
+        onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: imageUrl }}
+      />
+
       {/* 2. Image ko fixed-height box do (aspect-square ki jagah), taaki alag
              products ke alag intrinsic image sizes ho tab bhi sab ek jaisa
              dikhein - box aur bottle dono same box mein center hoke fit honge */}

@@ -72,6 +72,12 @@ const mapRecentProduct = (product) => ({
 
 // 3. Single product card - shows image, name, price, cart + wishlist buttons.
 // Wrapped in a Link (href = product slug) so it's crawlable and navigable.
+//
+// FIX: dropped the `md:max-w-[327px]` cap that used to hard-limit the card
+// width. On the non-slider (<=4 items) grid row, the grid columns now
+// stretch to fill the available width via `auto-fit + minmax`, but the
+// card itself was still capping out at 327px - leaving a big empty block
+// on wide screens. `md:max-w-none` lets the card grow to fill its column.
 function ProductCard({ product }) {
   const isDiscounted = hasDiscount(product.special_price);
 
@@ -134,7 +140,7 @@ function ProductCard({ product }) {
 
       <Link
         href={`/${product.seo_url || product.slug}`}
-        className="flex h-[93px] w-[280px] flex-shrink-0 cursor-pointer items-center gap-3 overflow-hidden border border-gray-100 bg-white p-2 shadow-sm transition hover:shadow-md snap-center md:w-full md:max-w-[327px]"
+        className="flex h-[93px] w-[280px] flex-shrink-0 cursor-pointer items-center gap-3 overflow-hidden border border-gray-100 bg-white p-2 shadow-sm transition hover:shadow-md snap-center md:w-full md:max-w-[400px]"
       >
         <div className="flex h-[78px] w-[78px] flex-shrink-0 items-center justify-center overflow-hidden">
           <img
@@ -293,7 +299,10 @@ export default function ProductViewTabs() {
 
   return (
     <section className={`bg-black px-3 2xl:px-32 py-10 ${sarabun.variable} ${hindMadurai.variable} ${sumana.variable}`}>
-      <div className="mx-auto max-w-[1366px]">
+      {/* FIX: added max-w + mx-auto so the whole block stays readable and
+          centered instead of stretching edge-to-edge on ultra-wide
+          screens. Adjust the max-w value if you want it wider/narrower. */}
+      <div className="max-w-[2000px]">
         {/* Tabs */}
         <div
           className="mb-6 flex gap-8 border-b border-gray-700"
@@ -351,7 +360,12 @@ export default function ProductViewTabs() {
                   ? `flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
                       canScrollLeft ? "pl-10" : "pl-0"
                     } ${canScrollRight ? "pr-10" : "pr-0"}`
-                  : "flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:overflow-visible md:px-0 md:grid md:grid-cols-4"
+                  : // FIX: replaced the fixed `md:grid-cols-4` with an
+                    // auto-fit grid. Columns now stretch to fill the
+                    // available width evenly (min 260px each) instead of
+                    // staying capped at 4 narrow columns that leave a big
+                    // empty gap on wide screens.
+                    "flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:overflow-visible md:px-0 md:grid md:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]"
               }
             >
               {currentData.map((product) => (

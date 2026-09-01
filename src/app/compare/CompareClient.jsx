@@ -101,7 +101,7 @@ const CompareClient = () => {
       ) : compareProducts.length === 0 ? (
         <div className="max-w-[1200px] mx-auto px-3 2xl:px-32 py-20 text-center">
           <p className="text-gray-500 text-lg">
-            Aapki compare list khaali hai.
+            Compare list is empty.
           </p>
         </div>
       ) : (

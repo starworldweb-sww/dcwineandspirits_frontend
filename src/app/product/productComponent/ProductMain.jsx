@@ -109,8 +109,6 @@ export default function ProductMain({ product }) {
     wishlistCheckData?.data?.inWishlist ?? wishlistCheckData?.inWishlist,
   );
 
-  // STEP B: Compare list ab SLUG se track hoti hai, productId se nahi —
-  // kyunki compare page single-product API "seo_url" (slug) leke fetch karta hai
   const { compareIds, addProduct, removeProduct } = useCompareList();
   const productSlug = product?.seo_url;
   const isInCompare = compareIds.includes(productSlug);
@@ -271,7 +269,6 @@ export default function ProductMain({ product }) {
     }
   };
 
-  // STEP C: Compare button click handler — ab productSlug se toggle hota hai
   const handleToggleCompare = () => {
     if (!productSlug) return;
     if (isInCompare) {
@@ -312,7 +309,7 @@ export default function ProductMain({ product }) {
         product={{ ...product, image: productImage }}
       />
 
-      <main className={`min-h-screen w-full bg-white ${hindMadurai.className}`}>
+      <main className={` w-full bg-white ${hindMadurai.className}`}>
         <section className="bg-white px-3 2xl:px-32 py-6">
           <div className="flex flex-col lg:flex-row lg:items-stretch gap-8">
             <div className="w-full lg:w-auto flex flex-row gap-3 lg:gap-4">
@@ -338,6 +335,14 @@ export default function ProductMain({ product }) {
                 </div>
               )}
 
+              {/* ============================================================
+                  FIX: "lg:h-full" hata diya — parent ki koi definite height
+                  set nahi thi, isliye percentage height (h-full) browser mein
+                  unpredictable resolve ho rahi thi aur poore section ki
+                  height bahut zyada ban rahi thi, jisse neeche bada khaali
+                  gap dikh raha tha. Ab fixed "lg:h-[486px]" use kiya hai —
+                  ye definite value hai, koi ambiguity nahi.
+              ============================================================ */}
               <div
                 onMouseEnter={() => setIsImageHovered(true)}
                 onMouseMove={handleImageMove}
@@ -345,7 +350,7 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-full lg:max-h-[486px] ${
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-[486px] ${
                   hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
                 }`}
               >
@@ -392,13 +397,9 @@ export default function ProductMain({ product }) {
               </div>
             </div>
 
-            <div className="w-full lg:w-1/2 min-w-0 flex flex-col justify-between">
+            <div className="w-full flex-1 min-w-0 flex flex-col justify-between">
               <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:min-h-[486px]">
 
-                {/* Price + Brand + Stock/Model info */}
-
-                {/* MOBILE ONLY — stacked layout so a long SKU never leaves an
-                    orphan bullet dot floating on its own line */}
                 <div className="sm:hidden pb-4 border-b border-gray-200">
                   <div className="flex items-center justify-between gap-4">
                     <div className={`${sumana.className}`}>
@@ -468,7 +469,6 @@ export default function ProductMain({ product }) {
                   </div>
                 </div>
 
-                {/* DESKTOP/TABLET — original layout, unchanged */}
                 <div className="hidden sm:flex flex-nowrap items-stretch justify-between gap-4 pb-4 border-b border-gray-200">
                   <div className="flex flex-nowrap items-stretch gap-4">
                     <div
@@ -564,6 +564,7 @@ export default function ProductMain({ product }) {
 
                 {rawOptions.length > 0 && (
                   <div className="w-full mt-5 mb-5 space-y-5">
+                    {/* option rendering — unchanged, same as before */}
                     {rawOptions.map((opt) => {
                       const key = String(opt.product_option_id);
                       const hasValues =
@@ -585,8 +586,6 @@ export default function ProductMain({ product }) {
                       const baseInputClass =
                         "block w-full p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none text-gray-700 bg-white";
 
-                      // option_id 13 ("Message On Gift Card") ke paas type field nahi aata
-                      // isliye ise pehle hi textarea (100px height) ke roop me render kar rahe hain
                       if (String(opt.option_id) === "13") {
                         const currentValue = optionValues[key] || "";
                         return (
@@ -930,7 +929,6 @@ export default function ProductMain({ product }) {
                           : "Add to Wish List"}
                     </button>
 
-                    {/* STEP D: sirf yahan onClick + conditional text/color/icon add kiya */}
                     <button
                       type="button"
                       onClick={handleToggleCompare}
@@ -1004,14 +1002,11 @@ export default function ProductMain({ product }) {
               </div>
 
            <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
-  {/* Step 1: grid-cols-4 hamesha lagaya hai (mobile se hi), 
-      isliye 2x2 wala split hataake ek hi line mein 4 items aayenge */}
   <div className="grid grid-cols-4 divide-x divide-gray-200">
     
     <a 
       className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
     >
-      {/* Step 2: icon size chhoti screen pe thoda chhota rakha hai */}
       <Gift size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
       Free Gift Card
     </a>
@@ -1022,8 +1017,8 @@ export default function ProductMain({ product }) {
       <Truck size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
       Fast Delivery
     </a>
-
-    <a
+<a
+    
       download={true}
       href="/bulk-order-form.xlsx"
       className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"

@@ -23,10 +23,12 @@ import { useAddtoCart } from "@/app/api/hooks/cart/useAddtoCart";
 
 import { toast } from "sonner";
 import { decodeHtml } from "@/libs/decodeHtml";
-import SmallDescAndSubcategory from "./SmallDescAndSubcategory";
+
 import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
+import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
+import SmallDescAndSubcategory from "@/app/productsDynamic/productsDynamicComponents/SmallDescAndSubcategory";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -60,6 +62,7 @@ const ProductListRow = ({ product }) => {
   const wishlistMut = useAddToWishlist();
   const [qty, setQty] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const productId = product?.product_id || product?.id;
 
   const isPending = addToCartMut.isPending;
@@ -108,7 +111,7 @@ const ProductListRow = ({ product }) => {
     if (!productId || wishlistMut.isPending || isInWishlist) return;
     try {
       await wishlistMut.mutateAsync(productId); // 👈 object hata diya
-      toast.success("Added to wishlist");
+      setShowWishlistPopup(true);
     } catch (e) {
       toast.error("Couldn't update wishlist — please try again");
     }
@@ -120,6 +123,12 @@ const ProductListRow = ({ product }) => {
         isOpen={showPopup}
         onClose={() => setShowPopup(false)}
         product={product}
+      />
+
+      <AddToWishlistPopup
+        isOpen={showWishlistPopup}
+        onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: productImage }}
       />
 
       <Link
@@ -274,6 +283,7 @@ const ProductGridCard = ({ product }) => {
   const { mutate: addtoCart, isPending } = useAddtoCart();
   const wishlistMut = useAddToWishlist();
   const [showPopup, setShowPopup] = useState(false);
+  const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const productLink = product.seo_url
     ? `/${product.seo_url}`
     : `/${product.product_id}`;
@@ -315,7 +325,7 @@ const ProductGridCard = ({ product }) => {
     if (!product?.product_id || wishlistMut.isPending || isInWishlist) return;
     try {
       await wishlistMut.mutateAsync(product.product_id);
-      toast.success("Added to wishlist");
+      setShowWishlistPopup(true);
     } catch (e) {
       toast.error("Couldn't update wishlist — please try again");
     }
@@ -327,6 +337,12 @@ const ProductGridCard = ({ product }) => {
         isOpen={showPopup}
         onClose={() => setShowPopup(false)}
         product={product}
+      />
+
+      <AddToWishlistPopup
+        isOpen={showWishlistPopup}
+        onClose={() => setShowWishlistPopup(false)}
+        product={{ ...product, image: productImage }}
       />
 
 

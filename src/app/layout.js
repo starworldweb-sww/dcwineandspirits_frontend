@@ -15,6 +15,7 @@ import { getQueryClient } from "@/libs/get-query-client";
 import { getMobileCategories } from "./api/services/mobileCategoryService";
 import { mobileCategoryKeys } from "@/libs/queryKeys";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import ProductViewTabs from "./components/ProductViewsTabs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -111,6 +112,7 @@ export default async function RootLayout({ children }) {
           <Stickynav />
           {children}
           <Toaster position="top-right" richColors />
+          <ProductViewTabs />
           <Footer />
         </Provider>
       </body>

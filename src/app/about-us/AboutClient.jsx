@@ -16,7 +16,7 @@ const AboutClient = () => {
       </div>
 
       {/* 2. PAGE CONTENT */}
-      <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 2xl:px-12 py-10 md:py-14">
+      <div className="w-full max-w-[1400px]  px-4 md:px-8 2xl:px-12 py-10 md:py-14">
         <div className="space-y-5 text-[15px] md:text-[16px] leading-[1.75] text-[#333333] normal-case">
           <p>
             <span className="font-bold">DC Wine &amp; Spirits</span> is your
