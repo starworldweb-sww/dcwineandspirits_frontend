@@ -109,18 +109,12 @@ const Stickynav = () => {
 
           {!isLoading &&
             !isError &&
-            MENU_ITEMS.map((item, index) => (
-              <div
-                key={item.label}
-                ref={(el) => (itemRefs.current[item.label] = el)}
-                className="relative h-full flex items-center"
-                onMouseEnter={() => item.hasDropdown && handleOpen(item.label)}
-                onMouseLeave={() => item.hasDropdown && setOpenMenu(null)}
-              >
-                <Link
-                  href={item.href}
-                  className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all "
-                >
+            MENU_ITEMS.map((item, index) => {
+              // Sirf jinke apna dropdown nahi hai (yaani "Deals & Sale")
+              // unhe hi real link banate hain — baaki sirf hover pe
+              // dropdown trigger karte hain, kahin navigate nahi karte
+              const itemContent = (
+                <>
                   {index === 0 && (
                     <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
                       <path d="M0 1H20" stroke="currentColor" strokeWidth="2" />
@@ -136,9 +130,32 @@ const Stickynav = () => {
                   {item.hasDropdown && (
                     <ChevronDown size={14} className="mt-[2px]" />
                   )}
-                </Link>
-              </div>
-            ))}
+                </>
+              );
+
+              return (
+                <div
+                  key={item.label}
+                  ref={(el) => (itemRefs.current[item.label] = el)}
+                  className="relative h-full flex items-center"
+                  onMouseEnter={() => item.hasDropdown && handleOpen(item.label)}
+                  onMouseLeave={() => item.hasDropdown && setOpenMenu(null)}
+                >
+                  {item.hasDropdown ? (
+                    <span className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all cursor-pointer">
+                      {itemContent}
+                    </span>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="flex items-center gap-2 font-bold lg:text-[15px] xl:text-[17px] text-black hover:text-[#98022e] transition-all cursor-pointer"
+                    >
+                      {itemContent}
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
         </div>
 
         {/* 7. Cart trigger + hover mini-cart wrapper */}

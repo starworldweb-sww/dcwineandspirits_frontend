@@ -43,7 +43,7 @@ const hindMadurai = Hind_Madurai({
   display: "swap",
 });
 
-const IMAGE_BASE = "https://www.dcwineandspirits.com/image/";
+const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 const getImageUrl = (path) => {
   if (!path) return "/prosecco-gift-800x800.webp";

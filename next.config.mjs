@@ -5,6 +5,12 @@ const nextConfig = {
 
   images: {
     remotePatterns: [
+
+        {
+        protocol: "https",
+        hostname: "www.admin.dcwineandspirits.com",
+        pathname: "/image/**",
+      },
       {
         protocol: "https",
         hostname: "www.dcwineandspirits.com",

@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import Navbar from "./components/Navbar";
 import Stickynav from "./components/navcomponents/StickyNav";
 import OccasionBar from "./components/navcomponents/OccasionsBar";
@@ -49,6 +50,9 @@ export const metadata = {
   title: "DC Wine & Spirits - Best Online Wine Gift Store",
   description:
     "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
+  robots: {
+    other: "max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+  },
   openGraph: {
     type: "website",
     url: "https://www.dcwineandspirits.com/",
@@ -95,10 +99,34 @@ export default async function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
     >
+      <head>
+        {/* Google Tag Manager */}
+        <Script id="gtm-script" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PKSMBZ5');
+          `}
+        </Script>
+        {/* End Google Tag Manager */}
+      </head>
       <body
         className="min-h-full flex flex-col"
         suppressHydrationWarning={true}
       >
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-PKSMBZ5"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
+
         <Provider>
           <GoToTopButton />
           <PhoneHeader />

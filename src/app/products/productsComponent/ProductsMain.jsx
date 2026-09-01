@@ -191,7 +191,7 @@ const ProductListRow = ({ product }) => {
   const brandName = product.brand || "Premium Brand";
   const description = product.description || product.name;
   const imageUrl = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
+    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
@@ -266,7 +266,7 @@ const ProductGridCard = ({ product }) => {
 
   const productLink = `/${product.seo_url || product.custom_url}/`;
   const imageUrl = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
+    ? `https://www.admin.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 
@@ -282,7 +282,6 @@ const ProductGridCard = ({ product }) => {
       if (res?.success) setShowCartPopup(true);
     } catch (e) {}
   };
-
 
   const handleAddToWishlist = async (e) => {
     e?.stopPropagation?.();
@@ -362,7 +361,9 @@ const ProductGridCard = ({ product }) => {
         </h2>
       </Link>
 
-      <p className={`${hindMadurai.className} mt-2 text-base text-gray-600 font-semibold`}>
+      <p
+        className={`${hindMadurai.className} mt-2 text-base text-gray-600 font-semibold`}
+      >
         ${Number(displayPrice || 0).toFixed(2)}
       </p>
 

@@ -76,7 +76,7 @@ const ProductListRow = ({ product }) => {
     ? `/${product.seo_url}`
     : `/${product.product_id}`;
   const productImage = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
+    ? `https://www.admin.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
@@ -288,7 +288,7 @@ const ProductGridCard = ({ product }) => {
     ? `/${product.seo_url}`
     : `/${product.product_id}`;
   const productImage = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
+    ? `https://www.admin.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
   const hasDiscount =

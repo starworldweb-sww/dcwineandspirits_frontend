@@ -19,6 +19,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
   const altText = banner?.alt;
   const titleText = banner?.title;
   const customUrl = banner?.custom_url;
+  console.log("image url", imageUrl, "slug", slug, "customUrl", customUrl, "altText", altText, "titleText", titleText);
 
   const bannerLink = slug ? `/${slug}` : customUrl || "/";
 
@@ -32,7 +33,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
       >
 
       <img
-        src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ''}${imageUrl}`}
+        src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${imageUrl}`}
         title={altText}
         alt={altText}
         width={1280}
