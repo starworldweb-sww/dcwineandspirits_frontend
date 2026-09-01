@@ -25,7 +25,7 @@ import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
 
 const IMAGE_BASE_URL =
   process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ||
-  "https://www.admin.dcwineandspirits.com/image/";
+  "https://www.dcwineandspirits.com/image/";
 
 const TAB_ICONS = {
   Bestsellers: Award,

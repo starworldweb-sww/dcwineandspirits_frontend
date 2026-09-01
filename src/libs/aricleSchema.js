@@ -37,6 +37,6 @@ export const generateArticleSchema = (blog) => ({
 
   mainEntityOfPage: {
     "@type": "WebPage",
-    "@id": `https://www.dcwineandspirits.com/blog/${blog.slug}/`,
+    "@id": `https://www.dcwineandspirits.com/blogs/${blog.slug}/`,
   },
 });

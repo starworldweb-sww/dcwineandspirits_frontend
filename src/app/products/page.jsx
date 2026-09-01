@@ -4,6 +4,18 @@ import ProductsClient from './productsComponent/ProductsClient'
 import { getQueryClient } from '@/libs/get-query-client'
 import { productKeys } from '@/libs/queryKeys'
 
+
+
+
+
+// Exact extracted (as per archived snapshot)
+export const metadata = {
+  title: "All Products | DC Wine & Spirits",
+  description: "All Products - DC Wine & Spirits",
+  alternates: {
+    canonical: "https://www.dcwineandspirits.com/products/",
+  },
+};
 const page = async () => {
   const queryClient = getQueryClient()
   const initialShowNum = 24;

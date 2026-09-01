@@ -31,42 +31,58 @@ const MOCK_USER = {
   lastname: "Doe",
 };
 
-const SHIPPING_INFO = {
-  heading: "Why Choose Our Delivery Service?",
-  intro:
-    "We make gifting simple, fast, and reliable. Here's why customers trust us:",
-  trustPoints: [
-    {
-      title: "Fast & Reliable Delivery:",
-      text: "We work with trusted delivery partners to ensure your wine, champagne, or gift basket arrives safely and on time.",
-    },
-    {
-      title: "Premium Selection:",
-      text: "Explore a wide range of fine wines, luxury champagne, prosecco, and gourmet gift baskets from around the world.",
-    },
-    {
-      title: "Easy Ordering & Tracking:",
-      text: "Our website offers a smooth shopping experience with secure checkout. Once your order is confirmed, you'll receive tracking details to monitor your delivery in real time.",
-    },
-  ],
-  fallbackNote:
-    "If a delivery cannot be completed, we offer flexible solutions:",
-  fallbackOptions: [
-    {
-      title: "Hold at UPS Facility:",
-      text: "Request to hold your package at a nearby UPS location for up to one week.",
-    },
-    {
-      title: "Reschedule Delivery:",
-      text: "Choose a new delivery date or update the delivery address based on the recipient's availability. You can add your preferred delivery date during checkout in the order comment section, chat with our assistant, or email us directly.",
-    },
-    {
-      title: "Refund or Reship Options:",
-      text: "If the package is returned after unsuccessful delivery attempts, you may request a reshipment or receive a refund minus a small handling fee.",
-    },
-  ],
-  detailsHeading: "Shipping & Delivery Details",
-};
+const SHIPPING_CONTENT_HTML = `
+<h2>Why Choose Our Delivery Service?</h2>
+<p>We make gifting simple, fast, and reliable. Here's why customers trust us:</p>
+<ul>
+<li><strong>Fast &amp; Reliable Delivery:</strong> We work with trusted delivery partners to ensure your wine, champagne, or gift basket arrives safely and on time.</li>
+<li><strong>Premium Selection:</strong> Explore a wide range of fine wines, luxury champagne, prosecco, and gourmet gift baskets from around the world.</li>
+<li><strong>Easy Ordering &amp; Tracking:</strong> Our website offers a smooth shopping experience with secure checkout. Once your order is confirmed, you'll receive tracking details to monitor your delivery in real time.</li>
+</ul>
+<p>If a delivery cannot be completed, we offer flexible solutions:</p>
+<ul>
+<li><strong>Hold at UPS Facility:</strong> Request to hold your package at a nearby UPS location for up to one week.</li>
+<li><strong>Reschedule Delivery:</strong> Choose a new delivery date or update the delivery address based on the recipient's availability. You can add your preferred delivery date during checkout in the order comment section, chat with our assistant, or email us directly.</li>
+<li><strong>Refund or Reship Options:</strong> If the package is returned after unsuccessful delivery attempts, you may request a reshipment or receive a refund minus a small handling fee.</li>
+</ul>
+<h2>Shipping &amp; Delivery Details</h2>
+<div class="shipping-info" style="display:flex; flex-wrap:wrap; gap:20px;">
+  <div style="flex:1; min-width:260px;">
+    <h3>Standard Delivery (2–5 Business Days)</h3>
+    <ul>
+      <li><strong>1–2 Days:</strong> NY, NJ, CT, KY, MD, MA, VA, DC</li>
+      <li><strong>2–3 Days:</strong> FL, GA, IL, IN, MI, OH, TN</li>
+      <li><strong>3–4 Days:</strong> ID, KS, LA, MO, MN, TX, NE, ND</li>
+      <li><strong>5–6 Days:</strong> OR, WA, WY, CA</li>
+    </ul>
+  </div>
+  <div style="flex:1; min-width:260px;">
+    <h3>Shipping Upgrades (Additional Charges Apply)</h3>
+    <ul>
+      <li><strong>3 Day Select:</strong> Delivered in 3 business days</li>
+      <li><strong>2nd Day Air:</strong> Delivered in 2 business days</li>
+      <li><strong>Next Day Air:</strong> Delivered in 1 business day</li>
+    </ul>
+  </div>
+  <div style="flex:1; min-width:260px;">
+    <h3>Shipping Charges</h3>
+    <ul>
+      <li><strong>Standard Delivery:</strong> $20</li>
+      <li><strong>Specific Locations:</strong> $30</li>
+      <li><strong>Same-Day Delivery:</strong> $50</li>
+      <li><strong>Free Delivery Available on Eligible Orders*</strong></li>
+    </ul>
+  </div>
+</div>
+<p><strong>Note:</strong> Same-day delivery is available in select Washington, D.C. and Virginia areas for ready-made gift baskets. Order by <strong>2:00 PM EST</strong>. Additional fees may apply.</p>
+<h2>Important Information</h2>
+<ul>
+<li>We do <strong>not</strong> ship to <strong>PO Boxes</strong>, <strong>APO addresses</strong>, or <strong>outside the USA</strong>.</li>
+<li>You must be at least <strong>21 years of age</strong> to purchase wine or spirits.</li>
+<li><strong>Personalized items</strong> may require an additional <strong>2–3 business days</strong> for processing.</li>
+<li>Due to state laws, we cannot ship alcohol to UT and DE. Additional restrictions may apply in MS, AL, AR, OK, IA, KS, and other states. Please refer to our shipping policy for full details, please visit our <a href="/shipping-and-delivery-policy" target="_blank">Shipping &amp; Delivery Policy</a>.</li>
+</ul>
+`;
 
 const ASSISTANCE_BOX = {
   heading: "Need Assistance with Payments or Bulk Orders?",
@@ -215,27 +231,10 @@ const DescriptionAndReview = ({ product = {} }) => {
   );
 
   const renderShippingContent = () => (
-    <div className="text-[15px] leading-7 text-zinc-800">
-      <p className="mb-4">{SHIPPING_INFO.intro}</p>
-      <ul className="list-disc pl-6 mb-6 space-y-1">
-        {SHIPPING_INFO.trustPoints.map((point, index) => (
-          <li key={index}>
-            <span className="font-bold">{point.title}</span> {point.text}
-          </li>
-        ))}
-      </ul>
-      <p className="mb-4">{SHIPPING_INFO.fallbackNote}</p>
-      <ul className="list-disc pl-6 mb-8 space-y-1">
-        {SHIPPING_INFO.fallbackOptions.map((option, index) => (
-          <li key={index}>
-            <span className="font-bold">{option.title}</span> {option.text}
-          </li>
-        ))}
-      </ul>
-      <h2 className={`${sumana.className} text-2xl font-bold text-black`}>
-        {SHIPPING_INFO.detailsHeading}
-      </h2>
-    </div>
+    <div
+      className="shipping-content-text text-[15px] leading-7 text-zinc-800"
+      dangerouslySetInnerHTML={{ __html: SHIPPING_CONTENT_HTML }}
+    />
   );
 
   const renderReviewsContent = () => (
@@ -489,9 +488,6 @@ const DescriptionAndReview = ({ product = {} }) => {
 
         {activeTab === "shipping" && (
           <section className="py-6 mt-1">
-            <h2 className={`${sumana.className} text-xl lg:text-2xl font-bold text-black mb-4 font-hind-madurai`}>
-              {SHIPPING_INFO.heading}
-            </h2>
             {renderShippingContent()}
           </section>
         )}
@@ -579,41 +575,50 @@ const DescriptionAndReview = ({ product = {} }) => {
       </div>
 
       <style jsx global>{`
-        .product-description-text h2 {
+        .product-description-text h2,
+        .shipping-content-text h2 {
           font-size: 20px;
           font-weight: 700;
           color: #1a1a1a;
           margin-top: 1.5rem;
           margin-bottom: 0.6rem;
         }
-        .product-description-text h3 {
+        .product-description-text h3,
+        .shipping-content-text h3 {
           font-size: 17px;
           font-weight: 700;
           color: #1a1a1a;
           margin-top: 1.25rem;
           margin-bottom: 0.5rem;
         }
-        .product-description-text p {
+        .product-description-text p,
+        .shipping-content-text p {
           margin-bottom: 0.85rem;
         }
         .product-description-text ul,
-        .product-description-text ol {
+        .product-description-text ol,
+        .shipping-content-text ul,
+        .shipping-content-text ol {
           margin: 0.9rem 0 0.9rem 1.5rem;
           list-style: disc;
         }
-        .product-description-text ol {
+        .product-description-text ol,
+        .shipping-content-text ol {
           list-style: decimal;
         }
-        .product-description-text li {
+        .product-description-text li,
+        .shipping-content-text li {
           margin-bottom: 0.35rem;
         }
-        .product-description-text img {
+        .product-description-text img,
+        .shipping-content-text img {
           max-width: 100%;
           height: auto;
           border-radius: 4px;
           margin: 0.8rem 0;
         }
-        .product-description-text blockquote {
+        .product-description-text blockquote,
+        .shipping-content-text blockquote {
           border-left: 3px solid #98022e;
           padding: 0.5rem 1rem;
           background: #faf5f6;
@@ -621,12 +626,15 @@ const DescriptionAndReview = ({ product = {} }) => {
           font-style: italic;
           color: #555;
         }
-        .product-description-text a {
+        .product-description-text a,
+        .shipping-content-text a {
           color: #98022e;
           text-decoration: underline;
         }
         .product-description-text strong,
-        .product-description-text b {
+        .product-description-text b,
+        .shipping-content-text strong,
+        .shipping-content-text b {
           font-weight: 700;
         }
       `}</style>

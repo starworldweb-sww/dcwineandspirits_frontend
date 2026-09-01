@@ -266,7 +266,7 @@ const ProductGridCard = ({ product }) => {
 
   const productLink = `/${product.seo_url || product.custom_url}/`;
   const imageUrl = product.image
-    ? `https://www.admin.dcwineandspirits.com/image/${product.image}`
+    ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
   const displayPrice = product.special_price || product.price;
 

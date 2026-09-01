@@ -17,6 +17,7 @@ import { getMobileCategories } from "./api/services/mobileCategoryService";
 import { mobileCategoryKeys } from "@/libs/queryKeys";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import ProductViewTabs from "./components/ProductViewsTabs";
+import AgeVerificationGate from "./components/AgeVerification";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,7 +66,7 @@ export const metadata = {
     siteName: "DC Wine & Spirits",
     images: [
       {
-        url: "https://www.admin.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp",
+        url: "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp",
         width: 600,
         height: 315,
         alt: "DC Wine & Spirits Logo",
@@ -79,7 +80,7 @@ export const metadata = {
     description:
       "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
     images: [
-      "https://www.admin.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-200x200h.webp",
+      "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-200x200h.webp",
     ],
   },
 };
@@ -130,8 +131,10 @@ export default async function RootLayout({ children }) {
         </noscript>
         {/* End Google Tag Manager (noscript) */}
 
+
         <Provider>
           <GoToTopButton />
+          <AgeVerificationGate />
           <PhoneHeader />
           <Topline />
           <Navbar />
