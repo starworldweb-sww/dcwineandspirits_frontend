@@ -6,18 +6,20 @@ import { blogKeys } from '@/libs/queryKeys';
 import { blogService } from '@/app/api/services/blogService';
 import Script from 'next/script';
 import { generateArticleSchema } from '@/libs/aricleSchema';
+import { getMetaByType } from '@/libs/getMetaByType';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const allCategories = await blogService.getAllCategory();
-  const matchedCategory = allCategories?.find((c) => c.slug === slug);
-
-  if (matchedCategory) {
+  // const matchedCategory = allCategories?.find((c) => c.slug === slug);
+  const meta = await getMetaByType("blog", slug)
+  console.log("meta", meta)
+  if (meta) {
     return {
-      title: `${matchedCategory.name} Blogs | DC Wine and Spirits`,
+      title: `${meta?.meta_title} Blogs | DC Wine and Spirits`,
       description:
-        matchedCategory.description ||
-        `Browse all blogs in the ${matchedCategory.name} category on DC Wine and Spirits.`,
+        meta.meta_description ||
+        `Browse all blogs in the ${meta.meta_description} category on DC Wine and Spirits.`,
       alternates: {
         canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
       },
