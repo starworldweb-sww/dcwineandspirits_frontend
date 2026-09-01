@@ -24,7 +24,7 @@ const geistSans = Geist({
 
 const sumana = Sumana({
   subsets: ["latin"],
-  weight: ["400", "700"], // Sumana sirf 400 & 700 support karta hai
+  weight: ["400", "700"], 
   variable: "--font-sumana",
 });
 
@@ -66,8 +66,8 @@ export const metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    site: "@dcwine_spirits",
+    card: "summary_large_image", 
+    site: "@dcwine_spirits", 
     title: "DC Wine & Spirits - Best Online Wine Gift Store",
     description:
       "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",

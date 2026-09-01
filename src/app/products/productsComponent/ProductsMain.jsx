@@ -362,7 +362,7 @@ const ProductGridCard = ({ product }) => {
         </h2>
       </Link>
 
-      <p className={`${hindMadurai.className} mt-2 text-base text-gray-400`}>
+      <p className={`${hindMadurai.className} mt-2 text-base text-gray-600 font-semibold`}>
         ${Number(displayPrice || 0).toFixed(2)}
       </p>
 
