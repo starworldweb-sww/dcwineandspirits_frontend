@@ -101,22 +101,22 @@ const CouponsTable = () => {
               <div className="flex-1 min-w-0 p-5 flex flex-col justify-between gap-4">
                 <div>
                   <h3
-                    className={`font-sumana text-base font-bold ${
-                      isDark ? "text-white" : "text-[#333333]"
+                    className={`font-sumana text-lg font-bold leading-snug ${
+                      isDark ? "text-white" : "text-[#1a1a1a]"
                     }`}
                   >
                     {coupon.title}
                   </h3>
                   <p
-                    className={`text-xs mt-1 leading-relaxed normal-case ${
-                      isDark ? "text-gray-200" : "text-gray-500"
+                    className={`text-sm mt-2 leading-relaxed normal-case ${
+                      isDark ? "text-white/90" : "text-gray-600"
                     }`}
                   >
                     {coupon.description}
                   </p>
                   <p
-                    className={`text-[10px] mt-2 uppercase tracking-wide ${
-                      isDark ? "text-gray-300" : "text-gray-400"
+                    className={`text-xs mt-3 font-semibold uppercase tracking-wide ${
+                      isDark ? "text-white/80" : "text-gray-500"
                     }`}
                   >
                     {coupon.expiry}
@@ -132,7 +132,7 @@ const CouponsTable = () => {
                   }`}
                 >
                   <span
-                    className={`text-sm font-bold tracking-widest truncate normal-case ${
+                    className={`text-base font-bold tracking-widest truncate normal-case ${
                       isDark ? "text-white" : "text-[#98022e]"
                     }`}
                   >
@@ -140,7 +140,7 @@ const CouponsTable = () => {
                   </span>
                   <button
                     onClick={() => handleCopy(coupon.code)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide transition-colors shrink-0 cursor-pointer normal-case ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-colors shrink-0 cursor-pointer normal-case ${
                       isDark
                         ? "bg-white text-[#98022e] hover:bg-gray-100"
                         : "bg-[#98022e] text-white hover:bg-[#7e1a3c]"

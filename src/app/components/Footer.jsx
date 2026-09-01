@@ -7,6 +7,7 @@ import {
   Headphones,
   Phone,
   Mail,
+  Star,
 } from "lucide-react";
 import NewsletterSection from "./NewsletterSection";
 
@@ -148,16 +149,38 @@ const socialLinks = [
   // Note: no Pinterest icon here, swap in your own Pinterest SVG/asset if needed.
 ];
 
+// 3a. Review platform data - labeled "pill" style badge: platform name +
+// small icon + 5-star row above the name.
+const reviewLinks = [
+  {
+    label: "Trustpilot",
+    href: "https://www.trustpilot.com/review/dcwineandspirits.com/",
+    Icon: TrustpilotIcon,
+    iconBg: "bg-[#00b67a]",
+    iconColor: "text-white",
+  },
+  {
+    label: "Google",
+    href: "https://g.page/r/CT-eswvbpQaMEAE/review/",
+    Icon: GoogleIcon,
+    iconBg: "bg-white",
+    iconColor: "",
+  },
+];
+
 // 4. Small reusable component for a single footer link row
 // `download` is optional - jab pass hoga tab link file download karega,
 // warna pehle jaisa normal navigation hoga.
+// FIX: click/tap (mouse-down ya touch) ke time underline dikhega -
+// `active:underline` mouse click aur touch dono pe fire hota hai,
+// `focus:underline` keyboard/tab navigation ke liye bhi feedback deta hai.
 function FooterLink({ label, href, download }) {
   return (
     <li>
       <a
         href={href}
         {...(download ? { download } : {})}
-        className="flex items-center gap-1 text-sm text-gray-700  group  hover:text-[#8a1538]"
+        className="flex items-center gap-1 text-sm text-gray-700  group  hover:text-[#8a1538] active:underline active:text-[#8a1538] focus:underline focus:text-[#8a1538] focus:outline-none"
       >
         <ChevronRight size={14} className="text-[#8a1538]" />
        <span  className="visited:text-[#8a1538]"> {label}</span> 
@@ -171,7 +194,7 @@ export default function Footer() {
 
     <>
     <NewsletterSection/>
-    <footer className={`w-full bg-white ${hindMadurai.variable}`} style={{ fontFamily: "var(--font-hind-madurai)" }}>
+    <footer className={`w-full bg-white overflow-x-hidden ${hindMadurai.variable}`} style={{ fontFamily: "var(--font-hind-madurai)" }}>
       {/* 5. Padding convention applied here */}
       <div className="px-3 2xl:px-32 py-12">
         {/* 6. Top grid - link columns + logo/contact column */}
@@ -243,7 +266,7 @@ export default function Footer() {
 
               <div className="flex items-center gap-3">
                 <Phone size={18} className="flex-shrink-0 text-gray-500" />
-                <a href="tel:+12024598489" className="hover:text-[#8a1538]">
+                <a href="tel:+12024598489" className="hover:text-[#8a1538] active:underline focus:underline focus:outline-none">
                   (202) 459-8489
                 </a>
               </div>
@@ -252,7 +275,7 @@ export default function Footer() {
                 <Mail size={18} className="flex-shrink-0 text-gray-500" />
                 <a
                   href="mailto:contact@dcwineandspirits.com"
-                  className="hover:text-[#8a1538]"
+                  className="hover:text-[#8a1538] active:underline focus:underline focus:outline-none"
                 >
                   contact@dcwineandspirits.com
                 </a>
@@ -265,11 +288,15 @@ export default function Footer() {
         <hr className="mt-10 border-gray-200" />
 
         {/* 8. Follow Us + Review Us row */}
-        <div className="flex flex-col items-center gap-6 py-6 md:flex-row md:justify-between">
+        {/* FIX: row ab "lg" pe row banti hai (pehle "md" pe thi, jahan
+            jagah kam hoti hai) aur "flex-wrap" hai - agar kabhi content
+            container se chhota bhi na fit ho to wrap ho jayega, page
+            overflow kabhi nahi hoga. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 py-6 lg:justify-between">
           {/* 8a. Social icons */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <span className="text-lg font-bold text-gray-800">Follow Us</span>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {socialLinks.map(({ label, href, Icon }) => (
                 <a
                   key={label}
@@ -277,7 +304,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8a1538] text-white transition hover:bg-[#6d1029]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#8a1538] text-white transition hover:bg-[#6d1029] active:ring-2 active:ring-[#6d1029] active:ring-offset-2 focus:ring-2 focus:ring-[#6d1029] focus:ring-offset-2 focus:outline-none"
                 >
                   <Icon width={16} height={16} />
                 </a>
@@ -285,33 +312,44 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 8b. Review badges - real Trustpilot (green circle + star bracket
-               mark) and real multi-colour Google "G" logo */}
-          <div className="flex items-center gap-4">
+          {/* 8b. Review badges - labeled "pill" cards with a 5-star row
+               above the platform name. Real Trustpilot (green circle +
+               star bracket mark) and real multi-colour Google "G" logo. */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <span className="text-lg font-bold text-gray-800">Review Us</span>
-
-            <div className="flex items-center gap-3">
-              {/* Trustpilot circle badge */}
-              <a
-                href="https://www.trustpilot.com/review/dcwineandspirits.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Trustpilot Reviews"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#00b67a] text-white transition hover:bg-[#00945f]"
-              >
-                <TrustpilotIcon width={18} height={18} />
-              </a>
-
-              {/* Google circle badge */}
-              <a
-                href="https://g.page/r/CT-eswvbpQaMEAE/review/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Google Reviews"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow transition hover:shadow-md"
-              >
-                <GoogleIcon width={18} height={18} />
-              </a>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {reviewLinks.map(({ label, href, Icon, iconBg, iconColor }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${label} Reviews`}
+                  className="group flex shrink-0 items-center gap-2.5 rounded-full border border-gray-200 bg-white pl-1.5 pr-4 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:ring-2 active:ring-[#8a1538]/40 focus:ring-2 focus:ring-[#8a1538]/40 focus:outline-none"
+                >
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconBg} ${iconColor} ${
+                      label === "Google" ? "border border-gray-200" : ""
+                    }`}
+                  >
+                    <Icon width={16} height={16} />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="flex items-center gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={10}
+                          className="fill-[#f5a623] text-[#f5a623]"
+                        />
+                      ))}
+                    </span>
+                    <span className="whitespace-nowrap text-xs font-semibold text-gray-700 group-hover:text-[#8a1538] normal-case">
+                      {label}
+                    </span>
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
         </div>

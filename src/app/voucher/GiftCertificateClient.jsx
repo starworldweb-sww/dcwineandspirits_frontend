@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import AccountSidebar from "@/app/components/AccountSidebar";
+import { useUser } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
@@ -24,13 +25,6 @@ const themeOptions = [
   { value: "christmas", label: "Christmas" },
   { value: "general", label: "General" },
 ];
-
-// API abhi connect nahi hai, isliye ek mock logged-in user se
-// "Your Name" / "Your e-mail" prefill kar rahe hain (screenshot jaisa)
-const MOCK_USER = {
-  name: "Sunil Kumar",
-  email: "sunilmund66@gmail.com",
-};
 
 // --- VALIDATION SCHEMA ---
 const validationSchema = Yup.object({
@@ -57,12 +51,15 @@ const validationSchema = Yup.object({
 const GiftCertificateClient = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 1. Real logged-in user ka data — MOCK_USER ki jagah
+  const { data: user } = useUser();
+
   const formik = useFormik({
     initialValues: {
       recipientName: "",
       recipientEmail: "",
-      yourName: MOCK_USER.name,
-      yourEmail: MOCK_USER.email,
+      yourName: "",
+      yourEmail: "",
       theme: "",
       message: "",
       amount: 1,
@@ -79,8 +76,8 @@ const GiftCertificateClient = () => {
           values: {
             recipientName: "",
             recipientEmail: "",
-            yourName: MOCK_USER.name,
-            yourEmail: MOCK_USER.email,
+            yourName: `${user?.firstname || ""} ${user?.lastname || ""}`.trim(),
+            yourEmail: user?.email || "",
             theme: "",
             message: "",
             amount: 1,
@@ -90,6 +87,24 @@ const GiftCertificateClient = () => {
       }, 600);
     },
   });
+
+  // 2. Jab user data aa jaye (API se), tab "Your Name" / "Your e-mail"
+  //    fields ko autofill kar do — agar user pehle se kuch type kar chuka
+  //    hai to overwrite nahi karenge.
+  useEffect(() => {
+    if (user) {
+      if (!formik.values.yourName) {
+        formik.setFieldValue(
+          "yourName",
+          `${user.firstname || ""} ${user.lastname || ""}`.trim(),
+        );
+      }
+      if (!formik.values.yourEmail) {
+        formik.setFieldValue("yourEmail", user.email || "");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const renderError = (field) =>
     formik.touched[field] && formik.errors[field] ? (
