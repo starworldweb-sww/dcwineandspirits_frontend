@@ -7,7 +7,7 @@ const MainDescription = ({ description }) => {
   return (
     <>
       <div
-        className="
+        className={`
           w-full py-8 px-2 2xl:px-32 max-w-none text-[15px] leading-[1.7] text-[#5a5a5a]
 
           [&_h2]:text-[18px] sm:[&_h2]:text-[18px] [&_h2]:font-medium [&_h2]:text-[#3d3d3d] [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:leading-snug
@@ -33,7 +33,7 @@ const MainDescription = ({ description }) => {
           [&_.faq_details[open]_summary]:mb-3
 
           [&_.faq_details_p]:mb-0 [&_.faq_details_p]:text-[#5a5a5a]
-        "
+        `}
         dangerouslySetInnerHTML={{ __html: decodeHtml(description) }}
       />
 

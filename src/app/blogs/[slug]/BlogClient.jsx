@@ -580,6 +580,50 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
           font-size: 13px;
           font-weight: 600;
         }
+
+        /* gupta sir style */
+        .blog-article-body .cta-section {
+          background: #f9f9f9;
+          padding: 30px;
+          text-align: center;
+          margin: 40px 0;
+          border: 2px dashed #9c0000;
+          border-radius: 8px;
+        }
+        .blog-article-body .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+        }
+        .blog-article-body .responsive-table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 600px;
+          font-family: Arial, sans-serif;
+        }
+        .blog-article-body .responsive-table th,
+        .blog-article-body .responsive-table td {
+          border: 1px solid #ccc;
+          padding: 10px;
+          text-align: left;
+        }
+        .blog-article-body .responsive-table th {
+          background-color: #f5f5f5;
+          font-weight: bold;
+        }
+        .blog-article-body .blog-highlight {
+          background: #faf5f6;
+          border-left: 3px solid #98022e;
+          padding: 0.75rem 1rem;
+          margin: 1.5rem 0;
+        }
+        .blog-article-body .faq details {
+          margin: 10px 0;
+        }
+        .blog-article-body .faq summary {
+          cursor: pointer;
+          font-weight: bold;
+          color: #4a2c2a;
+        }
       `}</style>
     </div>
   );

@@ -73,7 +73,8 @@ const ASSISTANCE_BOX = {
   textBeforeLink:
     "If you encounter any issues with online payments or wish to place a bulk order, please ",
   linkText: "Download Bulk Order Form",
-  linkHref: "/bulk-order-form",
+  linkHref: "/bulk-order-form.xlsx",
+  downloadName: "Bulk-Order-Form.xlsx",
   textBetweenLinkAndEmail: ". Complete the form and send it to ",
   email: "contact@dcwineandspirits.com",
   emailHref: "mailto:contact@dcwineandspirits.com",
@@ -560,6 +561,7 @@ const DescriptionAndReview = ({ product = {} }) => {
         <p className="max-w-3xl mx-auto">
           {ASSISTANCE_BOX.textBeforeLink}
           <a
+            download={ASSISTANCE_BOX.downloadName}
             href={ASSISTANCE_BOX.linkHref}
             className="text-[#98022e] hover:underline"
           >

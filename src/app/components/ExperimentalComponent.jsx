@@ -3,13 +3,7 @@ import Link from 'next/link'
 import { ChevronRight, MapPin, Tag, Globe, Gift } from 'lucide-react'
 
 const cards = [
-  {
-    eyebrow: 'DELIVERY',
-    title: 'Locations We Serve',
-    subtitle: 'Check delivery availability in your area',
-    icon: MapPin,
-    href: '/wine-delivery/',
-  },
+
   {
     eyebrow: 'PRICE',
     title: 'Shop by Price',
@@ -26,10 +20,17 @@ const cards = [
   },
   {
     eyebrow: 'RECIPIENT',
-    title: 'Gifts By Recipient',
+    title: 'Gifts by Recipient',
     subtitle: 'Find the perfect gift for anyone',
     icon: Gift,
     href: '/recipients/',
+  },
+    {
+    eyebrow: 'DELIVERY',
+    title: 'Major Areas We Cover',
+    subtitle: 'Check delivery availability in your area',
+    icon: MapPin,
+    href: '/wine-delivery/',
   },
 ]
 

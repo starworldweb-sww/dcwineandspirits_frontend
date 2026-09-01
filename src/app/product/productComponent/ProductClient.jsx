@@ -32,7 +32,7 @@ const ProductClient = ({ slug }) => {
       <ProductMain product={product} />
       <DescriptionAndReview product={product} />
       <RecommendedProducts product={product} />
-      <ProductViewTabs />
+    
     </>
   );
 };
