@@ -27,7 +27,7 @@ const cards = [
   },
     {
     eyebrow: 'DELIVERY',
-    title: 'Major Areas We Cover',
+    title: 'Major Areas Covered',
     subtitle: 'Check delivery availability in your area',
     icon: MapPin,
     href: '/wine-delivery/',
