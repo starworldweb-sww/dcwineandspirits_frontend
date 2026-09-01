@@ -176,8 +176,10 @@ const CheckoutClient = () => {
 
 
   const isLoggedIn = !!user?.customer_id;
+  
 
   const { data: addresses = [], refetch: refetchAddresses } = useGetAddresses(isLoggedIn);
+   console.log("address",addresses)
   const getZones = useZoneget();
   const { mutateAsync: placeOrderMut } = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
@@ -1271,6 +1273,77 @@ const CheckoutClient = () => {
                 )}
 
                 {/* REGISTER FORM */}
+                {isLoggedIn  && !addresses && (
+                  <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
+                    <h2
+                      className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
+                    >
+                      Your Personal Details
+                    </h2>
+                    <div
+                      className="h-[2px] w-14 mb-6"
+                      style={{ backgroundColor: ACCENT }}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>
+                          First Name {requiredStar}
+                        </label>
+                        <input
+                          type="text"
+                          name="firstname"
+                          placeholder="First Name"
+                          value={registerData.firstname}
+                          onChange={handleRegisterChange}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>
+                          Last Name {requiredStar}
+                        </label>
+                        <input
+                          type="text"
+                          name="lastname"
+                          placeholder="Last Name"
+                          value={registerData.lastname}
+                          onChange={handleRegisterChange}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>
+                          Email {requiredStar}
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          placeholder="Email"
+                          value={registerData.email}
+                          onChange={handleRegisterChange}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>
+                          Telephone {requiredStar}
+                        </label>
+                        <input
+                          type="tel"
+                          name="telephone"
+                          placeholder="Telephone"
+                          value={registerData.telephone}
+                          onChange={handleRegisterChange}
+                          className={inputClass}
+                        />
+                      </div>
+
+
+                    </div>
+                  </div>
+                )}
+
+
                 {!isLoggedIn && (checkoutType === "register" || checkoutType === "guest") && (
                   <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
                     <h2

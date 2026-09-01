@@ -11,6 +11,10 @@ import Footer from "./components/Footer";
 import Provider from "./components/Provider";
 import { Sumana, Hind_Madurai, Sarabun } from "next/font/google";
 import { Toaster } from "sonner";
+import { getQueryClient } from "@/libs/get-query-client";
+import { getMobileCategories } from "./api/services/mobileCategoryService";
+import { mobileCategoryKeys } from "@/libs/queryKeys";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,8 +65,8 @@ export const metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image", // ⚠️ बड़ी इमेज दिखाने के लिए (पुरानी फाइल में 'summary' था)
-    site: "@dcwine_spirits", // ⚠️ अपना एक्टिव Twitter हैंडल डालें
+    card: "summary_large_image",
+    site: "@dcwine_spirits",
     title: "DC Wine & Spirits - Best Online Wine Gift Store",
     description:
       "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
@@ -72,7 +76,19 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+
+
+export default async function RootLayout({ children }) {
+
+  const queryClient = getQueryClient();
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: mobileCategoryKeys.list(),
+      queryFn: getMobileCategories,
+    }),
+
+  ]);
   return (
     <html
       lang="en"
@@ -87,7 +103,11 @@ export default function RootLayout({ children }) {
           <PhoneHeader />
           <Topline />
           <Navbar />
-          <MobileNavbar />
+
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <MobileNavbar />
+          </HydrationBoundary>
+
           <Stickynav />
           {children}
           <Toaster position="top-right" richColors />
