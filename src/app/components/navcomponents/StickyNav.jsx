@@ -95,8 +95,8 @@ const Stickynav = () => {
   const isCompact = COMPACT_DROPDOWNS.includes(openMenu);
 
   return (
-    <div className="font-sumana relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  2xl:px-32 uppercase border-t-1">
-      <div className="flex items-center justify-around gap-28 w-full h-12">
+    <div className="font-sumana relative hidden lg:block w-full bg-white border-b border-gray-200 sticky top-0 z-40  px-1 2xl:px-32 uppercase border-t-1">
+      <div className="flex items-center justify-between gap-4 xl:gap-10 2xl:gap-28 w-full h-12">
         <div className="flex items-center h-full gap-3 xl:gap-5 py-6">
           {isLoading && (
             <span className="text-sm text-gray-400 normal-case"></span>

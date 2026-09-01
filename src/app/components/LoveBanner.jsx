@@ -2,13 +2,31 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { useLovebyBanner } from "../api/hooks/category/useLovebyBanner";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
-// Scroll me viewport me aane par left/right se slide-in hone wala banner card.
-// direction: "left" | "right" — kis taraf se andar aayega.
-function RevealBanner({ direction = "left", href, target, alt, image }) {
+// Manual text overrides for select banners — API only gives image + link,
+// so title/subtitle/local-image/badge for specific slots is maintained here.
+const BANNER_TEXT_OVERRIDES = {
+  0: {
+    title: "Veuve Clicquot & Flutes",
+    subtitle: "Champagne gift set — shop now",
+    badge: "6% OFF",
+    image: "/veuve-clicquot-champagne-and-flutes-giftset-1047x349.jpg",
+  },
+  1: {
+    title: "Graduation Gift Basket",
+    subtitle: "Gift sets for grads",
+    badge: "NEW",
+    image: "/graduation-love.jpg",
+  },
+};
+
+// Ek hi consistent card: image + neeche title/subtitle strip.
+// Viewport me aane par halka fade-up ke sath reveal hota hai.
+function BannerCard({ href, target, alt, image, title, subtitle, badge }) {
   const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -19,41 +37,63 @@ function RevealBanner({ direction = "left", href, target, alt, image }) {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // sirf ek baar animate ho, baar baar nahi
+          observer.disconnect();
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.15 },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  const hiddenTransform =
-    direction === "left" ? "-translate-x-16" : "translate-x-16";
+  const isDiscount = badge?.toLowerCase().includes("off");
 
   return (
     <Link
       ref={ref}
       href={href}
       target={target}
-      className={`group relative block w-full overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-[#98022e]/30 active:scale-[0.98] hover:-translate-y-1 transition-all duration-700 ease-out ${
-        isVisible ? "opacity-100 translate-x-0" : `opacity-0 ${hiddenTransform}`
+      className={`group relative block w-full shrink-0 snap-start overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 ease-out hover:shadow-md hover:border-[#98022e]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#98022e]/50 focus-visible:ring-offset-2 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      {/* thin maroon top accent bar — brand signature strip */}
-      {/* <span className="absolute top-0 left-0 right-0 h-[3px] bg-[#98022e] z-10" /> */}
+      <div className="relative w-full overflow-hidden aspect-[640/220] bg-gray-50">
+        <img
+          src={image}
+          alt={alt || title}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
 
-      <img
-        src={image}
-        alt={alt}
-        width={640}
-        height={220}
-        loading="lazy"
-        className="block w-full h-auto aspect-[640/220] object-cover transition-transform duration-300 group-hover:scale-105"
-      />
+        {badge && (
+          <span
+            className={`absolute top-2 left-2 rounded-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm ${
+              isDiscount ? "bg-[#98022e]" : "bg-[#c99000]"
+            }`}
+          >
+            {badge}
+          </span>
+        )}
+      </div>
 
-      {/* subtle bottom gradient overlay for readability if image has text */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+      {title && (
+        <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-hind-madurai font-semibold text-black group-hover:text-[#98022e] transition-colors">
+              {title}
+            </p>
+            {subtitle && (
+              <p className="mt-0.5 line-clamp-1 text-[12.5px] text-gray-500 font-hind-madurai">
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#98022e]/30 text-[#98022e] transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-[#98022e] group-hover:text-white">
+            <ChevronRight size={16} />
+          </span>
+        </div>
+      )}
     </Link>
   );
 }
@@ -70,23 +110,27 @@ const LoveBanner = ({ data, isLoading: propLoading, isError: propError }) => {
 
   return (
     <div className="w-full px-3 2xl:px-32 py-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-2 md:overflow-visible">
         {finalBannersData?.sections?.flatMap((section) =>
           section?.items?.map((item, index) => {
             const href =
               item.type === "custom"
                 ? item.custom_url
                 : `/${item.seo_url || item.id}`;
+            const override = BANNER_TEXT_OVERRIDES[index];
 
             return (
-              <RevealBanner
-                key={item.id}
-                href={href}
-                target={item.type === "custom" ? "_blank" : undefined}
-                alt={item.alt}
-                image={`${IMAGE_BASE_URL}${item.image}`}
-                direction={index % 2 === 0 ? "left" : "right"}
-              />
+              <div key={item.id} className="w-[88%] shrink-0 sm:w-[70%] md:w-auto">
+                <BannerCard
+                  href={href}
+                  target={item.type === "custom" ? "_blank" : undefined}
+                  alt={item.alt}
+                  image={override ? override.image : `${IMAGE_BASE_URL}${item.image}`}
+                  title={override?.title}
+                  subtitle={override?.subtitle}
+                  badge={override?.badge}
+                />
+              </div>
             );
           })
         )}

@@ -65,7 +65,7 @@ const Navbar = () => {
         {/* Account Icon / Dropdown */}
         {isLoggedIn ? (
           <div
-            className="relative"
+            className="relative inline-flex w-fit"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
@@ -90,35 +90,37 @@ const Navbar = () => {
                 className={`transition-transform duration-200 ${isAccountOpen ? "rotate-180" : ""}`}
               />
             </Link>
-
             {isAccountOpen && (
-              // 2. FIX: right-0 ki jagah center-align (left-1/2 -translate-x-1/2)
-              //    taaki dropdown account button ke exact neeche ho, left ki
-              //    taraf overhang na kare
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-56 z-50">
-                <div className="bg-white border border-gray-100 rounded-md shadow-xl shadow-black/10 overflow-hidden">
+                {/* FIX: -top-1.5 (negative) box se disconnect kar raha tha kyunki
+        wrapper ka pt-3 (12px) box ko neeche push karta hai. top-1.5
+        (positive) pointer ke center ko exactly box ke top border pe
+        align karta hai, taaki wo box se seamlessly juda hua lage. */}
+                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#f2f2f2] border-t border-l border-gray-200 rotate-45" />
+
+                <div className="bg-[#f2f2f2] border border-gray-100 rounded-md shadow-xl shadow-black/10 overflow-hidden relative">
                   <Link
                     href="/account/edit"
                     onClick={() => setIsAccountOpen(false)}
-                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-200 transition-colors"
                   >
                     <Edit3 size={18} strokeWidth={1.75} />
                     EDIT ACCOUNT
                   </Link>
-                  <div className="h-px bg-gray-100 mx-5" />
+                  <div className="h-px bg-gray-300 mx-5" />
                   <Link
                     href="/account/order/"
                     onClick={() => setIsAccountOpen(false)}
-                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-200 transition-colors"
                   >
                     <FileText size={18} strokeWidth={1.75} />
                     MY ORDERS
                   </Link>
-                  <div className="h-px bg-gray-100 mx-5" />
+                  <div className="h-px bg-gray-300 mx-5" />
                   <button
                     onClick={handleLogout}
                     disabled={logoutMutation.isPending}
-                    className="w-full flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-50 transition-colors disabled:opacity-60"
+                    className="w-full flex items-center gap-3 px-5 py-3.5 text-[#98022e] font-semibold text-sm tracking-wide hover:bg-gray-200 transition-colors disabled:opacity-60 cursor-pointer"
                   >
                     <LogOut size={18} strokeWidth={1.75} />
                     {logoutMutation.isPending ? "LOGGING OUT..." : "LOGOUT"}

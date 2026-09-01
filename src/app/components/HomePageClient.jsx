@@ -47,7 +47,7 @@ const HomePageClient = () => {
 
         <HomepageSeoSection data={homeData?.homePageText} isLoading={isLoading} isError={isError} />
         <WhyChooseUs/>
-        <ProductViewTabs />
+        
       </div>
     </>
   );

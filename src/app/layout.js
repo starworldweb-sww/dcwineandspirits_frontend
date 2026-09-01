@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import Provider from "./components/Provider";
 import { Sumana, Hind_Madurai, Sarabun } from "next/font/google";
 import { Toaster } from "sonner";
+import ProductViewTabs from "./components/ProductViewsTabs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -91,6 +92,7 @@ export default function RootLayout({ children }) {
           <Stickynav />
           {children}
           <Toaster position="top-right" richColors />
+          <ProductViewTabs />
           <Footer />
         </Provider>
       </body>
