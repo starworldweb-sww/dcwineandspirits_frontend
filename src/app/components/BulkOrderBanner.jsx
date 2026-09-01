@@ -69,7 +69,7 @@ export default function BulkOrderBanner() {
 
               {/* 5a. See all products button */}
               <a
-                href="/products"
+                href="/products/"
                 className="bg-white text-black px-6 py-3 text-sm md:text-base text-center hover:bg-gray-200 transition-colors"
               >
                 SEE ALL PRODUCTS

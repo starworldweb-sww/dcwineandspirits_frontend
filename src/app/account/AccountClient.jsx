@@ -49,13 +49,13 @@ const orderCards = [
   // { href: "/account/recurring-payments", icon: History, label: "Recurring payments" },
 ];
 
-const sidebarLinks = [
-  { href: "/account", label: "My Account" },
-  { href: "/account/address", label: "Address Book" },
-  { href: "/account/wishlist", label: "Wishlist" },
-  { href: "/account/order", label: "Order History" },
-  { href: "/account/transactions", label: "Transactions" },
-];
+// const sidebarLinks = [
+//   { href: "/account", label: "My Account" },
+//   { href: "/account/address", label: "Address Book" },
+//   { href: "/account/wishlist", label: "Wishlist" },
+//   { href: "/account/order", label: "Order History" },
+//   { href: "/account/transactions", label: "Transactions" },
+// ];
 
 // --- REUSABLE CARD ---
 const AccountCard = ({ href, icon: Icon, label }) => (
