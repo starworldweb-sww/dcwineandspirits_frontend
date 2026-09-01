@@ -55,6 +55,7 @@ const GiftsByDropdown = () => {
   // "Gifts By Origin" ka submenu data
   const { data: originData } = useGiftDropDownGiftByOrigin();
   const originAllSections = originData?.sections || [];
+  console.log("origin data", originAllSections);
 
   // "Shop By Price" ka submenu data — yeh flat list hai (heading + items), sections nahi
   const { data: priceData } = useGiftDropDownShopByPrice();
@@ -256,7 +257,15 @@ const GiftsByDropdown = () => {
                                   activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
                                 }`}
                               >
-                                <span>{getCountryFlag(country.title)}</span>
+                                {country.image ? (
+                                  <img
+                                    src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${country.image}`}
+                                    alt={country.title}
+                                    className="w-5 h-4 object-cover flex-shrink-0"
+                                  />
+                                ) : (
+                                  <span>{getCountryFlag(country.title)}</span>
+                                )}
                                 <span>{country.title}</span>
                               </Link>
                             </li>

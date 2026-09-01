@@ -55,7 +55,7 @@ const PersonalizedDropDown = ({ onClose }) => {
                     <Link
                       href={`/${item.seo_url}`}
                       onClick={onClose}
-                      className="text-[14px] text-gray-800 hover:text-[#98022e] normal-case font-hind-madurai hover:pl-1 transition-all duration-200"
+                      className="inline-block text-[14px] text-gray-800 hover:text-[#98022e] normal-case font-hind-madurai hover:translate-x-1 transition-all duration-200"
                      
                     >
                       {item.title}
