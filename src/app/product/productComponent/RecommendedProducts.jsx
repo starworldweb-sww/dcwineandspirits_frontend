@@ -13,7 +13,7 @@ const sumana = Sumana({
   display: "swap",
 });
 
-const IMAGE_BASE = "https://www.dcwineandspirits.com/image/";
+const IMAGE_BASE = "https://www.admin.dcwineandspirits.com/image/";
 
 const decodeHtml = (str) => {
   if (!str) return "";
