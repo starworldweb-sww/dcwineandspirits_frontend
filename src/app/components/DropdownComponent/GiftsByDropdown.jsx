@@ -300,7 +300,7 @@ const GiftsByDropdown = () => {
                   </div>
 
                   {originRecommendedItems.length > 0 && (
-                    <div className="bg-black w-full px-4 sm:px-8 py-3 sm:py-4">
+                    <div className="bg-[#98022e] w-full px-4 sm:px-8 py-3 sm:py-4">
                       <div className="w-full flex flex-wrap items-center gap-x-2 gap-y-1 font-hind-madurai">
                         <span
                           className="font-bold text-white mr-1 text-[16px] normal-case"
@@ -316,7 +316,7 @@ const GiftsByDropdown = () => {
                               <Link
                                 href={`/${recItem.seo_url}`}
                                 onClick={() => handleLinkClick(linkKey)}
-                                className={`text-white normal-case text-[16px] hover:text-[#d70b48] transition-colors duration-200 ${
+                                className={`text-white normal-case text-[16px] hover:underline transition-colors duration-200 ${
                                   activeLink === linkKey ? ACTIVE_LINK_CLASS : ""
                                 }`}
                               >
