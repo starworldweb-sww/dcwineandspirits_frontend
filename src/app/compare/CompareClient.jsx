@@ -33,7 +33,7 @@ const CompareProductFetcher = ({ slug, onLoad, onError }) => {
   // STEP FIX: response shape hai { success, message, data: {...product} }
   // isliye ek extra ".data" chahiye — pehle sirf ek level tha
   const product = data;
-  console.log("product compare", product)
+  
 
   React.useEffect(() => {
     if (product) {

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }) {
  
   // const matchedCategory = allCategories?.find((c) => c.slug === slug);
   const meta = await getMetaByType("blog", slug)
-  console.log("meta", meta)
+  
   if (meta) {
     return {
       title: `${meta?.meta_title}`,

@@ -55,7 +55,7 @@ const GiftsByDropdown = () => {
   // "Gifts By Origin" ka submenu data
   const { data: originData } = useGiftDropDownGiftByOrigin();
   const originAllSections = originData?.sections || [];
-  console.log("origin data", originAllSections);
+
 
   // "Shop By Price" ka submenu data — yeh flat list hai (heading + items), sections nahi
   const { data: priceData } = useGiftDropDownShopByPrice();

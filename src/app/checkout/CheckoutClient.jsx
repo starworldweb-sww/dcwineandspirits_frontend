@@ -179,7 +179,7 @@ const CheckoutClient = () => {
   
 
   const { data: addresses = [], refetch: refetchAddresses } = useGetAddresses(isLoggedIn);
-   console.log("address",addresses)
+   
   const getZones = useZoneget();
   const { mutateAsync: placeOrderMut } = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
@@ -1056,6 +1056,9 @@ const CheckoutClient = () => {
 
     return () => clearTimeout(timer);
   }, [subTotal]);
+
+
+  
   return (
     <main className="font-hind-madurai text-[#333333] mb-10">
       <div className="flex flex-col w-full">
@@ -1273,7 +1276,7 @@ const CheckoutClient = () => {
                 )}
 
                 {/* REGISTER FORM */}
-                {isLoggedIn  && !addresses && (
+                {isLoggedIn  && addresses?.length === 0  && (
                   <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
                     <h2
                       className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}

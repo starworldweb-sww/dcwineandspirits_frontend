@@ -8,7 +8,7 @@ import { useGetSingleProductDetails } from "@/app/api/hooks/useAllProducts";
 
 const ProductClient = ({ slug }) => {
   const { data: product, isLoading, isError } = useGetSingleProductDetails(slug);
-  console.log("single product",product)
+
   
 
   if (isLoading) {

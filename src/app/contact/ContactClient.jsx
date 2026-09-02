@@ -45,7 +45,7 @@ const ContactClient = () => {
       // Jab backend ready ho jaye, is block mein apna mutation/fetch call laga dena.
       try {
         setIsSubmitting(true);
-        console.log("Contact form values:", values);
+        
 
         toast.success("Your message has been sent successfully!");
         resetForm();

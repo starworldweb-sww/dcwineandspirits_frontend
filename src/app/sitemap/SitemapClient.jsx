@@ -111,7 +111,7 @@ const SitemapClient = () => {
   const infoPages = data?.infoPages || [];
 
 
-  console.log("brand",brands)
+  
   const infoPageUrls = new Map(
     staticInfoHeading.items.map((i) => [i.href, i.label])
   );
