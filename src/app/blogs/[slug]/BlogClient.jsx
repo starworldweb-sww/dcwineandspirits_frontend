@@ -1,11 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { User, Eye, MessageCircle, Search, Clock, Rss, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import {
+  User,
+  Eye,
+  MessageCircle,
+  Search,
+  Clock,
+  Rss,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
-import { useCountViews, useGetAllPosts, useGetCategory, useGetPostBySlug, useSearchPosts } from '@/app/api/hooks/blog/useBlogPosts';
+import {
+  useCountViews,
+  useGetAllPosts,
+  useGetCategory,
+  useGetPostBySlug,
+  useSearchPosts,
+} from "@/app/api/hooks/blog/useBlogPosts";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 const BLOGS_PER_PAGE = 10;
@@ -46,7 +62,12 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData }) => {
+const BlogClient = ({
+  viewType,
+  category,
+  initialCategoryPosts,
+  initialPostData,
+}) => {
   const { slug } = useParams();
   const router = useRouter();
 
@@ -57,9 +78,13 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
 
   const { data: catData } = useGetCategory();
 
-  const { data: post, isLoading: postLoading, isError: postError } = useGetPostBySlug(
+  const {
+    data: post,
+    isLoading: postLoading,
+    isError: postError,
+  } = useGetPostBySlug(
     viewType === "post" ? slug : null,
-    viewType === "post" ? initialPostData : undefined
+    viewType === "post" ? initialPostData : undefined,
   );
 
   const {
@@ -76,16 +101,22 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
     },
     {
       initialData:
-        viewType === "category" && currentPage === 1 ? initialCategoryPosts : undefined,
+        viewType === "category" && currentPage === 1
+          ? initialCategoryPosts
+          : undefined,
       enabled: viewType === "category",
-    }
+    },
   );
 
   const { mutate: countView } = useCountViews();
   const countedPostIdRef = useRef(null);
 
   useEffect(() => {
-    if (viewType === "post" && post?.post_id && countedPostIdRef.current !== post.post_id) {
+    if (
+      viewType === "post" &&
+      post?.post_id &&
+      countedPostIdRef.current !== post.post_id
+    ) {
       countView(post.post_id);
       countedPostIdRef.current = post.post_id;
     }
@@ -170,7 +201,9 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
             {isSearchLoading ? (
               <p className="px-3 py-3 text-sm text-gray-400">Searching...</p>
             ) : suggestions.length === 0 ? (
-              <p className="px-3 py-3 text-sm text-gray-400">No results found.</p>
+              <p className="px-3 py-3 text-sm text-gray-400">
+                No results found.
+              </p>
             ) : (
               <ul className="divide-y divide-gray-100">
                 {suggestions.map((item) => (
@@ -235,7 +268,10 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
 
     return (
       <div className="w-full bg-white">
-        <ProductsHeader categoryName={category?.name || "Blog Category"} breadcrumbs={breadcrumbs} />
+        <ProductsHeader
+          categoryName={category?.name || "Blog Category"}
+          breadcrumbs={breadcrumbs}
+        />
 
         <div className="px-3 2xl:px-32 py-8 md:py-12 flex flex-col lg:flex-row gap-10">
           <div className="flex-1 min-w-0">
@@ -259,7 +295,7 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
                   //   {category.description}
                   // </p>
                   <div
-                  dangerouslySetInnerHTML={{ __html: category.description }}
+                    dangerouslySetInnerHTML={{ __html: category.description }}
                   />
                 )}
               </div>
@@ -283,7 +319,10 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
               <div className="flex flex-col divide-y divide-gray-200">
                 {posts.map((postItem) => {
                   const { day, month } = formatBlogDate(postItem.date_created);
-                  const authorName = [postItem.author_firstname, postItem.author_lastname]
+                  const authorName = [
+                    postItem.author_firstname,
+                    postItem.author_lastname,
+                  ]
                     .filter(Boolean)
                     .join(" ");
                   const readingMinutes = getReadingTime(postItem.description);
@@ -344,7 +383,10 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
                           className="inline-flex items-center gap-2 w-fit bg-gray-900 hover:bg-[#98022e] text-white text-xs font-semibold tracking-wider uppercase px-5 py-3 rounded transition-all hover:rounded-xl group"
                         >
                           Continue Reading
-                          <ArrowRight size={14} className="group-hover:ml-1 transition-all" />
+                          <ArrowRight
+                            size={14}
+                            className="group-hover:ml-1 transition-all"
+                          />
                         </Link>
                       </div>
                     </article>
@@ -365,20 +407,22 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
                   <ChevronLeft size={16} />
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => handlePageChange(page)}
-                    className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${
-                      page === currentPage
-                        ? "bg-[#98022e] border-[#98022e] text-white"
-                        : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => handlePageChange(page)}
+                      className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${
+                        page === currentPage
+                          ? "bg-[#98022e] border-[#98022e] text-white"
+                          : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
 
                 <button
                   type="button"
@@ -433,7 +477,9 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
   }
 
   const { day, month } = formatBlogDate(post.date_created);
-  const authorName = [post.author_firstname, post.author_lastname].filter(Boolean).join(" ");
+  const authorName = [post.author_firstname, post.author_lastname]
+    .filter(Boolean)
+    .join(" ");
   const readingMinutes = getReadingTime(post.content);
 
   const breadcrumbs = [
@@ -456,7 +502,9 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
             />
             <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
               <span className="block text-lg font-bold">{day}</span>
-              <span className="block text-[11px] uppercase tracking-wide">{month}</span>
+              <span className="block text-[11px] uppercase tracking-wide">
+                {month}
+              </span>
             </div>
           </div>
 
@@ -496,6 +544,11 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
           color: #333333;
           line-height: 1.75;
           font-size: 15px;
+        }
+        .blog-article-body::after {
+          content: "";
+          display: block;
+          clear: both;
         }
         .blog-article-body h2 {
           font-size: 22px;
@@ -579,6 +632,7 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
           text-decoration: none !important;
           font-size: 13px;
           font-weight: 600;
+          margin-top: auto;
         }
 
         /* gupta sir style */
@@ -623,6 +677,304 @@ const BlogClient = ({ viewType, category, initialCategoryPosts, initialPostData 
           cursor: pointer;
           font-weight: bold;
           color: #4a2c2a;
+        }
+
+        /* legacy OpenCart blog content classes — kept scoped under
+           .blog-article-body so purane blog posts (jo inhi classnames ke
+           saath content bhejte hain) yahan bhi sahi render ho jayein */
+        .blog-article-body .blog1.blog-by-s {
+          margin: 20px 0px;
+        }
+        .blog-article-body .blog1.blog-by-s h2 {
+          font-size: 28px;
+          font-weight: 600;
+        }
+        .blog-article-body .blog1.blog-by-s h3 {
+          font-size: 24px;
+          font-weight: 600;
+        }
+        .blog-article-body .blog1.blog-by-s h4 {
+          font-size: 22px;
+          font-weight: 600;
+        }
+        .blog-article-body .blog1.blog-by-s h5 {
+          font-size: 20px;
+          font-weight: 600;
+        }
+        .blog-article-body .table.blog_table1 table td,
+        .blog-article-body .table.blog_table1 table th {
+          padding: 15px !important;
+          border: 1px solid #c3bbbb !important;
+        }
+        .blog-article-body .blog_img_sec1 {
+          padding: 15px;
+        }
+        .blog-article-body .post-image img {
+          width: 100% !important;
+          height: auto !important;
+        }
+
+        /* =========================================
+            img_box card styling — floated side by side
+            (3 across on desktop, stacked on mobile)
+            ========================================= */
+        .blog-article-body a.img_box {
+          display: inline-block !important;
+          text-decoration: none !important;
+          margin: 10px auto !important;
+        }
+
+        .blog-article-body a.img_box p,
+        .blog-article-body div.img_box span {
+          display: inline-block !important;
+          background-color: #98022e !important;
+          color: #ffffff !important;
+          font-size: 14px !important;
+          font-weight: 700 !important;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          padding: 8px 24px !important;
+          border-radius: 4px;
+          margin: 0 auto !important;
+          transition: background-color 0.2s ease;
+          text-align: center !important;
+        }
+
+        .blog-article-body a.img_box:hover p,
+        .blog-article-body div.img_box span:hover {
+          background-color: #7a0225 !important;
+        }
+
+        .blog-article-body div.img_box {
+          float: left;
+          width: 31.5%;
+          margin: 0 2.25% 20px 0;
+          box-sizing: border-box;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          transition: box-shadow 0.2s;
+          background: #fff;
+        }
+        .blog-article-body div.img_box:nth-child(3n) {
+          margin-right: 0;
+        }
+
+        .blog-article-body div.img_box:hover {
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .blog-article-body div.img_box a {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          color: inherit;
+          align-items: center;
+        }
+
+        .blog-article-body div.img_box h4 {
+          font-size: 15px !important;
+          margin-top: 0;
+          margin-bottom: 12px;
+          line-height: 1.4;
+          text-align: center;
+        }
+
+        .blog-article-body div.img_box p {
+          margin-bottom: 15px;
+          font-size: 14px;
+          color: #666;
+          flex-grow: 1;
+        }
+
+        .blog-article-body div.img_box img {
+          margin-bottom: 15px;
+          max-height: 220px;
+          object-fit: contain;
+        }
+
+        @media (max-width: 900px) {
+          .blog-article-body div.img_box {
+            width: 48%;
+          }
+          .blog-article-body div.img_box:nth-child(3n) {
+            margin-right: 2.25%;
+          }
+          .blog-article-body div.img_box:nth-child(2n) {
+            margin-right: 0;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .blog-article-body div.img_box {
+            float: none;
+            width: 100%;
+            margin: 0 0 16px 0;
+            padding: 1rem;
+          }
+
+          .blog-article-body a.img_box p,
+          .blog-article-body div.img_box span {
+            font-size: 12px !important;
+            padding: 6px 16px;
+          }
+        }
+
+        /* =========================================
+            Old OpenCart/Bootstrap grid classes
+            (legacy blog content ke inline col-lg-* /
+            card-row / btn-blog markup ke liye)
+            ========================================= */
+        
+        .blog-article-body .row {
+          display: flex;
+          flex-wrap: wrap;
+          margin-right: -15px;
+          margin-left: -15px;
+        }
+
+        .blog-article-body .text-center {
+          text-align: center !important;
+        }
+
+        .blog-article-body .image-container {
+          margin-bottom: 24px;
+        }
+
+        .blog-article-body .btn-blog {
+          padding: 12px 30px;
+          background: #d9a859;
+          color: #fff;
+          text-decoration: none;
+          font-weight: 700;
+          margin-top: auto;
+        }
+
+        .blog-article-body .card-row {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 0px;
+        }
+
+        .blog-article-body .col-lg-12 {
+          width: 100%;
+        }
+        .blog-article-body .col-lg-11 {
+          width: 91.66666667%;
+        }
+        .blog-article-body .col-lg-10 {
+          width: 83.33333333%;
+        }
+        .blog-article-body .col-lg-9 {
+          width: 75%;
+        }
+        .blog-article-body .col-lg-8 {
+          width: 66.66666667%;
+        }
+        .blog-article-body .col-lg-7 {
+          width: 58.33333333%;
+        }
+        .blog-article-body .col-lg-6 {
+          width: 50%;
+        }
+        .blog-article-body .col-lg-5 {
+          width: 41.66666667%;
+        }
+        .blog-article-body .col-lg-4 {
+          width: 33.33333333%;
+        }
+        .blog-article-body .col-lg-3 {
+          width: 25%;
+        }
+        .blog-article-body .col-lg-2 {
+          width: 16.66666667%;
+        }
+        .blog-article-body .col-lg-1 {
+          width: 8.33333333%;
+          position: relative;
+          min-height: 1px;
+          padding-right: 15px;
+          padding-left: 15px;
+        }
+
+        .blog-article-body .col-lg-1,
+        .blog-article-body .col-lg-10,
+        .blog-article-body .col-lg-11,
+        .blog-article-body .col-lg-12,
+        .blog-article-body .col-lg-2,
+        .blog-article-body .col-lg-3,
+        .blog-article-body .col-lg-4,
+        .blog-article-body .col-lg-5,
+        .blog-article-body .col-lg-6,
+        .blog-article-body .col-lg-7,
+        .blog-article-body .col-lg-8,
+        .blog-article-body .col-lg-9 {
+          position: relative;
+          min-height: 1px;
+          padding-right: 15px;
+          padding-left: 15px;
+          float: left;
+        }
+
+        /* Tablet */
+        @media (max-width: 991px) {
+          .blog-article-body .col-lg-12 {
+            width: 100%;
+          }
+          .blog-article-body .col-lg-11 {
+            width: 91.66666667%;
+          }
+          .blog-article-body .col-lg-10 {
+            width: 83.33333333%;
+          }
+          .blog-article-body .col-lg-9 {
+            width: 75%;
+          }
+          .blog-article-body .col-lg-8 {
+            width: 66.66666667%;
+          }
+          .blog-article-body .col-lg-7 {
+            width: 58.33333333%;
+          }
+          .blog-article-body .col-lg-6 {
+            width: 50%;
+          }
+          .blog-article-body .col-lg-5 {
+            width: 41.66666667%;
+          }
+          .blog-article-body .col-lg-4 {
+            width: 33.33333333%;
+          }
+          .blog-article-body .col-lg-3 {
+            width: 25%;
+          }
+          .blog-article-body .col-lg-2 {
+            width: 16.66666667%;
+          }
+          .blog-article-body .col-lg-1 {
+            width: 8.33333333%;
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 640px) {
+          .blog-article-body .col-lg-1,
+          .blog-article-body .col-lg-10,
+          .blog-article-body .col-lg-11,
+          .blog-article-body .col-lg-12,
+          .blog-article-body .col-lg-2,
+          .blog-article-body .col-lg-3,
+          .blog-article-body .col-lg-4,
+          .blog-article-body .col-lg-5,
+          .blog-article-body .col-lg-6,
+          .blog-article-body .col-lg-7,
+          .blog-article-body .col-lg-8,
+          .blog-article-body .col-lg-9 {
+            width: 100%;
+          }
         }
       `}</style>
     </div>
