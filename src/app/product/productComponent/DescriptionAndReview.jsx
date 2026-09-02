@@ -100,7 +100,9 @@ const ASSISTANCE_BOX = {
 
 const DescriptionAndReview = ({ product = {} }) => {
   const rawDescription = product.description || "";
-  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
+  const attributes = Array.isArray(product.attributes)
+    ? product.attributes
+    : [];
   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
   const totalReviews = product.review_count ?? reviews.length;
 
@@ -112,7 +114,11 @@ const DescriptionAndReview = ({ product = {} }) => {
 
   const TABS = [
     { key: "description", label: "Description", visible: hasDescription },
-    { key: "specifications", label: "Specifications", visible: hasSpecifications },
+    {
+      key: "specifications",
+      label: "Specifications",
+      visible: hasSpecifications,
+    },
     { key: "shipping", label: "Shipping", visible: true },
     { key: "reviews", label: `Reviews (${totalReviews})`, visible: true },
   ];
@@ -216,7 +222,10 @@ const DescriptionAndReview = ({ product = {} }) => {
       <table className="w-full text-[15px]">
         <tbody className="divide-y divide-gray-200">
           {attributes.map((attr, i) => (
-            <tr key={attr.attribute_id || i} className="odd:bg-white even:bg-[#fafafa]">
+            <tr
+              key={attr.attribute_id || i}
+              className="odd:bg-white even:bg-[#fafafa]"
+            >
               <th className="w-1/3 text-left px-4 py-3 font-semibold text-black align-top">
                 {decodeHtml(attr.name)}
               </th>
@@ -487,9 +496,7 @@ const DescriptionAndReview = ({ product = {} }) => {
         )}
 
         {activeTab === "shipping" && (
-          <section className="py-6 mt-1">
-            {renderShippingContent()}
-          </section>
+          <section className="py-6 mt-1">{renderShippingContent()}</section>
         )}
 
         {activeTab === "reviews" && (
@@ -541,7 +548,11 @@ const DescriptionAndReview = ({ product = {} }) => {
                 }`}
               >
                 <div
-                  id={tab.key === "reviews" ? "product-review-section-mobile" : undefined}
+                  id={
+                    tab.key === "reviews"
+                      ? "product-review-section-mobile"
+                      : undefined
+                  }
                   className="pb-5 px-1"
                 >
                   {getAccordionContent(tab.key)}
@@ -553,7 +564,9 @@ const DescriptionAndReview = ({ product = {} }) => {
       </div>
 
       <div className="bg-[#f8f8f8] mt-6 py-8 px-6 text-center">
-        <h3 className="text-lg font-bold text-black mb-4">{ASSISTANCE_BOX.heading}</h3>
+        <h3 className="text-lg font-bold text-black mb-4">
+          {ASSISTANCE_BOX.heading}
+        </h3>
         <p className="max-w-3xl mx-auto">
           {ASSISTANCE_BOX.textBeforeLink}
           <a
@@ -636,6 +649,44 @@ const DescriptionAndReview = ({ product = {} }) => {
         .shipping-content-text strong,
         .shipping-content-text b {
           font-weight: 700;
+        }
+
+        /* --- NEW: Description ke andar h2/h3/li/p ki extra styling --- */
+        .product-description-text h2 {
+          display: block;
+          color: rgb(51, 51, 51);
+          font-family: Sumana;
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 22px;
+          text-align: start;
+        }
+        .product-description-text h3 {
+          display: block;
+          color: rgb(51, 51, 51);
+          font-family: Sumana;
+          font-size: 18px;
+          font-weight: 700;
+          line-height: 19.8px;
+          text-align: start;
+        }
+        .product-description-text li {
+          display: list-item;
+          color: rgb(51, 51, 51);
+          font-family: "Hind Madurai";
+          font-size: 16px;
+          font-weight: 400;
+          line-height: 25.6px;
+          text-align: start;
+        }
+        .product-description-text p {
+          display: block;
+          color: rgb(51, 51, 51);
+          font-family: "Hind Madurai";
+          font-size: 16px;
+          font-weight: 400;
+          line-height: 25.6px;
+          text-align: start;
         }
       `}</style>
     </main>

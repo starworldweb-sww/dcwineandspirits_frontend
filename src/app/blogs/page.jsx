@@ -7,43 +7,41 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getMetaByType } from '@/libs/getMetaByType';
 
 
-// export const metadata = {
-//   title: "Wine & Spirits Blogs | Expert Advice, Pairing Tips & Gift Ideas",
-//   description:
-//     "Discover expert wine and spirits advice, food pairing tips, and creative celebration ideas on the DC Wine and Spirits blog. Read our latest articles and guides.",
-//   alternates: {
-//     canonical: "https://www.dcwineandspirits.com/blogs/",
-//   },
-// };
+export const metadata = {
+ title: "Wine & Spirits Blogs | Expert Advice, Pairing Tips & Gift Ideas",
+ description:"Discover expert wine and spirits advice, food pairing tips, and creative celebration ideas on the DC Wine and Spirits blog. Read our latest articles and guides.",
+alternates: {
+canonical: "https://www.dcwineandspirits.com/blogs/",   },
+ };
 
 
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
+// export async function generateMetadata({ params }) {
+//   const { slug } = await params;
  
-  // const matchedCategory = allCategories?.find((c) => c.slug === slug);
-  const meta = await getMetaByType("blog", slug)
+//   // const matchedCategory = allCategories?.find((c) => c.slug === slug);
+//   const meta = await getMetaByType("blog", slug)
   
-  if (meta) {
-    return {
-      title: `${meta?.meta_title}`,
-      description:
-        meta.meta_description ||
-        `Browse all blogs in the ${meta.meta_description} category on DC Wine and Spirits.`,
-      alternates: {
-        canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
-      },
-    };
-  }
+//   if (meta) {
+//     return {
+//       title: `${meta?.meta_title}`,
+//       description:
+//         meta.meta_description ||
+//         `Browse all blogs in the ${meta.meta_description} category on DC Wine and Spirits.`,
+//       alternates: {
+//         canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
+//       },
+//     };
+//   }
 
-  return {
-    title: "Wine & Spirits Blogs | Expert Advice, Pairing Tips & Gift Ideas",
-    description:
-      "Discover expert wine and spirits advice, food pairing tips, and creative celebration ideas on the DC Wine and Spirits blog. Read our latest articles and guides.",
-    alternates: {
-      canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
-    },
-  };
-}
+//   return {
+//     title: "Wine & Spirits Blogs | Expert Advice, Pairing Tips & Gift Ideas",
+//     description:
+//       "Discover expert wine and spirits advice, food pairing tips, and creative celebration ideas on the DC Wine and Spirits blog. Read our latest articles and guides.",
+//     alternates: {
+//       canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
+//     },
+//   };
+// }
 const page = async () => {
 
   const queryClient = getQueryClient();
