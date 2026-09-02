@@ -176,13 +176,12 @@ const ProductListRow = ({ product }) => {
           </p>
         )}
 
-        <Link href={productLink}>
-          <h2
-            title={decodeHtml(product.name)}
-            className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
-          >
-            {decodeHtml(product.name)}
-          </h2>
+        <Link
+          href={productLink}
+          title={decodeHtml(product.name)}
+          className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
+        >
+          {decodeHtml(product.name)}
         </Link>
 
         <div className="mt-3 flex items-center gap-2">
