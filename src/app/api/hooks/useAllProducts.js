@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { productsService } from "../services/productsService";
 import { productKeys } from "@/libs/queryKeys";
@@ -24,6 +24,7 @@ export const useGetAllProducts = (showNum) => {
         queryFn: ({ pageParam = 1 }) => productsService.getAllProducts({ showNum, pageParam }),
         initialPageParam: 1,
         getNextPageParam,
+        placeholderData: keepPreviousData,
     });
 };
 
@@ -36,6 +37,7 @@ export const useGetProductBySlugOrId = (slug, filter = {}, options = {}, limit =
         getNextPageParam: getNextPageParamNested,
         ...options,
         enabled: !!slug && options.enabled !== false,
+         placeholderData: keepPreviousData, 
     });
 };
 

@@ -206,7 +206,6 @@ const CheckoutClient = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
-
   // ── Draft-order tracking (silent auto-save), same idea as the first checkout ──
   const [missingOrderId, setMissingOrderId] = useState(null);
   const [draftIntentId, setDraftIntentId] = useState(null);
@@ -306,9 +305,11 @@ const CheckoutClient = () => {
     if (addr.city) parts.push(addr.city);
     if (addr.zone_name) parts.push(addr.zone_name);
     if (addr.country_name) parts.push(addr.country_name);
+     
     return parts.filter(Boolean).join(" ");
   };
-
+  
+  // console.log("formatAddressLabel",)
   const populateAddressToBilling = (addr) => {
     if (!addr) return;
     setBilling((prev) => ({

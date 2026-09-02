@@ -57,6 +57,27 @@ const ShowOptions = [
   { value: 100, label: "100" },
 ];
 
+const ProductCardSkeleton = () => (
+  <div className="h-full flex flex-col items-center bg-white border border-gray-200 p-5 animate-pulse">
+    <div className="w-full h-[200px] bg-gray-200 rounded" />
+    <div className="mt-4 h-4 w-3/4 bg-gray-200 rounded" />
+    <div className="mt-2 h-4 w-1/2 bg-gray-200 rounded" />
+    <div className="mt-3 h-4 w-1/3 bg-gray-200 rounded" />
+    <div className="mt-4 h-9 w-[90%] bg-gray-200 rounded" />
+  </div>
+);
+
+const ProductRowSkeleton = () => (
+  <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200 animate-pulse">
+    <div className="w-full sm:w-[220px] sm:h-[220px] aspect-square bg-gray-200" />
+    <div className="flex-1 flex flex-col justify-center gap-3 px-2">
+      <div className="h-4 w-1/4 bg-gray-200 rounded" />
+      <div className="h-6 w-2/3 bg-gray-200 rounded" />
+      <div className="h-6 w-1/4 bg-gray-200 rounded" />
+      <div className="h-10 w-full max-w-sm bg-gray-200 rounded" />
+    </div>
+  </div>
+);
 const ProductListRow = ({ product }) => {
   const addToCartMut = useAddtoCart();
   const wishlistMut = useAddToWishlist();
@@ -85,10 +106,10 @@ const ProductListRow = ({ product }) => {
     Number(product.special_price) < Number(product.price);
   const discountPercent = hasDiscount
     ? Math.round(
-        ((Number(product.price) - Number(product.special_price)) /
-          Number(product.price)) *
-          100,
-      )
+      ((Number(product.price) - Number(product.special_price)) /
+        Number(product.price)) *
+      100,
+    )
     : 0;
   const isOutOfStock = product.in_stock === false;
 
@@ -103,7 +124,7 @@ const ProductListRow = ({ product }) => {
       if (res?.success) {
         setShowPopup(true);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const handleAddToWishlist = async (e) => {
@@ -247,11 +268,10 @@ const ProductListRow = ({ product }) => {
             aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
             aria-pressed={isInWishlist}
             title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-            className={`group w-10 h-10 flex-shrink-0 flex items-center justify-center border transition-all duration-200 cursor-pointer  disabled:cursor-not-allowed ${
-              isInWishlist
-                ? "bg-[#98022e] border-[#98022e] text-white"
-                : "bg-white border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
-            }`}
+            className={`group w-10 h-10 flex-shrink-0 flex items-center justify-center border transition-all duration-200 cursor-pointer  disabled:cursor-not-allowed ${isInWishlist
+              ? "bg-[#98022e] border-[#98022e] text-white"
+              : "bg-white border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
+              }`}
           >
             {wishlistMut.isPending ? (
               <Loader2 size={16} className="animate-spin" />
@@ -259,9 +279,8 @@ const ProductListRow = ({ product }) => {
               <Heart
                 size={16}
                 fill={isInWishlist ? "currentColor" : "none"}
-                className={`transition-transform duration-200 ${
-                  isInWishlist ? "scale-110" : "group-hover:scale-110"
-                }`}
+                className={`transition-transform duration-200 ${isInWishlist ? "scale-110" : "group-hover:scale-110"
+                  }`}
               />
             )}
           </button>
@@ -295,10 +314,10 @@ const ProductGridCard = ({ product }) => {
     Number(product.special_price) < Number(product.price);
   const discountPercent = hasDiscount
     ? Math.round(
-        ((Number(product.price) - Number(product.special_price)) /
-          Number(product.price)) *
-          100,
-      )
+      ((Number(product.price) - Number(product.special_price)) /
+        Number(product.price)) *
+      100,
+    )
     : 0;
   const isOutOfStock = product.in_stock === false;
 
@@ -377,11 +396,10 @@ const ProductGridCard = ({ product }) => {
           aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
           aria-pressed={isInWishlist}
           title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-          className={`group/heart lg:hidden absolute bottom-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer ${
-            isInWishlist
-              ? "bg-[#98022e] text-white"
-              : "bg-white/90 text-gray-500 hover:text-[#98022e]"
-          }`}
+          className={`group/heart lg:hidden absolute bottom-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer ${isInWishlist
+            ? "bg-[#98022e] text-white"
+            : "bg-white/90 text-gray-500 hover:text-[#98022e]"
+            }`}
         >
           {wishlistMut.isPending ? (
             <Loader2 size={14} className="animate-spin" />
@@ -389,9 +407,8 @@ const ProductGridCard = ({ product }) => {
             <Heart
               size={14}
               fill={isInWishlist ? "currentColor" : "none"}
-              className={`transition-transform duration-200 ${
-                isInWishlist ? "scale-110" : "group-hover/heart:scale-110"
-              }`}
+              className={`transition-transform duration-200 ${isInWishlist ? "scale-110" : "group-hover/heart:scale-110"
+                }`}
             />
           )}
         </button>
@@ -439,11 +456,10 @@ const ProductGridCard = ({ product }) => {
           aria-label={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
           aria-pressed={isInWishlist}
           title={isInWishlist ? "Added to wishlist" : "Add to wishlist"}
-          className={`group hidden lg:flex w-9 h-9 flex-shrink-0 items-center justify-center border transition-all duration-200 cursor-pointer disabled:cursor-not-allowed ${
-            isInWishlist
-              ? "bg-[#98022e] border-[#98022e] text-white"
-              : "bg-white border-black text-black hover:border-[#98022e] hover:text-[#98022e]"
-          }`}
+          className={`group hidden lg:flex w-9 h-9 flex-shrink-0 items-center justify-center border transition-all duration-200 cursor-pointer disabled:cursor-not-allowed ${isInWishlist
+            ? "bg-[#98022e] border-[#98022e] text-white"
+            : "bg-white border-black text-black hover:border-[#98022e] hover:text-[#98022e]"
+            }`}
         >
           {wishlistMut.isPending ? (
             <Loader2 size={14} className="animate-spin" />
@@ -451,9 +467,8 @@ const ProductGridCard = ({ product }) => {
             <Heart
               size={14}
               fill={isInWishlist ? "currentColor" : "none"}
-              className={`transition-transform duration-200 ${
-                isInWishlist ? "scale-110" : "group-hover:scale-110"
-              }`}
+              className={`transition-transform duration-200 ${isInWishlist ? "scale-110" : "group-hover:scale-110"
+                }`}
             />
           )}
         </button>
@@ -461,6 +476,7 @@ const ProductGridCard = ({ product }) => {
     </div>
   );
 };
+
 const ProductsDynamicMain = ({
   data,
   sort,
@@ -470,11 +486,13 @@ const ProductsDynamicMain = ({
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
+  isFiltering,
 }) => {
   const [layout, setLayout] = useState("grid");
   const sentinelRef = useRef(null);
 
   const products = data.products?.items || [];
+  const skeletonCount = Math.min(limit, 8);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -488,7 +506,10 @@ const ProductsDynamicMain = ({
       },
       { rootMargin: "400px" },
     );
-  }, []);
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <section className="w-full min-w-0 bg-white flex-1">
@@ -564,7 +585,22 @@ const ProductsDynamicMain = ({
         </div>
       </div>
 
-      {products.length === 0 ? (
+      {isFiltering ? (
+        // 👇 FILTER/SORT/LIMIT change hote hi yeh dikhega, jab tak naya data na aa jaye
+        layout === "list" ? (
+          <div>
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <ProductRowSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6 items-stretch">
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        )
+      ) : products.length === 0 ? (
         <div className="w-full py-20 text-center text-gray-400 font-semibold text-lg">
           No products found.
         </div>
@@ -602,5 +638,4 @@ const ProductsDynamicMain = ({
     </section>
   );
 };
-
 export default ProductsDynamicMain;

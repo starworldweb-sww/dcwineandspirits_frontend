@@ -161,12 +161,7 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
-/**
- * Fully controlled by the parent (ProductsDynamicClient). No local filter
- * state here anymore — that was the bug: this component used to keep its
- * own useState for availability/brands/price, completely disconnected from
- * the `filters` object the parent actually sends to the backend hooks.
- */
+
 const Filters = ({
   data,
   priceRange,

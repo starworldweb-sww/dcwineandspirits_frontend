@@ -120,6 +120,7 @@ const ProductsDynamicClient = ({ slug }) => {
   const {
     data: dynamicPages,
     isLoading: dynamicLoading,
+    isFetching: dynamicFetching,
     isError: dynamicError,
     fetchNextPage: fetchNextDynamicPage,
     hasNextPage: hasNextDynamicPage,
@@ -134,6 +135,7 @@ const ProductsDynamicClient = ({ slug }) => {
   const {
     data: searchPages,
     isLoading: searchLoading,
+    isFetching: searchFetching,
     isError: searchError,
     fetchNextPage: fetchNextSearchPage,
     hasNextPage: hasNextSearchPage,
@@ -158,11 +160,12 @@ const ProductsDynamicClient = ({ slug }) => {
   }, [search, searchPages, dynamicPages]);
 
   const isLoading = search ? searchLoading : dynamicLoading;
+  const isFetching = search ? searchFetching : dynamicFetching;
   const isError = search ? searchError : dynamicError;
   const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
   const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;
   const isFetchingNextPage = search ? isFetchingNextSearchPage : isFetchingNextDynamicPage;
- 
+
   React.useEffect(() => {
     if (data?.priceRange && !priceInitialized) {
       const bounds = [data.priceRange.min, data.priceRange.max];
@@ -172,6 +175,10 @@ const ProductsDynamicClient = ({ slug }) => {
     }
   }, [data, priceInitialized]);
 
+  // useEffect(() => {
+  //   if (!priceInitialized) return;
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // }, [sort, selectedBrandIds, inStockParam, priceRange, limit]);
   const handleClearFilters = () => {
     setSelectedBrandIds([]);
     setSelectedAvailability([]);
@@ -228,6 +235,8 @@ const ProductsDynamicClient = ({ slug }) => {
           onLimitChange={setLimit}
           // fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
+          isFiltering={isFetching && !isFetchingNextPage}
+
         // isFetchingNextPage={isFetchingNextPage}
         />
 
