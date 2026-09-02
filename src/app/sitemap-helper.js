@@ -125,3 +125,33 @@ export const SITEMAP_PATHS = [
   "sitemap-blogs.xml",
   "sitemap-information.xml",
 ];
+
+export const XML_URLSET_HEADER_WITH_IMAGE = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">`;
+
+export const buildUrlEntryWithImages = ({
+  loc,
+  lastmod,
+  changefreq,
+  priority,
+  images = [],
+}) => {
+  const parts = [];
+  parts.push(`  <url>`);
+  parts.push(`    <loc>${escapeXml(loc)}</loc>`);
+  if (lastmod) parts.push(`    <lastmod>${lastmod}</lastmod>`);
+  if (changefreq) parts.push(`    <changefreq>${changefreq}</changefreq>`);
+  if (priority != null) parts.push(`    <priority>${priority}</priority>`);
+
+  for (const img of images) {
+    if (!img || !img.loc) continue;
+    parts.push(`    <image:image>`);
+    parts.push(`      <image:loc>${`https://www.dcwineandspirits.com/image/`}${escapeXml(img.loc)}</image:loc>`);
+    if (img.caption) parts.push(`      <image:caption>${escapeXml(img.caption)}</image:caption>`);
+    parts.push(`    </image:image>`);
+  }
+
+  parts.push(`  </url>`);
+  return parts.join("\n");
+};

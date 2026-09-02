@@ -10,10 +10,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { p } from "motion/react-client";
 import MainDescription from "./MainDescription";
 
-// merges every fetched page's product items into one flat list, while
-// keeping meta (brands/priceRange/breadcrumbs/subCategories/name/etc) from
-// the FIRST page only — those don't change page to page, only products.items
-// and the pagination cursor do
+
 const flattenCategoryPages = (pages) => {
   if (!pages || !pages.length) return null;
   const first = pages[0];
@@ -79,12 +76,8 @@ const ProductsDynamicClient = ({ slug }) => {
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  // page size — changing this restarts the infinite query from page 1
-  // (it's part of the query key in the hooks)
   const [limit, setLimit] = useState(24);
-  // sort now goes to the backend instead of being re-sorted client-side per
-  // fetched page (client-side sort would only be correct within one page and
-  // break across pages once you scroll past the first)
+
   const [sort, setSort] = useState("");
 
   const [priceRange, setPriceRange] = useState([null, null]);
@@ -184,9 +177,11 @@ const ProductsDynamicClient = ({ slug }) => {
     setSelectedAvailability([]);
     setPriceRange(defaultBounds);
   };
+  console.log("dynmicData",data)
   const handleLoadMore = async () => {
     await fetchNextPage();
-    const newPage = (data?.pages?.length || 1) + 1;
+    const newPage = (data?.products?.page || 1) + 1;
+    console.log("newPage",newPage)
     document.cookie = `current_page_${slug}=${newPage}; path=/; max-age=1800`;
   };
 
