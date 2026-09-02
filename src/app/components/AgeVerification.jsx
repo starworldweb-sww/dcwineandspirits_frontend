@@ -22,7 +22,11 @@ export default function AgeVerificationGate({ onClose }) {
     setMounted(true);
     const verified = getCookie("ageVerified");
     if (verified !== "true") {
-      setShow(true);
+      // site khulne ke 4 sec baad hi popup dikhana hai
+      const timer = setTimeout(() => {
+        setShow(true);
+      }, 8000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
