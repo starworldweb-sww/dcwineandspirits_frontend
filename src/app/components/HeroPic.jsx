@@ -19,9 +19,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
   const altText = banner?.alt;
   const titleText = banner?.title;
   const customUrl = banner?.custom_url;
-  console.log("image url", imageUrl, "slug", slug, "customUrl", customUrl, "altText", altText, "titleText", titleText);
-
-  const bannerLink = slug ? `/${slug}` : customUrl || "/";
+    const bannerLink = slug ? `/${slug}` : customUrl || "/";
 
   return (
     <section

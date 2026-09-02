@@ -162,7 +162,7 @@ const ProductsDynamicClient = ({ slug }) => {
   const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
   const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;
   const isFetchingNextPage = search ? isFetchingNextSearchPage : isFetchingNextDynamicPage;
-  console.log("data", data)
+ 
   React.useEffect(() => {
     if (data?.priceRange && !priceInitialized) {
       const bounds = [data.priceRange.min, data.priceRange.max];

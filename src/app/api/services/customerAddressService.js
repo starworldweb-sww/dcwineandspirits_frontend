@@ -11,7 +11,7 @@ export const customerAddressService = {
   },
   getAddresses: async () => {
     const res = await axiosInstance.get(`/customer-address/`);
-    console.log("res", res);
+   
     return res?.data?.data || [];
   },
   createAddress: async (payload) => {

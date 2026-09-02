@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
 
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
-    console.log("meta",meta)
+   
   }
 
   if (!meta) {

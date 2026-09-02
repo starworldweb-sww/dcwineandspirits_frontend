@@ -47,7 +47,7 @@ const OrderInfoClient = () => {
   }
 
   const { data, isLoading, isError, error } = useOrderInfo(orderId);
-  console.log(data)
+ 
   const order = data?.data;
 
   if (isLoading) {

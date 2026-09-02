@@ -247,7 +247,7 @@ export default function ProductMain({ product }) {
 
     try {
       const optionPayload = buildOptionPayload();
-      console.log("optionPayload",optionPayload)
+
       const res = await addToCartMut.mutateAsync({
         product_id: productId,
         quantity: Math.max(1, Number(quantity) || 1),

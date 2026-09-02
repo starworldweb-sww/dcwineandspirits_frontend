@@ -35,14 +35,13 @@ const WishlistClient = () => {
     PAGE_LIMIT
   );
 
-  console.log({ data, isLoading, isError, error });
+  
   const removeMutation = useRemoveFromWishlist();
   const addToCartMut = useAddtoCart();
 
   // backend response shape: { success, message, data: { items: { total, page, limit, items: [...], totalPages } } }
   const rawItems = data?.data?.items?.items || [];
-  console.log("raw items", rawItems);
-
+  
   const wishlistItems = rawItems.map((item) => ({
     id: item.product_id,
     image: getImageUrl(item.image),

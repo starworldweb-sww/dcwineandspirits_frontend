@@ -20,7 +20,7 @@ export async function GET() {
     if (!brand || !brand.slug) continue;
     entries.push(
       buildUrlEntry({
-        loc: `${buildUrl("/brands")}#${encodeURIComponent(brand.slug)}`,
+        loc: `${buildUrl("/")}${encodeURIComponent(brand.slug)}`,
         lastmod: now,
         changefreq: "monthly",
         priority: 0.6,
