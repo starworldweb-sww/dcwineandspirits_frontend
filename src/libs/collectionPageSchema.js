@@ -73,7 +73,7 @@ export const generateCollectionPageSchema = (
       numberOfItems,
       itemListElement,
     },
-    // Added details as additionalProperty
+   
     additionalProperty: [
       {
         "@type": "PropertyValue",
