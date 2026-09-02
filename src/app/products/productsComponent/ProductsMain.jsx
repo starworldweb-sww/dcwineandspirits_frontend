@@ -225,10 +225,11 @@ const ProductListRow = ({ product }) => {
           </Link>
         </p>
 
-        <Link href={productLink}>
-          <h2 className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors">
-            {decodeHtml(product.name)}
-          </h2>
+        <Link
+          href={productLink}
+          className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors"
+        >
+          {decodeHtml(product.name)}
         </Link>
 
         <p className="mt-2 text-[15px] leading-relaxed text-gray-500 line-clamp-2 sm:line-clamp-3 max-w-2xl">
@@ -355,10 +356,11 @@ const ProductGridCard = ({ product }) => {
       {/* 3. FIX: line-clamp leak fix — fixed "h-[2.8em]" + explicit
              "leading-[1.4]" taaki box height exactly "2 lines × 1.4em"
              ke barabar ho, koi extra sliver leak na ho neeche. */}
-      <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2 className="mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 font-hind-madurai">
-          {decodeHtml(product.name)}
-        </h2>
+      <Link
+        href={productLink}
+        className={`${hindMadurai.className} mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 font-hind-madurai w-full`}
+      >
+        {decodeHtml(product.name)}
       </Link>
 
       <p

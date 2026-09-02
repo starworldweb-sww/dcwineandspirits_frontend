@@ -50,9 +50,11 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
     name: item.title,
     slug: item.seo_url,
     image: `${IMAGE_BASE_URL}${item.image}`,
-    href: item.custom_url ? item.custom_url : `/${item.seo_url}/`,
+    href:    item.custom_url ? item.custom_url : `/${item.seo_url}/`,
   }));
 
+
+  console.log("GiftsByOccasionHero occasions:", occasions);
   return (
     <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
 
@@ -84,7 +86,7 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
                 <Link
                   title={item.name}
                   key={item.slug}
-                  href={item.href}
+                  href={item.slug}
                   className={`group relative overflow-hidden bg-white shadow-sm hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all duration-300 ${
                     isHero ? "row-span-2 rounded-2xl" : "rounded-xl"
                   }`}
@@ -133,7 +135,7 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
               <Link
                 title={item.name}
                 key={item.slug}
-                href={item.href}
+                href={item.slug}
                 className="group"
               >
                 <div className="w-full aspect-square overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">

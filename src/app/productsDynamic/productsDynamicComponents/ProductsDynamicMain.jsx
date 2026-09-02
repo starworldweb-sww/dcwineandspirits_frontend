@@ -176,13 +176,12 @@ const ProductListRow = ({ product }) => {
           </p>
         )}
 
-        <Link href={productLink}>
-          <h2
-            title={decodeHtml(product.name)}
-            className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
-          >
-            {decodeHtml(product.name)}
-          </h2>
+        <Link
+          href={productLink}
+          title={decodeHtml(product.name)}
+          className="mt-1 text-xl sm:text-2xl text-[#333333] hover:text-[#98022e] transition-colors line-clamp-2 cursor-pointer"
+        >
+          {decodeHtml(product.name)}
         </Link>
 
         <div className="mt-3 flex items-center gap-2">
@@ -345,21 +344,19 @@ const ProductGridCard = ({ product }) => {
         product={{ ...product, image: productImage }}
       />
 
-
       {isOutOfStock && (
-          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
-            <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
-              Out of Stock
-            </span>
-          </div>
-        )}
-
-
-        {hasDiscount && !isOutOfStock && (
-          <span className="absolute top-2 left-3 z-10 bg-[#98022e] text-white text-[10px] font-semibold px-2 py-1 rounded-xl">
-            -{discountPercent}%
+        <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden z-10 pointer-events-none">
+          <span className="absolute top-[18px] left-[-38px] w-[150px] text-center bg-gradient-to-r from-gray-900 to-gray-700 text-white text-[11px] font-bold uppercase tracking-wider py-1 shadow-md -rotate-45">
+            Out of Stock
           </span>
-        )}
+        </div>
+      )}
+
+      {hasDiscount && !isOutOfStock && (
+        <span className="absolute top-2 left-3 z-10 bg-[#98022e] text-white text-[10px] font-semibold px-2 py-1 rounded-xl">
+          -{discountPercent}%
+        </span>
+      )}
 
       <Link
         href={productLink}
@@ -371,10 +368,6 @@ const ProductGridCard = ({ product }) => {
           loading="lazy"
           className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
-
-        
-
-        
 
         {/* Wishlist — bottom-right corner badge, mobile & tablet only */}
         <button
@@ -404,13 +397,12 @@ const ProductGridCard = ({ product }) => {
         </button>
       </Link>
 
-      <Link href={productLink} className={`${hindMadurai.className} w-full`}>
-        <h2
-          title={decodeHtml(product.name)}
-          className="mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 cursor-pointer"
-        >
-          {decodeHtml(product.name)}
-        </h2>
+      <Link
+        href={productLink}
+        title={decodeHtml(product.name)}
+        className={`${hindMadurai.className} mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 cursor-pointer w-full`}
+      >
+        {decodeHtml(product.name)}
       </Link>
 
       <div

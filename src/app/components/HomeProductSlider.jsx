@@ -142,9 +142,12 @@ const SliderProductCard = ({ item, isAddingThis, onAddToCart }) => {
         {/* PRODUCT INFO */}
         <div className="w-full sm:w-[243px] flex flex-col items-center justify-between p-3 sm:p-5 text-center lg:min-h-[151px]">
           <div className="flex flex-col gap-2 w-full items-center">
-            <h3 className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]">
+            <Link
+             href={`/${item.seo_url}`}
+              className="text-[#333] text-[14px] font-medium leading-snug line-clamp-2 min-h-[40px]"
+            >
               {decodeHtml(item.name)}
-            </h3>
+            </Link>
 
             <div className="flex items-center justify-center gap-2 mt-1 ">
               {hasSpecialPrice ? (
