@@ -7,12 +7,11 @@ import { useShopByBrand } from "@/app/api/hooks/category/useShopByBrands";
 
 
 const ShopByBrandDropdown = ({ onClose }) => {
-  // 1. API se brands ka data fetch kar rahe hain
+  
   const { data } = useShopByBrand();
-
-  // 2. Actual response structure: { heading, items: [{ id, name, image, slug }] }
   const heading = data?.heading || "";
   const brands = data?.items || [];
+  
 
   return (
     <div className="absolute top-full left-0 w-full bg-white border border-gray-200 shadow-xl z-50 px-3 2xl:px-32 py-6">
@@ -27,7 +26,11 @@ const ShopByBrandDropdown = ({ onClose }) => {
             className="relative flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors aspect-[190/79] w-full"
           >
             <Image
-              src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
+              src={
+                brand?.image?.startsWith("http")
+                  ? brand.image
+                  : `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand?.image || ""}`
+              }
               alt={brand.name}
               fill
               sizes="190px"
@@ -42,7 +45,7 @@ const ShopByBrandDropdown = ({ onClose }) => {
         <Link
           href="/brands/"
           onClick={onClose}
-          className="inline-block bg-[#98022e] hover:bg-[#7e1a3c] text-white text-[13px] font-bold uppercase tracking-wide px-6 py-3 transition-colors hover:rounded-xl"
+          className="inline-block bg-[#98022e] hover:bg-[#7e1a3c] text-white text-[13px] font-bold uppercase tracking-wide px-6 py-3 transition-all hover:rounded-xl"
         >
           View All
         </Link>

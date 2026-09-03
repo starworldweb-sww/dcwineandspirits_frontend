@@ -8,6 +8,10 @@ import WishlistClient from './WishlistClient'
 
 export const metadata = {
   title: "My Wish List",
+  robots: {
+    index: false,
+    follow: true,
+  },
   description:
     "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
   alternates: {

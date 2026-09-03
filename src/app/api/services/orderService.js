@@ -2,10 +2,12 @@ import axiosInstance from "@/config/axiosConfig";
 
 
 
-const BASE_URL = "/order-details"; 
+const BASE_URL = "/order-details";
 export const orderService = {
-  getOrderHistory: async () => {
-    const { data } = await axiosInstance.get(`/order-details/order-history`);
+  getOrderHistory: async (params) => {
+    const { data } = await axiosInstance.get(`/order-details/order-history`, {
+      params: params
+    });
     return data;
   },
 

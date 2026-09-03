@@ -7,10 +7,10 @@ import { useGetSitemapData } from "../api/hooks/useSitemapData";
 import { FileText, FolderOpen } from "lucide-react";
 
 const staticAccountLinks = [
-  {
-    heading: "Special Offers",
-    items: [{ label: "Special Offers", href: "/specials" }],
-  },
+  // {
+  //   heading: "Special Offers",
+  //   items: [{ label: "Special Offers", href: "/specials" }],
+  // },
   {
     heading: "My Account",
     items: [
@@ -27,7 +27,7 @@ const staticAccountLinks = [
     items: [
       { label: "Shopping Cart", href: "/cart" },
       { label: "Checkout", href: "/checkout" },
-      { label: "Search", href: "/search" },
+      // { label: "Search", href: "/search" },
     ],
   },
 ];

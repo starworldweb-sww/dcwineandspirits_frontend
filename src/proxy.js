@@ -67,8 +67,14 @@ export async function proxy(request) {
         pathname.startsWith('/favicon') ||
         pathname.includes('.');
 
-
     if (!isStaticOrApi) {
+
+       
+        if (pathname !== pathname.toLowerCase()) {
+            const url = request.nextUrl.clone();
+            url.pathname = pathname.toLowerCase();
+            return NextResponse.redirect(url, 301);
+        }
 
         const page = request.nextUrl.searchParams.get('page');
 
@@ -94,7 +100,6 @@ export async function proxy(request) {
             return NextResponse.redirect(destination, 301);
         }
     }
-
 
 
     const hasToken = Boolean(request.cookies.get('token')?.value?.length);

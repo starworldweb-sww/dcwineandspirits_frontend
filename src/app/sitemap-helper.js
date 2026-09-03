@@ -100,21 +100,21 @@ export const STATIC_PAGES = [
   { path: "/", changefreq: "daily", priority: 1.0 },
   { path: "/about-us", changefreq: "monthly", priority: 0.8 },
   { path: "/contact", changefreq: "monthly", priority: 0.8 },
-  { path: "/brands", changefreq: "weekly", priority: 0.9 },
-  { path: "/blogs", changefreq: "daily", priority: 0.9 },
-  { path: "/search", changefreq: "monthly", priority: 0.5 },
+  // { path: "/brands", changefreq: "weekly", priority: 0.9 },
+  // { path: "/blogs", changefreq: "daily", priority: 0.9 },
+  // { path: "/search", changefreq: "monthly", priority: 0.5 },
   { path: "/account/login", changefreq: "yearly", priority: 0.3 },
   { path: "/register", changefreq: "yearly", priority: 0.3 },
   { path: "/frequently-asked-questions", changefreq: "monthly", priority: 0.7 },
   { path: "/shipping-and-delivery-policy", changefreq: "yearly", priority: 0.6 },
   { path: "/return-policy", changefreq: "yearly", priority: 0.6 },
   { path: "/terms", changefreq: "yearly", priority: 0.6 },
-  { path: "/privacy-policy", changefreq: "yearly", priority: 0.6 },
+  { path: "/privacy", changefreq: "yearly", priority: 0.6 },
   { path: "/coupon-and-deals", changefreq: "weekly", priority: 0.8 },
   { path: "/sitemap", changefreq: "monthly", priority: 0.3 },
-  { path: "/checkout", changefreq: "monthly", priority: 0.4 },
-  { path: "/account/cart", changefreq: "monthly", priority: 0.4 },
-  { path: "/products", changefreq: "daily", priority: 0.8 },
+  // { path: "/checkout", changefreq: "monthly", priority: 0.4 },
+  // { path: "/account/cart", changefreq: "monthly", priority: 0.4 },
+  // { path: "/products", changefreq: "daily", priority: 0.8 },
 ];
 
 export const SITEMAP_PATHS = [
@@ -123,7 +123,7 @@ export const SITEMAP_PATHS = [
   "sitemap-products.xml",
   "sitemap-brands.xml",
   "sitemap-blogs.xml",
-  "sitemap-information.xml",
+  // "sitemap-information.xml",
 ];
 
 export const XML_URLSET_HEADER_WITH_IMAGE = `<?xml version="1.0" encoding="UTF-8"?>

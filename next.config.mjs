@@ -47,10 +47,10 @@ const nextConfig = {
           source: "/sitemap-blogs.xml",
           destination: "/api/sitemaps/blogs",
         },
-        {
-          source: "/sitemap-information.xml",
-          destination: "/api/sitemaps/information",
-        },
+        // {
+        //   source: "/sitemap-information.xml",
+        //   destination: "/api/sitemaps/information",
+        // },
       ],
       afterFiles: [],
       fallback: [],
