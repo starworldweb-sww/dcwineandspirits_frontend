@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Sarabun, Hind_Madurai, Sumana } from "next/font/google";
 import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react";
@@ -142,12 +143,13 @@ function ProductCard({ product }) {
         href={`/${product.seo_url || product.slug}`}
         className="flex h-[93px] w-[280px] flex-shrink-0 cursor-pointer items-center gap-3 overflow-hidden border border-gray-100 bg-white p-2 shadow-sm transition hover:shadow-md snap-center md:w-full md:max-w-[400px]"
       >
-        <div className="flex h-[78px] w-[78px] flex-shrink-0 items-center justify-center overflow-hidden">
-          <img
+        <div className="relative flex h-[78px] w-[78px] flex-shrink-0 items-center justify-center overflow-hidden">
+          <Image
             src={product.image}
             alt={decodeHtml(product.name)}
-            loading="lazy"
-            className="max-h-full max-w-full object-contain"
+            fill
+            sizes="78px"
+            className="object-contain"
           />
         </div>
 

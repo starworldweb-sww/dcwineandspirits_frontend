@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { Sumana } from "next/font/google";
@@ -216,10 +217,12 @@ export default function RecommendedProducts({ product = {} }) {
                           HOT
                         </span>
                       )}
-                      <img
+                      <Image
                         src={p.image}
                         alt={p.displayName}
-                        className="w-full h-full object-contain object-center p-4"
+                        fill
+                        sizes="(max-width: 640px) 42vw, (max-width: 1024px) 240px, 260px"
+                        className="!p-4 object-contain object-center"
                       />
                     </div>
                   </Link>

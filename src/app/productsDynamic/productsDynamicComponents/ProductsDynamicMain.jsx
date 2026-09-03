@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Search,
@@ -156,11 +157,12 @@ const ProductListRow = ({ product }) => {
         href={productLink}
         className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group/img"
       >
-        <img
+        <Image
           src={productImage}
           alt={product.name}
-          loading="lazy"
-          className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
+          fill
+          sizes="(max-width: 640px) 100vw, 220px"
+          className={`!p-2 object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
 
         {isOutOfStock && (
@@ -381,11 +383,12 @@ const ProductGridCard = ({ product }) => {
         href={productLink}
         className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
-        <img
+        <Image
           src={productImage}
           alt={decodeHtml(product.name)}
-          loading="lazy"
-          className={`max-w-full max-h-full object-contain ${isOutOfStock ? "opacity-50" : ""}`}
+          fill
+          sizes="100vw"
+          className={`!p-2 object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
 
         {/* Wishlist — bottom-right corner badge, mobile & tablet only */}

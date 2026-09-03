@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useOccasionTreasures } from "@/app/api/hooks/category/useOccasionTreasures";
 // Apna exact hook path check kar lena
@@ -96,12 +97,14 @@ const OcassionsDropDown = ({ onClose }) => {
             <Link
               href={`/${(bannerItem.seo_url || bannerItem.custom_url || "").replace(/^\//, "")}`}
               onClick={onClose}
-              className="block w-full lg:w-[260px] flex-shrink-0"
+              className="block w-full lg:w-[260px] flex-shrink-0 relative aspect-[4/3]"
             >
-              <img
+              <Image
                 src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${bannerItem.image}`}
                 alt={bannerItem.alt || "Occasion banner"}
-                className="w-full h-full max-h-[280px] lg:max-h-none object-cover"
+                fill
+                sizes="260px"
+                className="object-cover"
               />
             </Link>
           )}

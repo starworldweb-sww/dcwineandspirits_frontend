@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useGiftDropDown } from "@/app/api/hooks/category/useGiftDropDown";
 import { useGiftsShopyByCategory } from "@/app/api/hooks/category/useGiftsShopByCategory";
@@ -257,11 +258,15 @@ const GiftsByDropdown = () => {
                                 }`}
                               >
                                 {country.image ? (
-                                  <img
-                                    src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${country.image}`}
-                                    alt={country.title}
-                                    className="w-5 h-4 object-cover flex-shrink-0"
-                                  />
+                                  <div className="relative w-5 h-4 flex-shrink-0">
+                                    <Image
+                                      src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${country.image}`}
+                                      alt={country.title}
+                                      fill
+                                      sizes="20px"
+                                      className="object-cover"
+                                    />
+                                  </div>
                                 ) : (
                                   <span>{getCountryFlag(country.title)}</span>
                                 )}
@@ -282,16 +287,18 @@ const GiftsByDropdown = () => {
                             key={brand.id}
                             href={`/${brand.seo_url}`}
                             onClick={() => handleLinkClick(linkKey)}
-                            className={`flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors h-[90px] px-3 w-[213px] ${
+                            className={`relative flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors h-[90px] px-3 w-[213px] ${
                               activeLink === linkKey
                                 ? "ring-2 ring-inset ring-[#98022e]"
                                 : ""
                             }`}
                           >
-                            <img
+                            <Image
                               src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
                               alt={brand.title}
-                              className="max-h-full max-w-full object-contain"
+                              fill
+                              sizes="213px"
+                              className="!p-3 object-contain"
                             />
                           </Link>
                         );

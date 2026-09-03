@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Hind_Madurai } from "next/font/google";
 import {
   ChevronRight,
@@ -239,9 +240,11 @@ export default function Footer() {
 
           {/* 6c. Logo + contact info column */}
           <div className="lg:w-[300px]">
-            <img
+            <Image
               src="/dc-wine_logo-360x90.webp"
               alt="DC Wine & Spirits"
+              width={360}
+              height={90}
               className="h-14 w-auto object-contain"
             />
 

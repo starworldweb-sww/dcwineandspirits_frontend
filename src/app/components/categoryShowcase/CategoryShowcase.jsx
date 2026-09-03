@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import Image from "next/image";
 import { Hind_Madurai } from "next/font/google";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetTopCategories } from "@/app/api/hooks/category/useTopCategories";
@@ -20,16 +21,15 @@ const CategoryCard = ({ label, href, image }) => (
     title={label}
   >
     <div
-      className="w-full aspect-square bg-[#eeeeee] overflow-hidden
+      className="relative w-full aspect-square bg-[#eeeeee] overflow-hidden
                  border-2 border-transparent active:border-black transition-colors"
     >
-      <img
+      <Image
         src={image}
         alt={label}
-        width={232}
-        height={232}
-        loading="lazy"
-        className="block w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+        fill
+        sizes="(max-width: 768px) 50vw, 234px"
+        className="object-contain transition-transform duration-300 group-hover:scale-105"
       />
     </div>
 

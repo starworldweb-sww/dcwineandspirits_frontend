@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -336,11 +337,12 @@ const BlogClient = ({
                         href={`/blogs/${postItem.slug}`}
                         className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md overflow-hidden bg-gray-100"
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={getBlogImageUrl(postItem.image)}
                           alt={postItem.title}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 420px"
+                          className="object-cover"
                         />
                         <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
                           <span className="block text-lg font-bold">{day}</span>
@@ -494,11 +496,12 @@ const BlogClient = ({
       <div className="px-3 2xl:px-32 py-8 md:py-12 flex flex-col lg:flex-row gap-10">
         <article className="flex-1 min-w-0">
           <div className="relative w-full h-[280px] md:h-[420px] rounded-md overflow-hidden bg-gray-100 mb-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={getBlogImageUrl(post.image)}
               alt={post.title}
-              className="w-full h-full object-cover"
+              fill
+              sizes="100vw"
+              className="object-cover"
             />
             <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
               <span className="block text-lg font-bold">{day}</span>

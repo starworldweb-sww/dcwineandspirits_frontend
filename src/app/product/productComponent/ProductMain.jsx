@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   Check,
   Dot,
@@ -319,16 +320,18 @@ export default function ProductMain({ product }) {
                     <div
                       key={`${imageUrl}-${index}`}
                       onClick={() => handleImageChange(imageUrl)}
-                      className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
+                      className={`relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
                         mainImage === imageUrl
                           ? "border-[#98022e]"
                           : "border-gray-200"
                       }`}
                     >
-                      <img
+                      <Image
                         src={imageUrl}
                         alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover object-center"
+                        fill
+                        sizes="80px"
+                        className="!p-1 object-cover object-center"
                       />
                     </div>
                   ))}
@@ -381,11 +384,13 @@ export default function ProductMain({ product }) {
                   </>
                 )}
 
-                <img
+                <Image
                   src={mainImage}
                   alt={sanitizedName}
                   draggable={false}
-                  className="w-full h-full object-contain object-center select-none will-change-transform"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 582px"
+                  className="!p-4 object-contain object-center select-none will-change-transform"
                   style={{
                     transform: isImageHovered ? "scale(2.2)" : "scale(1)",
                     transformOrigin: zoomOrigin,
@@ -421,16 +426,18 @@ export default function ProductMain({ product }) {
                     </div>
 
                     {brandName && (
-                      <div className="w-[90px] h-[50px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                      <div className="relative w-[90px] h-[50px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
                         <Link
                           href={`/${brandurl}`}
                           className="w-full h-full flex items-center justify-center p-1.5"
                         >
                           {brandImage ? (
-                            <img
+                            <Image
                               src={brandImage}
                               alt={brandName}
-                              className="max-w-full max-h-full object-contain"
+                              fill
+                              sizes="90px"
+                              className="!p-1.5 object-contain"
                             />
                           ) : (
                             <span className="text-[10px] tracking-widest text-gray-700 text-center px-2">
@@ -541,16 +548,18 @@ export default function ProductMain({ product }) {
                   </div>
 
                   {brandName && (
-                    <div className="w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                    <div className="relative w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
                       <Link
                         href={`/${brandurl}`}
                         className="w-full h-full flex items-center justify-center p-2"
                       >
                         {brandImage ? (
-                          <img
+                          <Image
                             src={brandImage}
                             alt={brandName}
-                            className="max-w-full max-h-full object-contain"
+                            fill
+                            sizes="120px"
+                            className="!p-2 object-contain"
                           />
                         ) : (
                           <span className="text-xs tracking-widest text-gray-700 text-center px-2">

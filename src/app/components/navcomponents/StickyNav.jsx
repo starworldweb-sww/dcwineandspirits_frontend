@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sumana } from "next/font/google";
@@ -192,12 +193,14 @@ const Stickynav = () => {
                       key={item?.cart_id || idx}
                       className="flex items-center gap-3 px-4 py-3 border-b border-gray-100"
                     >
-                      <div className="w-12 h-12 flex-shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+                      <div className="relative w-12 h-12 flex-shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
                         {item?.product?.image ? (
-                          <img
+                          <Image
                             src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${item?.product?.image}`}
                             alt={item?.product?.name || "Product"}
-                            className="w-full h-full object-contain"
+                            fill
+                            sizes="48px"
+                            className="object-contain"
                           />
                         ) : null}
                       </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useShopByBrand } from "@/app/api/hooks/category/useShopByBrands";
 
-const ShopByBrandDropDown = ({ onClose }) => {
+
+const ShopByBrandDropdown = ({ onClose }) => {
   // 1. API se brands ka data fetch kar rahe hain
   const { data } = useShopByBrand();
 
@@ -22,13 +24,14 @@ const ShopByBrandDropDown = ({ onClose }) => {
             key={brand.id}
             href={`/${brand.slug}`}
             onClick={onClose}
-            className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors aspect-[190/79] w-full"
+            className="relative flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors aspect-[190/79] w-full"
           >
-            <img
+            <Image
               src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`}
               alt={brand.name}
-              loading="lazy"
-              className="max-h-full max-w-[85%] object-contain"
+              fill
+              sizes="190px"
+              className="max-h-full max-w-[85%] object-contain !p-2"
             />
           </Link>
         ))}
@@ -48,4 +51,4 @@ const ShopByBrandDropDown = ({ onClose }) => {
   );
 };
 
-export default ShopByBrandDropDown;
+export default ShopByBrandDropdown;

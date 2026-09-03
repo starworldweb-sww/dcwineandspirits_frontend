@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { useCompareList } from "../api/hooks/useCompareProducts";
 import {
@@ -168,11 +169,15 @@ const CompareClient = () => {
                       )}
 
                       {row.key === "image" && (
-                        <img
-                          src={getImageUrl(product.image)}
-                          alt={product.name}
-                          className="w-24 h-24 object-contain"
-                        />
+                        <div className="relative w-24 h-24">
+                          <Image
+                            src={getImageUrl(product.image)}
+                            alt={product.name}
+                            fill
+                            sizes="96px"
+                            className="object-contain"
+                          />
+                        </div>
                       )}
 
                       {row.key === "price" && (

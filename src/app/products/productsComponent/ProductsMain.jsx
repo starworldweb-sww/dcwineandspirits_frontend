@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Search,
@@ -201,11 +202,12 @@ const ProductListRow = ({ product }) => {
         href={productLink}
         className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group"
       >
-        <img
+        <Image
           src={imageUrl}
           alt={decodeHtml(product.name)}
-          loading="lazy"
-          className="max-w-full max-h-full object-contain"
+          fill
+          sizes="(max-width: 640px) 100vw, 220px"
+          className="!p-2 object-contain"
         />
         <span className="absolute bottom-3 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <Search size={16} />
@@ -318,11 +320,12 @@ const ProductGridCard = ({ product }) => {
         href={productLink}
         className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
-        <img
+        <Image
           src={imageUrl}
           alt={decodeHtml(product.name)}
-          loading="lazy"
-          className="max-w-full max-h-full object-contain"
+          fill
+          sizes="100vw"
+          className="!p-2 object-contain"
         />
 
         {/* Wishlist — bottom-right corner badge, mobile & tablet only */}

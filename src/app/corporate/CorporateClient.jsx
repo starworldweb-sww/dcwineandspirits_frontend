@@ -13,91 +13,91 @@ const PRODUCTS = {
       id: "WCG055",
       name: "Bon Appetit Gourmet Gift Basket",
       slug: "bon-appetit-gourmet-gift-basket",
-      image: "/images/corporate/bon-appetit-gourmet-gift-basket.jpg",
+      image: "/images/corporate/bon-appetit-gourmet-gift-basket.webp",
     },
     {
       id: "WCG054",
       name: "Congratulation Gift Basket",
       slug: "congratulation-gift-basket",
-      image: "/images/corporate/congratulation-gift-basket.jpg",
+      image: "/images/corporate/congratulation-gift-basket.webp",
     },
     {
       id: "WCG051",
       name: "Godiva Chocolate Holiday Gift Basket",
       slug: "godiva-chocolate-holiday-gift-basket",
-      image: "/images/corporate/godiva-chocolate-holiday-gift-basket.jpg",
+      image: "/images/corporate/godiva-chocolate-holiday-gift-basket.webp",
     },
     {
       id: "WCG057",
       name: "The Connoisseur Gift Basket",
       slug: "the-connoisseur-gift-basket",
-      image: "/images/corporate/the-connoisseur-gift-basket.jpg",
+      image: "/images/corporate/the-connoisseur-gift-basket.webp",
     },
     {
       id: "WCG052",
       name: "The Gourmet Delight Gift Basket",
       slug: "the-gourmet-delight-gift-basket",
-      image: "/images/corporate/the-gourmet-delight-gift-basket.jpg",
+      image: "/images/corporate/the-gourmet-delight-gift-basket.webp",
     },
     {
       id: "WCG206",
       name: "Godiva Chocolates 8 Pc Box",
       slug: "godiva-chocolates-8-pc-box",
-      image: "/images/corporate/godiva-chocolates-8-pc-box.jpg",
+      image: "/images/corporate/godiva-chocolates-8-pc-box.webp",
     },
     {
       id: "WCG085",
       name: "Godiva Chocolate Basket & Mug",
       slug: "godiva-chocolate-basket-mug",
-      image: "/images/corporate/godiva-chocolate-basket-mug.jpg",
+      image: "/images/corporate/godiva-chocolate-basket-mug.webp",
     },
     {
       id: "WCG402",
       name: "Godiva Black & Gold Celebration Gift Basket",
       slug: "godiva-black-gold-celebration-gift-basket",
-      image: "/images/corporate/godiva-black-gold-celebration-gift-basket.jpg",
+      image: "/images/corporate/godiva-black-gold-celebration-gift-basket.webp",
     },
     {
       id: "WCG013",
       name: "Godiva Chocolates 26 Pc Box",
       slug: "godiva-chocolates-26-pc-box",
-      image: "/images/corporate/godiva-chocolates-26-pc-box.jpg",
+      image: "/images/corporate/godiva-chocolates-26-pc-box.webp",
     },
     {
       id: "WCG002",
       name: "Veuve Clicquot Rose & Assorted Godiva Chocolates Gift Basket",
       slug: "veuve-clicquot-rose-godiva-chocolates-gift-basket",
-      image: "/images/corporate/veuve-clicquot-rose-godiva-chocolates-gift-basket.jpg",
+      image: "/images/corporate/veuve-clicquot-rose-godiva-chocolates-gift-basket.webp",
     },
     {
       id: "WCG---",
       name: "Italy Gift Basket",
       slug: "italy-gift-basket",
-      image: "/images/corporate/italy-gift-basket.jpg",
+      image: "/images/corporate/italy-gift-basket.webp",
     },
     {
       id: "WCG009",
       name: "Caymus Wine & Cheese Gift Basket",
       slug: "caymus-wine-cheese-gift-basket",
-      image: "/images/corporate/caymus-wine-cheese-gift-basket.jpg",
+      image: "/images/corporate/caymus-wine-cheese-gift-basket.webp",
     },
     {
       id: "WCG015",
       name: "Caymus Cabernet Sauvignon Wine Gift Basket",
       slug: "caymus-cabernet-sauvignon-wine-gift-basket",
-      image: "/images/corporate/caymus-cabernet-sauvignon-wine-gift-basket.jpg",
+      image: "/images/corporate/caymus-cabernet-sauvignon-wine-gift-basket.webp",
     },
     {
       id: "WCG364",
       name: "Cakebread Wine Gift Set",
       slug: "cakebread-wine-gift-set",
-      image: "/images/corporate/cakebread-wine-gift-set.jpg",
+      image: "/images/corporate/cakebread-wine-gift-set.webp",
     },
     {
       id: "WCG182",
       name: "DAOU Soul of a Lion Wine & Cheese Gift Basket",
       slug: "daou-soul-of-a-lion-wine-cheese-gift-basket",
-      image: "/images/corporate/daou-soul-of-a-lion-wine-cheese-gift-basket.jpg",
+      image: "/images/corporate/daou-soul-of-a-lion-wine-cheese-gift-basket.webp",
     },
   ],
   Wine: [],
@@ -198,7 +198,7 @@ export default function CorporateClient() {
       {/* Hero */}
       <section className="relative min-h-[280px] md:min-h-[360px] flex items-center py-10 px-4 overflow-hidden">
         <Image
-          src="/coprate_page_banner_main.jpg"
+          src="/coprate_page_banner_main.webp"
           alt=""
           fill
           priority

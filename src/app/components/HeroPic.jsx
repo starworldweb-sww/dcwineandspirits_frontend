@@ -1,5 +1,6 @@
 "use client"
 import React from "react";
+import Image from "next/image";
 import { useGetHomePageTopBanner } from "../api/hooks/category/useHomeBanner";
 import Link from "next/link";
 
@@ -30,15 +31,14 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
       href={bannerLink}
       >
 <h1 className="opacity-0 hidden">DC Wine & Spirits</h1>
-      <img
+      <Image
         src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${imageUrl}`}
         title={altText}
         alt={altText}
         width={1280}
         height={390}
         loading="eager"
-        fetchPriority="high"
-        decoding="sync"
+        priority
         className="block w-full h-auto max-w-full aspect-[1280/390] object-cover transition-[0.2s] cursor-pointer"
       />
       </Link>

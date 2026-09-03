@@ -289,7 +289,7 @@ const MobileNavbar = () => {
           }`}
       >
         <Image
-          src="/dc-wine_logo_mobile.jpg"
+          src="/dc-wine_logo_mobile.webp"
           alt="DC Wine & Spirits"
           width={36}
           height={36}

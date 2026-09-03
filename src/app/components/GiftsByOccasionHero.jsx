@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Sumana } from "next/font/google";
 import { Gift } from "lucide-react";
@@ -93,11 +94,12 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
                 >
                   {isHero ? (
                     <div className="relative h-full w-full min-h-[160px]">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
-                        loading="lazy"
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        fill
+                        sizes="50vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 px-3 py-3">
@@ -109,11 +111,12 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
                   ) : (
                     <>
                       <div className="relative w-full aspect-square overflow-hidden">
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          fill
+                          sizes="50vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" />
                       </div>
@@ -138,12 +141,13 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
                 href={item.slug}
                 className="group"
               >
-                <div className="w-full aspect-square overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <img
+                <div className="relative w-full aspect-square overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <Image
                     src={item.image}
                     alt={item.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 1024px) 33vw, 20vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
                 <p className="mt-3 text-center text-[15px] text-black group-hover:text-[#c99000] transition-colors">

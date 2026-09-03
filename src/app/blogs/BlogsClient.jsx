@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from "next/image";
 import Link from 'next/link';
 import { User, Eye, Rss, ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
@@ -153,11 +154,12 @@ const BlogsClient = ({ initialData }) => {
                     href={`/blogs/${post.slug}`}
                     className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md overflow-hidden bg-gray-100"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={getBlogImageUrl(post.image)}
                       alt={post.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 420px"
+                      className="object-cover"
                     />
                     <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
                       <span className="block text-lg font-bold">{day}</span>

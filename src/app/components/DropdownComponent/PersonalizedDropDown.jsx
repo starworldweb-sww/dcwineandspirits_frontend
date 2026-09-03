@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePersonalizedDropDown } from "@/app/api/hooks/category/usePersonalizedDropDown";
 
@@ -71,12 +72,14 @@ const PersonalizedDropDown = ({ onClose }) => {
             <Link
               href={banner.custom_url || `/${banner.seo_url}`}
               onClick={onClose}
-              className="ml-auto"
+              className="ml-auto relative w-[450px] h-[195px]"
             >
-              <img
+              <Image
                 src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${banner.image}`}
                 alt={banner.alt || banner.title}
-                className="w-[450px] h-[195px] object-cover"
+                fill
+                sizes="450px"
+                className="object-cover"
               />
             </Link>
           )}

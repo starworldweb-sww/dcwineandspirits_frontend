@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState, useMemo } from "react";
 import {
@@ -129,11 +130,12 @@ const SliderProductCard = ({ item, isAddingThis, onAddToCart }) => {
             )}
           </button>
 
-          <img
+          <Image
             src={`${IMAGE_BASE_URL}${item.image}`}
             alt={decodeHtml(item.name)}
-            loading="lazy"
-            className={`max-h-full max-w-full object-contain mix-blend-multiply ${
+            fill
+            sizes="(max-width: 640px) 50vw, 243px"
+            className={`!p-4 object-contain mix-blend-multiply ${
               isOutOfStock ? "opacity-50" : ""
             }`}
           />

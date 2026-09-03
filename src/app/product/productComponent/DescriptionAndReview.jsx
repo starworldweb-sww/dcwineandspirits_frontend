@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Upload, X, ChevronDown } from "lucide-react";
 import { Sumana } from "next/font/google";
 
@@ -388,10 +389,12 @@ const DescriptionAndReview = ({ product = {} }) => {
                     key={index}
                     className="relative w-20 h-20 border border-gray-200 rounded-sm overflow-hidden"
                   >
-                    <img
+                    <Image
                       src={previewUrl}
                       alt="preview"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
                     />
                     <button
                       type="button"
