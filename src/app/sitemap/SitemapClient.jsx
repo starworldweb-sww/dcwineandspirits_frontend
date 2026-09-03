@@ -40,7 +40,7 @@ const staticInfoHeading = {
     { label: "About Us", href: "/about-us" },
     { label: "Delivery & Shipping Policy", href: "/shipping-and-delivery-policy" },
     { label: "Return Policy", href: "/return-policy" },
-    { label: "Privacy Policy", href: "/privacy-policy" },
+    // { label: "Privacy Policy", href: "/privacy-policy" },
     { label: "Terms & Conditions", href: "/terms" },
     { label: "Contact Us", href: "/contact" },
   ],

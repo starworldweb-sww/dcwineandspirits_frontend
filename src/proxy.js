@@ -38,7 +38,7 @@ async function checkRedirect(slug, fullUrl) {
             `${BACKEND_URL}/redirect/check?slug=${encodeURIComponent(slug)}&fullUrl=${encodeURIComponent(fullUrl)}`,
             { signal: AbortSignal.timeout(3000) }
         );
-       
+
         if (!res.ok) return null;
 
         const { data } = await res.json();
@@ -70,13 +70,16 @@ export async function proxy(request) {
 
     if (!isStaticOrApi) {
 
-        // if (/^\/dom-perignon\/page\/\d+\/?$/.test(pathname)) {
-        //     return NextResponse.redirect(
-        //         new URL('/dom-perignon-gift-sets', request.nextUrl.origin),
-        //         301
-        //     );
-        // }
+        const page = request.nextUrl.searchParams.get('page');
 
+        if (page && Number(page) > 1) {
+            const url = new URL(request.nextUrl.pathname, request.nextUrl.origin);
+            request.nextUrl.searchParams.forEach((value, key) => {
+                if (key !== 'page') url.searchParams.set(key, value);
+            });
+
+            return NextResponse.redirect(url, 301);
+        }
 
         const slug = pathname.replace(/^\/|\/$/g, '');
         const fullRequestUrl = request.nextUrl.href;
