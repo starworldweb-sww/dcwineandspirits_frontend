@@ -11,6 +11,8 @@ const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 const VIEW_ALL_OCCASIONS_HREF = "/occasion-gift-basket/";
 
+const HERO_INDEX = 0;
+
 function ViewAllOccasionsTile({ variant = "mobile" }) {
   const isMobile = variant === "mobile";
   return (
@@ -82,7 +84,7 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
         <>
           <div className="grid grid-cols-2 gap-3 md:hidden">
             {occasions.map((item, index) => {
-              const isHero = index === 0;
+              const isHero = index === HERO_INDEX;
               return (
                 <Link
                   title={item.name}
@@ -99,7 +101,7 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
                         alt={item.name}
                         fill
                         sizes="50vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover object-[center_30%] transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 px-3 py-3">
