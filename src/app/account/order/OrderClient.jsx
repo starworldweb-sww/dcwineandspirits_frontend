@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
@@ -34,14 +34,22 @@ const OrderClient = () => {
   const [page, setPage] = useState(1);
   const limit = 12;
 
-  const { data, isLoading, isError, error } = useOrderHistory({ page, limit });
+  const { data, isLoading, isError, error, isFetching } = useOrderHistory({ page, limit });
 
   const orders = data?.data?.data || [];
   const total = data?.data?.total || 0;
   const totalPages = data?.data?.total_pages || 1;
+  const serverPage = data?.data?.page || page;
+  const serverLimit = data?.data?.limit || limit;
+  const showingFrom = total === 0 ? 0 : (serverPage - 1) * serverLimit + 1;
+  const showingTo = Math.min(serverPage * serverLimit, total);
 
-  const showingFrom = total === 0 ? 0 : (page - 1) * limit + 1;
-  const showingTo = Math.min(page * limit, total);
+
+  useEffect(() => {
+    if (!isLoading && data?.data?.total_pages && page > data.data.total_pages) {
+      setPage(data.data.total_pages);
+    }
+  }, [data, isLoading, page]);
 
   if (isLoading) {
     return (
@@ -162,7 +170,7 @@ const OrderClient = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    disabled={page <= 1}
+                    disabled={page <= 1 || isFetching}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     className="px-3 py-1.5 text-[13px] font-hind-madurai border border-[#e5e5e5] rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-[#f5f5f5]"
                   >
@@ -173,7 +181,7 @@ const OrderClient = () => {
                   </span>
                   <button
                     type="button"
-                    disabled={page >= totalPages}
+                    disabled={page >= totalPages || isFetching}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     className="px-3 py-1.5 text-[13px] font-hind-madurai border border-[#e5e5e5] rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-[#f5f5f5]"
                   >

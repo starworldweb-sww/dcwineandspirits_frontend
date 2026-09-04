@@ -16,7 +16,7 @@ const SITEMAP_FILES = [
   "sitemap-products.xml",
   "sitemap-brands.xml",
   "sitemap-blogs.xml",
-  "sitemap-information.xml",
+  // "sitemap-information.xml",
 ];
 
 const now = new Date().toISOString();
