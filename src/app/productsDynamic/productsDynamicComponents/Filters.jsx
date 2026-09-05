@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { CircleX, Minus, Plus } from "lucide-react";
+import { CircleX, Minus, Plus, Check } from "lucide-react";
 import { Box, Slider, Input, Typography, Stack } from "@mui/material";
 import { decodeHtml } from "@/libs/decodeHtml";
 
@@ -14,18 +14,11 @@ const STATIC_AVAILABILITY = [
   { id: "out_of_stock", label: "Out of Stock" },
 ];
 
-/**
- * Controlled price slider.
- * - `value` / `onCommit` come from the parent (ProductsDynamicClient).
- * - We keep a local `dragValue` so the slider feels smooth while dragging,
- *   but only call `onCommit` (which updates parent state -> triggers the
- *   backend call) on mouse-up / blur / enter, not on every pixel of drag.
- */
+const AUTO_CLOSE_DELAY_MS = 500;
+
 const PriceSlider = ({ min, max, value, onCommit }) => {
   const [dragValue, setDragValue] = useState(value ?? [min, max]);
 
-  // keep local drag state in sync if parent value changes externally
-  // (e.g. "Clear" button resets priceRange)
   useEffect(() => {
     if (value && (value[0] !== dragValue[0] || value[1] !== dragValue[1])) {
       setDragValue(value);
@@ -43,11 +36,6 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
   };
 
   return (
-    // FIX: "minWidth: 0" — yeh outer Box hi container hai jiske andar
-    // Stack (flex row) baithta hai. Bina iske, agar andar koi child apni
-    // natural content-width tak grow karta hai (lambe number input ki
-    // wajah se), toh yeh Box bhi grow ho jayega aur parent Filters
-    // container ki fixed max-width (280px) todke bahar push kar dega.
     <Box sx={{ width: "100%", minWidth: 0, px: 1, pb: 2 }}>
       <Slider
         value={dragValue}
@@ -70,9 +58,6 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
           "& .MuiSlider-rail": { color: "#e0e0e0" },
         }}
       />
-      {/* FIX: "minWidth: 0" add kiya Stack pe bhi — flex row ka default
-          min-width "auto" hota hai, jo andar ke Box ko shrink hone se
-          rok raha tha jab number input mein lambe digits aate the. */}
       <Stack
         direction="row"
         spacing={1}
@@ -97,8 +82,8 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
                 py: 0.6,
                 borderRadius: "4px",
                 flex: 1,
-                minWidth: 0, // FIX: isse yeh box lambe number input pe bhi apni allotted width se bahar nahi grow karega
-                overflow: "hidden", // safety: agar content phir bhi overflow kare to clip ho, container na todhe
+                minWidth: 0,
+                overflow: "hidden",
               }}
             >
               <Typography
@@ -122,7 +107,7 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
                 inputProps={{ step: 10, min, max, type: "number" }}
                 sx={{
                   width: "100%",
-                  minWidth: 0, // FIX: Input ke andar ka native <input> bhi shrink ho sake
+                  minWidth: 0,
                   fontSize: "0.85rem",
                   fontFamily: "Sarabun, sans-serif",
                   "& input": {
@@ -142,15 +127,26 @@ const PriceSlider = ({ min, max, value, onCommit }) => {
   );
 };
 
-const SectionHeader = ({ label, isOpen, onToggle }) => (
+// FIX: label ko "min-w-0 truncate" diya aur badge ko "shrink-0" —
+// isse lambe labels (jaise "BRANDS") badge ko bahar push nahi karte,
+// aur agar space kam ho to label khud truncate ho jayega, badge nahi tootega
+const SectionHeader = ({ label, isOpen, isApplied, onToggle }) => (
   <button
     type="button"
     onClick={onToggle}
-    className="w-full flex justify-between items-center px-4 py-3 border-b border-gray-200 cursor-pointer"
+    className="w-full flex justify-between items-center gap-2 px-4 py-3 border-b border-gray-200 cursor-pointer"
   >
-    <p className="font-['Sarabun',sans-serif] font-bold text-sm tracking-widest text-black uppercase">
-      {label}
-    </p>
+    <span className="flex items-center gap-2 min-w-0 flex-1">
+      <p className="font-['Sarabun',sans-serif] font-bold text-sm tracking-widest text-black uppercase truncate">
+        {label}
+      </p>
+      {isApplied && (
+        <span className="flex items-center gap-1 shrink-0 font-['Sarabun',sans-serif] text-[10px] font-semibold tracking-wide text-[#98022e] bg-[#98022e]/10 rounded-full px-2 py-[3px] leading-none animate-[fadeIn_0.2s_ease-out]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#98022e]" />
+          Applied
+        </span>
+      )}
+    </span>
     <span className="w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 bg-white border-1 border-[#9c1750]">
       {isOpen ? (
         <Minus size={12} className="text-[#98022e]" />
@@ -161,7 +157,6 @@ const SectionHeader = ({ label, isOpen, onToggle }) => (
   </button>
 );
 
-
 const Filters = ({
   data,
   priceRange,
@@ -171,10 +166,27 @@ const Filters = ({
   selectedBrandIds,
   onBrandChange,
   onClear,
+  onClose,
 }) => {
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
+
+  const closeTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
+  const scheduleAutoClose = () => {
+    if (!onClose) return;
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      onClose();
+    }, AUTO_CLOSE_DELAY_MS);
+  };
 
   const hasPriceRange =
     data?.priceRange?.min !== undefined &&
@@ -184,11 +196,28 @@ const Filters = ({
 
   const hasBrands = Array.isArray(data?.brands) && data.brands.length > 0;
 
+  const isPriceApplied =
+    hasPriceRange &&
+    Array.isArray(priceRange) &&
+    (priceRange[0] !== data.priceRange.min || priceRange[1] !== data.priceRange.max);
+
+  const isAvailabilityApplied = selectedAvailability?.length > 0;
+  const isBrandsApplied = selectedBrandIds?.length > 0;
+
+  const activeFilterCount =
+    (isPriceApplied ? 1 : 0) + (isAvailabilityApplied ? 1 : 0) + (isBrandsApplied ? 1 : 0);
+
+  const handlePriceCommit = (next) => {
+    onPriceChange?.(next);
+    scheduleAutoClose();
+  };
+
   const toggleAvailability = (id) => {
     const next = selectedAvailability.includes(id)
       ? selectedAvailability.filter((v) => v !== id)
       : [...selectedAvailability, id];
     onAvailabilityChange(next);
+    scheduleAutoClose();
   };
 
   const toggleBrand = (id) => {
@@ -196,39 +225,63 @@ const Filters = ({
       ? selectedBrandIds.filter((v) => v !== id)
       : [...selectedBrandIds, id];
     onBrandChange(next);
+    scheduleAutoClose();
   };
 
   return (
     <div className="w-full max-w-[280px] font-['Sarabun',sans-serif]">
-      {/* Header */}
-      <div className="flex justify-between items-center px-1 py-4">
-        <div>
-          <h2 className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none">
-            Filter
-          </h2>
+      {/* Header — FIX: flex-wrap add kiya taaki agar Clear button ke liye
+          jagah kam pade (title + badge zyada wide ho jaye), to woh
+          overflow hone ki bajaye neeche wrap ho jaye, na ki squeeze ho */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-1 py-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none shrink-0">
+              Filter
+            </h2>
+            {/* FIX: text pill ("1 applied") ki jagah ab ek chhota compact
+                circular number badge — kam jagah leta hai, header row
+                squeeze nahi hoti */}
+            {activeFilterCount > 0 && (
+              <span
+                className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-bold text-white bg-[#98022e] leading-none animate-[fadeIn_0.2s_ease-out]"
+                title={`${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""} applied`}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
           <div className="h-[2px] w-10 mt-1 rounded-full bg-[#98022e]" />
         </div>
         <button
           type="button"
-          onClick={onClear}
-          className="flex items-center justify-center gap-1.5 bg-black text-white text-sm font-['Sarabun',sans-serif] px-4 py-1.5 hover:bg-gray-800 transition-colors cursor-pointer hover:scale-102 active:scale-98 hover:rounded-xl"
+          onClick={() => {
+            onClear?.();
+            if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+          }}
+          className="shrink-0 flex items-center justify-center gap-1.5 bg-black text-white text-sm font-['Sarabun',sans-serif] px-4 py-1.5 hover:bg-gray-800 transition-colors cursor-pointer hover:scale-102 active:scale-98 hover:rounded-xl"
         >
           <CircleX size={14} />
           <span>Clear</span>
         </button>
       </div>
 
-      {/* PRICE — sirf tab dikhega jab API se valid min/max mila ho */}
+      {/* PRICE */}
       {hasPriceRange && (
         <>
-          <SectionHeader label="Price" isOpen={priceOpen} onToggle={() => setPriceOpen((p) => !p)} />
+          <SectionHeader
+            label="Price"
+            isOpen={priceOpen}
+            isApplied={isPriceApplied}
+            onToggle={() => setPriceOpen((p) => !p)}
+          />
           {priceOpen && (
             <div className="px-1 pt-4 pb-2">
               <PriceSlider
                 min={data.priceRange.min}
                 max={data.priceRange.max}
                 value={priceRange}
-                onCommit={onPriceChange}
+                onCommit={handlePriceCommit}
               />
             </div>
           )}
@@ -239,6 +292,7 @@ const Filters = ({
       <SectionHeader
         label="Availability"
         isOpen={availabilityOpen}
+        isApplied={isAvailabilityApplied}
         onToggle={() => setAvailabilityOpen((p) => !p)}
       />
       {availabilityOpen && (
@@ -260,10 +314,15 @@ const Filters = ({
         </div>
       )}
 
-      {/* BRANDS — sirf tab dikhega jab API se brands array mein kuch data ho */}
+      {/* BRANDS */}
       {hasBrands && (
         <>
-          <SectionHeader label="Brands" isOpen={brandsOpen} onToggle={() => setBrandsOpen((p) => !p)} />
+          <SectionHeader
+            label="Brands"
+            isOpen={brandsOpen}
+            isApplied={isBrandsApplied}
+            onToggle={() => setBrandsOpen((p) => !p)}
+          />
           {brandsOpen && (
             <div className="flex flex-col px-4 py-2 h-64 overflow-y-auto overflow-x-hidden">
               {data.brands.map((brand) => (
@@ -296,6 +355,19 @@ const Filters = ({
           )}
         </>
       )}
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-2px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

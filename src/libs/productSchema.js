@@ -1,6 +1,6 @@
 export function buildProductSchema(product) {
   const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ?? "";
-
+  console.log("buildProductSchema product:", product);
   const decodeAndStrip = (str) => {
     if (!str) return "";
     return str
@@ -30,9 +30,13 @@ export function buildProductSchema(product) {
     name: product.name,
     image: `${IMAGE_BASE}${product.image}`,
     description: decodeAndStrip(product.description),
-    sku: product.sku || String(product.product.model || product.product_id),
-    mpn: product.mpn || String(product.product.model || product.product_id),
-    model: product.model || String(product.product_id),
+    sku: product?.sku || String(product?.model || product?.product_id),
+    mpn: product?.mpn || String(product?.model || product?.product_id),
+    model: product?.model || String(product?.product_id),
+    ...(product?.upc &&
+      String(product.upc).trim() !== "" && {
+        upc: String(product.upc).trim(),
+      }),
     brand: {
       "@type": "Brand",
       name: "DC Wine & Spirits",
@@ -46,7 +50,7 @@ export function buildProductSchema(product) {
       url: `https://www.dcwineandspirits.com/${product.seo_url}/`,
       priceCurrency: "USD",
       price: effectivePrice,
-      ValidFrom: "2024-01-01",
+      validFrom: "2024-01-01",
       priceValidUntil: "2027-07-07",
       itemCondition: "https://schema.org/NewCondition",
       availability: product.in_stock
@@ -56,19 +60,23 @@ export function buildProductSchema(product) {
         "@type": "Organization",
         name: "DC Wine & Spirits",
       },
-      priceSpecification: {
-        "@type": "UnitPriceSpecification",
-        priceCurrency: "USD",
-        price: effectivePrice,
-        ...(hasDiscount && {
-          referencePrice: {
-            "@type": "UnitPriceSpecification",
-            priceCurrency: "USD",
-            price: product.price,
-            priceType: "https://schema.org/ListPrice",
-          },
-        }),
-      },
+      priceSpecification: [
+        {
+          "@type": "UnitPriceSpecification",
+          priceCurrency: "USD",
+          price: effectivePrice,
+        },
+        ...(hasDiscount
+          ? [
+              {
+                "@type": "UnitPriceSpecification",
+                priceCurrency: "USD",
+                price: product.price,
+                priceType: "https://schema.org/ListPrice",
+              },
+            ]
+          : []),
+      ],
       shippingDetails: {
         "@type": "OfferShippingDetails",
         shippingRate: {
@@ -96,7 +104,7 @@ export function buildProductSchema(product) {
           handlingTime: {
             "@type": "QuantitativeValue",
             minValue: 1,
-            maxValue: 10,
+            maxValue: 7,
             unitCode: "DAY",
           },
           transitTime: {
@@ -144,4 +152,4 @@ export function buildProductSchema(product) {
       })),
     }),
   };
-} 
+}

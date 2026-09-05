@@ -32,7 +32,6 @@ export async function generateMetadata({ params }) {
     notFound();
   }
 
-
   return {
     title:
       decodeHtml(meta?.meta_title) ||
@@ -90,16 +89,22 @@ export default async function ProductsSlugPage({ params }) {
 
     try {
       const product = await productsService.getSingleProductDetails(slug);
+
+      console.log("Product single:", product);
       if (product) {
         schema = buildProductSchema(product);
+
+        const breadcrumbsData =
+          product.breadcrumbs && product.breadcrumbs.length > 1
+            ? product.breadcrumbs
+            : slug;
+
         breadcrumbSchema = generateBreadcrumbSchema(
-          product.breadcrumbs,
+          breadcrumbsData,
           product.slug,
           "https://www.dcwineandspirits.com",
           product.name,
         );
-
-        console.log("Product single:", product);
         console.log("Product schema:", schema);
       }
     } catch (e) {
@@ -168,8 +173,13 @@ export default async function ProductsSlugPage({ params }) {
         firstPageData.priceRange,
       );
 
+      const categoryBreadcrumbsData =
+        firstPageData.breadcrumbs && firstPageData.breadcrumbs.length > 1
+          ? firstPageData.breadcrumbs
+          : slug;
+
       categoryBreadcrumbSchema = generateBreadcrumbSchema(
-        firstPageData.breadcrumbs,
+        categoryBreadcrumbsData,
         slug,
         "https://www.dcwineandspirits.com",
         decodeHtml(meta?.custom_title || meta?.meta_title) ||
