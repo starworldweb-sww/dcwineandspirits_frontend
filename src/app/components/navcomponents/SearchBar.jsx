@@ -249,7 +249,7 @@ const SearchBar = () => {
   const handleSearch = useCallback(() => {
     const trimmed = inputValue.trim();
     if (!trimmed) return;
-    router.push(`/productsDynamic?search=${encodeURIComponent(trimmed)}`);
+    router.push(`/products-dynamic?search=${encodeURIComponent(trimmed)}`);
     setIsDropdownOpen(false);
   }, [inputValue, router]);
 

@@ -4,7 +4,7 @@ import { decodeHtml } from "@/libs/decodeHtml";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/libs/get-query-client";
 import { productKeys } from "@/libs/queryKeys";
-import ProductsDynamicClient from "../productsDynamic/productsDynamicComponents/ProductsDynamicClient";
+import ProductsDynamicClient from "../products-dynamic/productsDynamicComponents/ProductsDynamicClient";
 import ProductClient from "../product/productComponent/ProductClient";
 import { productsService } from "../api/services/productsService";
 import { cookies } from "next/headers";
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
 
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
-   
+
   }
 
   if (!meta) {
@@ -67,55 +67,55 @@ export default async function ProductsSlugPage({ params }) {
   }
 
   if (productMeta) {
-  let schema = null;
-  let breadcrumbSchema = null;
+    let schema = null;
+    let breadcrumbSchema = null;
 
-  try {
-    const product = await productsService.getSingleProductDetails(slug);
-    if (product) {
-      schema = buildProductSchema(product);
-      breadcrumbSchema = generateBreadcrumbSchema(
-        product.breadcrumbs,
-        product.slug,
-        "https://www.dcwineandspirits.com",
-        product.name,
-      );
+    try {
+      const product = await productsService.getSingleProductDetails(slug);
+      if (product) {
+        schema = buildProductSchema(product);
+        breadcrumbSchema = generateBreadcrumbSchema(
+          product.breadcrumbs,
+          product.slug,
+          "https://www.dcwineandspirits.com",
+          product.name,
+        );
+      }
+    } catch (e) {
+      console.error("Schema fetch failed:", e.message);
     }
-  } catch (e) {
-    console.error("Schema fetch failed:", e.message);
+
+    await queryClient.prefetchQuery({
+      queryKey: productKeys.singleProductDetail(slug),
+      queryFn: () => productsService.getSingleProductDetails(slug),
+    });
+
+    return (
+      <>
+        {schema && (
+          <Script
+            id="product-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        )}
+        {breadcrumbSchema && (
+          <Script
+            id="product-breadcrumb-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          />
+        )}
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ProductClient slug={slug} />
+        </HydrationBoundary>
+      </>
+    );
   }
-
-  await queryClient.prefetchQuery({
-    queryKey: productKeys.singleProductDetail(slug),
-    queryFn: () => productsService.getSingleProductDetails(slug),
-  });
-
-  return (
-    <>
-      {schema && (
-        <Script
-          id="product-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      )}
-      {breadcrumbSchema && (
-        <Script
-          id="product-breadcrumb-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-        />
-      )}
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <ProductClient slug={slug} />
-      </HydrationBoundary>
-    </>
-  );
-}
 
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
-  const filter = {}; 
+  const filter = {};
   const limit = 24;
 
   const queryKey = [...productKeys.bySlugOrId(slug), filter, limit];

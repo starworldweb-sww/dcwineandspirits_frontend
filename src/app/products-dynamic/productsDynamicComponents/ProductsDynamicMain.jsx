@@ -29,7 +29,7 @@ import AddToCartPopup from "@/app/components/popups/AddToCartPopUp";
 import AddToWishlistPopup from "@/app/components/popups/AddToWishlistPopUp";
 import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { useCheckWishlist } from "@/app/api/hooks/wishlist/useCheckWishlist";
-import SmallDescAndSubcategory from "@/app/productsDynamic/productsDynamicComponents/SmallDescAndSubcategory";
+import SmallDescAndSubcategory from "@/app/products-dynamic/productsDynamicComponents/SmallDescAndSubcategory";
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -52,8 +52,8 @@ const SortOptions = [
 ];
 
 const ShowOptions = [
-  { value: 24, label: "24" },
-  { value: 50, label: "50" },
+  // { value: 24, label: "24" },
+  { value:48, label: "48" },
   { value: 75, label: "75" },
   { value: 100, label: "100" },
 ];
@@ -528,11 +528,10 @@ const ProductsDynamicMain = ({
             type="button"
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
-            className={`cursor-pointer transition-colors ${
-              layout === "grid"
+            className={`cursor-pointer transition-colors ${layout === "grid"
                 ? "text-[#98022e]"
                 : "text-black hover:text-[#98022e]"
-            }`}
+              }`}
           >
             <RiGridFill size={20} />
           </button>
@@ -541,11 +540,10 @@ const ProductsDynamicMain = ({
             type="button"
             onClick={() => setLayout("list")}
             aria-label="List view"
-            className={`cursor-pointer transition-colors ${
-              layout === "list"
+            className={`cursor-pointer transition-colors ${layout === "list"
                 ? "text-[#98022e]"
                 : "text-black hover:text-[#98022e]"
-            }`}
+              }`}
           >
             <Logs size={20} />
           </button>
