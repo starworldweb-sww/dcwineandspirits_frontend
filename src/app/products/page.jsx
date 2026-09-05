@@ -48,7 +48,7 @@ const page = async () => {
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
   console.log("currentPage", currentPage)
-  const limit = 24;
+  const limit = 100;
 
   const queryKey = [...productKeys.allProducts(limit)];
 
@@ -68,11 +68,11 @@ const page = async () => {
     const firstPageData = pagesData[0];
     if (firstPageData) {
       productsCollectionSchema = generateCollectionPageSchema(
-        firstPageData.products?.items,
+        firstPageData?.allproducts,
         metadata.title,
         metadata.description,
         "products",
-        firstPageData.products?.total,
+        firstPageData?.total,
         firstPageData.priceRange,
       );
 

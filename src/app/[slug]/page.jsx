@@ -143,7 +143,7 @@ export default async function ProductsSlugPage({ params }) {
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
   const filter = {};
-  const limit = 24;
+  const limit = 100;
 
   const queryKey = [...productKeys.bySlugOrId(slug), filter, limit];
 
