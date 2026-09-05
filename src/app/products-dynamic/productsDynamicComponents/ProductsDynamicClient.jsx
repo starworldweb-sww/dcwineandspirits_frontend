@@ -75,7 +75,7 @@ const ProductsDynamicClient = ({ slug }) => {
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  const [limit, setLimit] = useState(24);
+  const [limit, setLimit] = useState(48);
 
   const [sort, setSort] = useState("");
 
@@ -85,6 +85,15 @@ const ProductsDynamicClient = ({ slug }) => {
 
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedBrandIds, setSelectedBrandIds] = useState([]);
+
+React.useEffect(() => {
+  setPriceInitialized(false);
+  setDefaultBounds([null, null]);
+  setPriceRange([null, null]);
+  setSelectedAvailability([]);
+  setSelectedBrandIds([]);
+  setSort("");
+}, [search, slug]);
 
   const inStockParam =
     selectedAvailability.length === 1
@@ -155,6 +164,8 @@ const ProductsDynamicClient = ({ slug }) => {
 
   const isLoading = search ? searchLoading : dynamicLoading;
   const isFetching = search ? searchFetching : dynamicFetching;
+  console.log("search",search)
+  console.log("searchFetching",searchFetching)
   const isError = search ? searchError : dynamicError;
   const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
   const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;
@@ -171,6 +182,7 @@ const ProductsDynamicClient = ({ slug }) => {
     }
   }, [data, priceInitialized]);
 
+  
   // useEffect(() => {
   //   if (!priceInitialized) return;
   //   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -180,11 +192,10 @@ const ProductsDynamicClient = ({ slug }) => {
     setSelectedAvailability([]);
     setPriceRange(defaultBounds);
   };
-  console.log("dynmicData", data);
+ 
   const handleLoadMore = async () => {
     await fetchNextPage();
     const newPage = (data?.products?.page || 1) + 1;
-    console.log("newPage", newPage);
     document.cookie = `current_page_${slug}=${newPage}; path=/; max-age=1800`;
   };
 

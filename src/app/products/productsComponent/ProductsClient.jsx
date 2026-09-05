@@ -9,7 +9,7 @@ import { useGetAllProducts } from "@/app/api/hooks/useAllProducts";
 
 const ProductsClient = () => {
   const [sortOption, setSortOption] = useState("");
-  const [showNum, setShowNum] = useState(24);
+  const [showNum, setShowNum] = useState(48);
   const [layout, setLayout] = useState("grid");
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllProducts(showNum);

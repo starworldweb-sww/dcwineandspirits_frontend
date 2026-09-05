@@ -30,7 +30,7 @@
 // };
 
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { productsService } from "../services/productsService";
 import { productKeys } from "@/libs/queryKeys";
 
@@ -49,5 +49,6 @@ export const useSearchResults = ({ search, limit = 24, filter = {}, options = {}
         getNextPageParam: getNextPageParamNested,
         ...options,
         enabled: !!search && options.enabled !== false,
+        placeholderData:keepPreviousData
     });
 };

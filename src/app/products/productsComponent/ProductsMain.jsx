@@ -52,8 +52,8 @@ const SortOptions = [
 ];
 
 const ShowOptions = [
-  { value: 24, label: "24" },
-  { value: 50, label: "50" },
+  { value: 48, label: "48" },
+  // { value: 50, label: "50" },
   { value: 75, label: "75" },
   { value: 100, label: "100" },
 ];

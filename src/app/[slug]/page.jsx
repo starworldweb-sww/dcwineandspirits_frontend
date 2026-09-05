@@ -4,7 +4,7 @@ import { decodeHtml } from "@/libs/decodeHtml";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/libs/get-query-client";
 import { productKeys } from "@/libs/queryKeys";
-import ProductsDynamicClient from "../productsDynamic/productsDynamicComponents/ProductsDynamicClient";
+import ProductsDynamicClient from "../products-dynamic/productsDynamicComponents/ProductsDynamicClient";
 import ProductClient from "../product/productComponent/ProductClient";
 import { productsService } from "../api/services/productsService";
 import { cookies } from "next/headers";
