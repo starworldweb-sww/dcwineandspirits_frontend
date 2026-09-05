@@ -88,7 +88,7 @@ export const generateCollectionPageSchema = (
       {
         "@type": "PropertyValue",
         name: "Shipping",
-        value: "Fast Delivery: $99 to $599 · $20 delivery",
+        value: "Fast Delivery",
       },
     ],
   };

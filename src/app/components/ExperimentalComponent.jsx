@@ -72,8 +72,8 @@ const ExperimentalComponent = () => {
               </div>
 
               <ChevronRight
-                size={16}
-                className="hidden shrink-0 text-gray-300 transition-colors duration-200 group-hover:text-[#98022e] xs:block sm:block"
+                size={14}
+                className="shrink-0 text-gray-300 transition-colors duration-200 group-hover:text-[#98022e] sm:size-4"
               />
             </Link>
           )

@@ -10,7 +10,6 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { p } from "motion/react-client";
 import MainDescription from "./MainDescription";
 
-
 const flattenCategoryPages = (pages) => {
   if (!pages || !pages.length) return null;
   const first = pages[0];
@@ -117,7 +116,14 @@ React.useEffect(() => {
       if (priceRange[1] != null) f.max_price = priceRange[1];
     }
     return f;
-  }, [sort, selectedBrandIds, priceRange, inStockParam, priceInitialized, isDefaultPriceRange]);
+  }, [
+    sort,
+    selectedBrandIds,
+    priceRange,
+    inStockParam,
+    priceInitialized,
+    isDefaultPriceRange,
+  ]);
 
   const {
     data: dynamicPages,
@@ -127,12 +133,7 @@ React.useEffect(() => {
     fetchNextPage: fetchNextDynamicPage,
     hasNextPage: hasNextDynamicPage,
     isFetchingNextPage: isFetchingNextDynamicPage,
-  } = useGetProductBySlugOrId(
-    slug,
-    filters,
-    { enabled: !search },
-    limit
-  );
+  } = useGetProductBySlugOrId(slug, filters, { enabled: !search }, limit);
 
   const {
     data: searchPages,
@@ -168,7 +169,9 @@ React.useEffect(() => {
   const isError = search ? searchError : dynamicError;
   const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
   const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;
-  const isFetchingNextPage = search ? isFetchingNextSearchPage : isFetchingNextDynamicPage;
+  const isFetchingNextPage = search
+    ? isFetchingNextSearchPage
+    : isFetchingNextDynamicPage;
 
   React.useEffect(() => {
     if (data?.priceRange && !priceInitialized) {
@@ -243,17 +246,12 @@ React.useEffect(() => {
           hasNextPage={hasNextPage}
           isFiltering={isFetching && !isFetchingNextPage}
 
-        // isFetchingNextPage={isFetchingNextPage}
+          // isFetchingNextPage={isFetchingNextPage}
         />
-
-
-
       </div>
-
 
       {hasNextPage && (
         <div className="flex flex-col items-center pl-7 gap-3 py-5">
-
           {isFetchingNextPage ? (
             <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#98022e]" />
@@ -317,6 +315,8 @@ React.useEffect(() => {
                 selectedBrandIds={selectedBrandIds}
                 onBrandChange={setSelectedBrandIds}
                 onClear={handleClearFilters}
+                // NEW: filter apply hote hi drawer auto-close ho jayega
+                onClose={() => setIsFilterDrawerOpen(false)}
               />
             </div>
           </div>
@@ -325,8 +325,12 @@ React.useEffect(() => {
 
       <style jsx global>{`
         @keyframes slideIn {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
+          from {
+            transform: translateX(-100%);
+          }
+          to {
+            transform: translateX(0);
+          }
         }
       `}</style>
     </>

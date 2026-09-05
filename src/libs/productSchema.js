@@ -1,6 +1,6 @@
 export function buildProductSchema(product) {
   const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ?? "";
-
+  console.log("buildProductSchema product:", product);
   const decodeAndStrip = (str) => {
     if (!str) return "";
     return str
@@ -20,6 +20,9 @@ export function buildProductSchema(product) {
 
   // special_price agar set hai to wahi effective price hai, warna price
   const effectivePrice = product.special_price ?? product.price;
+  const hasDiscount =
+    product.special_price != null &&
+    Number(product.special_price) < Number(product.price);
 
   return {
     "@context": "https://schema.org/",
@@ -27,12 +30,16 @@ export function buildProductSchema(product) {
     name: product.name,
     image: `${IMAGE_BASE}${product.image}`,
     description: decodeAndStrip(product.description),
-    sku: product.sku || String(product.product_id),
-    mpn: product.mpn || String(product.product_id),
-    model: product.model || String(product.product_id),
+    sku: product?.sku || String(product?.model || product?.product_id),
+    mpn: product?.mpn || String(product?.model || product?.product_id),
+    model: product?.model || String(product?.product_id),
+    ...(product?.upc &&
+      String(product.upc).trim() !== "" && {
+        upc: String(product.upc).trim(),
+      }),
     brand: {
       "@type": "Brand",
-      name: "DC Wine and Spirits",
+      name: "DC Wine & Spirits",
     },
     manufacturer: {
       "@type": "Organization",
@@ -43,20 +50,38 @@ export function buildProductSchema(product) {
       url: `https://www.dcwineandspirits.com/${product.seo_url}/`,
       priceCurrency: "USD",
       price: effectivePrice,
-      priceValidUntil: "2026-12-31",
+      validFrom: "2024-01-01",
+      priceValidUntil: "2027-07-07",
       itemCondition: "https://schema.org/NewCondition",
       availability: product.in_stock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       seller: {
         "@type": "Organization",
-        name: "DC Wine and Spirits",
+        name: "DC Wine & Spirits",
       },
+      priceSpecification: [
+        {
+          "@type": "UnitPriceSpecification",
+          priceCurrency: "USD",
+          price: effectivePrice,
+        },
+        ...(hasDiscount
+          ? [
+              {
+                "@type": "UnitPriceSpecification",
+                priceCurrency: "USD",
+                price: product.price,
+                priceType: "https://schema.org/ListPrice",
+              },
+            ]
+          : []),
+      ],
       shippingDetails: {
         "@type": "OfferShippingDetails",
         shippingRate: {
           "@type": "MonetaryAmount",
-          minValue: "15",
+          minValue: "0",
           maxValue: "30",
           currency: "USD",
         },
@@ -79,7 +104,7 @@ export function buildProductSchema(product) {
           handlingTime: {
             "@type": "QuantitativeValue",
             minValue: 1,
-            maxValue: 10,
+            maxValue: 7,
             unitCode: "DAY",
           },
           transitTime: {
@@ -89,7 +114,7 @@ export function buildProductSchema(product) {
             unitCode: "DAY",
           },
         },
-        url: "https://www.dcwineandspirits.com/delivery/",
+        url: "https://www.dcwineandspirits.com/shipping-and-delivery-policy/",
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -103,6 +128,14 @@ export function buildProductSchema(product) {
         returnMethod: "https://schema.org/ReturnByMail",
       },
     },
+    ...(product.related_products?.length && {
+      isRelatedTo: product.related_products.map((p) => ({
+        "@type": "Product",
+        name: p.name,
+        url: `https://www.dcwineandspirits.com/${p.seo_url}/`,
+        image: p.image ? `${IMAGE_BASE}${p.image}` : undefined,
+      })),
+    }),
     ...(hasReviews && {
       aggregateRating: {
         "@type": "AggregateRating",

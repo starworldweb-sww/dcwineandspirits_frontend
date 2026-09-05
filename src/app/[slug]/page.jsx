@@ -17,14 +17,15 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   let meta = await getMetaByType("category", slug);
+  console.log("generateMetadata meta:", meta);
 
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
-
   }
 
   if (!meta) {
     meta = await getMetaByType("product", slug);
+    console.log("generateMetadata product meta:", meta);
   }
 
   if (!meta) {
@@ -42,8 +43,24 @@ export async function generateMetadata({ params }) {
       canonical: `https://www.dcwineandspirits.com/${slug}/`,
     },
     openGraph: {
+      type: "website",
+      url: `https://www.dcwineandspirits.com/${slug}/`,
       title: decodeHtml(meta?.meta_title) || decodeHtml(meta?.custom_title),
       description: decodeHtml(meta?.meta_description),
+      siteName: "DC Wine & Spirits",
+      images: [
+        {
+          url:
+            meta?.image ||
+            "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp",
+          width: 600,
+          height: 315,
+          alt:
+            decodeHtml(meta?.meta_title) ||
+            decodeHtml(meta?.custom_title) ||
+            "DC Wine & Spirits",
+        },
+      ],
     },
   };
 }
@@ -52,7 +69,8 @@ export default async function ProductsSlugPage({ params }) {
   const { slug } = await params;
   const queryClient = getQueryClient();
   const cookieStore = await cookies();
-  const currentPage = Number(cookieStore.get(`current_page_${slug}`)?.value) || 1;
+  const currentPage =
+    Number(cookieStore.get(`current_page_${slug}`)?.value) || 1;
   let meta = await getMetaByType("category", slug);
 
   if (!meta) {
@@ -60,7 +78,6 @@ export default async function ProductsSlugPage({ params }) {
   }
 
   const productMeta = await getMetaByType("product", slug);
-
 
   if (!meta && !productMeta) {
     notFound();
@@ -72,14 +89,23 @@ export default async function ProductsSlugPage({ params }) {
 
     try {
       const product = await productsService.getSingleProductDetails(slug);
+
+      console.log("Product single:", product);
       if (product) {
         schema = buildProductSchema(product);
+
+        const breadcrumbsData =
+          product.breadcrumbs && product.breadcrumbs.length > 1
+            ? product.breadcrumbs
+            : slug;
+
         breadcrumbSchema = generateBreadcrumbSchema(
-          product.breadcrumbs,
+          breadcrumbsData,
           product.slug,
           "https://www.dcwineandspirits.com",
           product.name,
         );
+        console.log("Product schema:", schema);
       }
     } catch (e) {
       console.error("Schema fetch failed:", e.message);
@@ -103,7 +129,9 @@ export default async function ProductsSlugPage({ params }) {
           <Script
             id="product-breadcrumb-schema"
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(breadcrumbSchema),
+            }}
           />
         )}
         <HydrationBoundary state={dehydrate(queryClient)}>
@@ -113,7 +141,6 @@ export default async function ProductsSlugPage({ params }) {
     );
   }
 
-
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
   const filter = {};
   const limit = 24;
@@ -121,7 +148,9 @@ export default async function ProductsSlugPage({ params }) {
   const queryKey = [...productKeys.bySlugOrId(slug), filter, limit];
 
   const pagesData = await Promise.all(
-    pageParams.map((p) => productsService.getProductBySlugOrId(slug, filter, p, limit))
+    pageParams.map((p) =>
+      productsService.getProductBySlugOrId(slug, filter, p, limit),
+    ),
   );
 
   queryClient.setQueryData(queryKey, {
@@ -137,19 +166,24 @@ export default async function ProductsSlugPage({ params }) {
       categoryCollectionSchema = generateCollectionPageSchema(
         firstPageData.products?.items,
         decodeHtml(meta?.custom_title || meta?.meta_title) ||
-        firstPageData.name,
-        decodeHtml(meta?.meta_description) ||
-        firstPageData.smalldesc,
+          firstPageData.name,
+        decodeHtml(meta?.meta_description) || firstPageData.smalldesc,
         slug,
         firstPageData.products?.total,
         firstPageData.priceRange,
       );
 
+      const categoryBreadcrumbsData =
+        firstPageData.breadcrumbs && firstPageData.breadcrumbs.length > 1
+          ? firstPageData.breadcrumbs
+          : slug;
+
       categoryBreadcrumbSchema = generateBreadcrumbSchema(
-        firstPageData.breadcrumbs,
+        categoryBreadcrumbsData,
         slug,
         "https://www.dcwineandspirits.com",
-        decodeHtml(meta?.custom_title || meta?.meta_title) || firstPageData.name,
+        decodeHtml(meta?.custom_title || meta?.meta_title) ||
+          firstPageData.name,
       );
     }
   } catch (e) {
