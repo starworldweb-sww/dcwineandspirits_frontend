@@ -511,7 +511,7 @@ const SearchBar = () => {
                 {/* View All Button */}
                 {total > DROPDOWN_VISIBLE_LIMIT && (
                   <Link
-                    href={`/productsDynamic?search=${encodeURIComponent(debouncedValue)}`}
+                    href={`/products-dynamic?search=${encodeURIComponent(debouncedValue)}`}
                     onClick={handleResultClick}
                     className="block text-center text-sm text-[#98022e] font-medium py-2.5 border-t border-gray-100 hover:bg-gray-50 transition-colors"
                   >
