@@ -195,7 +195,7 @@ const MobileNavbar = () => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     setShowSuggestions(false);
-    router.push(`/productsDynamic?search=${encodeURIComponent(searchQuery.trim())}`);
+    router.push(`/products-dynamic?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   // 8) Escape se dropdown band karna (Tab/ArrowRight ghost-accept logic hata diya, ghost text hi nahi hai ab)
@@ -289,8 +289,10 @@ const MobileNavbar = () => {
           }`}
       >
         <Image
-          src="/dc-wine_logo_mobile.webp"
+          src="/dc-wine_logo_mobile.jpg"
           alt="DC Wine & Spirits"
+          loading="eager"
+          priority
           width={36}
           height={36}
           className="object-contain w-[34px] h-[34px] cursor-pointer"
@@ -426,7 +428,7 @@ const MobileNavbar = () => {
                 {/* View All Button */}
                 {total > DROPDOWN_VISIBLE_LIMIT && (
                   <Link
-                    href={`/productsDynamic?search=${encodeURIComponent(debouncedValue)}`}
+                    href={`/products-dynamic?search=${encodeURIComponent(debouncedValue)}`}
                     onClick={handleResultClick}
                     className="block text-center text-sm text-[#98022e] font-medium py-2.5 border-t border-gray-100 hover:bg-gray-50 transition-colors"
                   >
