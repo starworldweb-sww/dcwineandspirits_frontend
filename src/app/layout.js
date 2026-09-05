@@ -67,8 +67,8 @@ export const metadata = {
     images: [
       {
         url: "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp",
-        width: 600,
-        height: 315,
+        width: 1200,
+        height: 630,
         alt: "DC Wine & Spirits Logo",
       },
     ],

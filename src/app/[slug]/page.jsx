@@ -12,25 +12,53 @@ import { buildProductSchema } from "@/libs/productSchema";
 import { generateCollectionPageSchema } from "@/libs/collectionPageSchema";
 import { generateBreadcrumbSchema } from "@/libs/breadCrumbSchema";
 import Script from "next/script";
-
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
+  const IMAGE_BASE_URL = "https://www.dcwineandspirits.com/image/";
+  const FALLBACK_IMAGE =
+    "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp";
+
   let meta = await getMetaByType("category", slug);
-  console.log("generateMetadata meta:", meta);
+  let categoryData = null;
+
+  if (meta) {
+    try {
+      // limit 1 — hume sirf category ki image chahiye, poori list nahi
+      categoryData = await productsService.getProductBySlugOrId(slug, {}, 1, 1);
+
+      console.log("Category data for og:", categoryData);
+    } catch (e) {
+      console.error("Category OG image fetch failed:", e.message);
+    }
+  }
 
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
   }
 
+  let productData = null;
+
   if (!meta) {
     meta = await getMetaByType("product", slug);
-    console.log("generateMetadata product meta:", meta);
+    if (meta) {
+      try {
+        productData = await productsService.getSingleProductDetails(slug);
+        console.log("Product data for og:", productData);
+      } catch (e) {
+        console.error("Product OG image fetch failed:", e.message);
+      }
+    }
   }
 
   if (!meta) {
     notFound();
   }
+
+  const rawImage = productData?.image || categoryData?.image || meta?.image;
+
+  const ogImage = rawImage ? `${IMAGE_BASE_URL}${rawImage}` : FALLBACK_IMAGE;
+  console.log("OG Image URL:", ogImage);
 
   return {
     title:
@@ -43,18 +71,16 @@ export async function generateMetadata({ params }) {
       canonical: `https://www.dcwineandspirits.com/${slug}/`,
     },
     openGraph: {
-      type: "website",
+      type: productMeta ? "product" : "website",
       url: `https://www.dcwineandspirits.com/${slug}/`,
       title: decodeHtml(meta?.meta_title) || decodeHtml(meta?.custom_title),
       description: decodeHtml(meta?.meta_description),
       siteName: "DC Wine & Spirits",
       images: [
         {
-          url:
-            meta?.image ||
-            "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-600x315.webp",
-          width: 600,
-          height: 315,
+          url: ogImage,
+          width: 1200,
+          height: 630,
           alt:
             decodeHtml(meta?.meta_title) ||
             decodeHtml(meta?.custom_title) ||
@@ -62,6 +88,23 @@ export async function generateMetadata({ params }) {
         },
       ],
     },
+    twitter: {
+      site: "@dcwine_spirits",
+      card: "summary_large_image",
+      title: decodeHtml(meta?.meta_title) || decodeHtml(meta?.custom_title),
+      description: decodeHtml(meta?.meta_description),
+      images: [ogImage],
+    },
+    ...(productData && {
+      other: {
+        "product:price:amount":
+          productData?.special_price || productData?.price,
+        "product:price:currency": "USD",
+        "product:availability": productData?.in_stock
+          ? "in stock"
+          : "out of stock",
+      },
+    }),
   };
 }
 

@@ -18,16 +18,13 @@ import React, {
   useRef,
   useDeferredValue,
 } from "react";
-import { useMobileCategory } from "@/app/api/hooks/useMobileCategory"; // apna actual path daal dena
-import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // PhoneHeader wala hi auth hook — login state yahin se milega
+import { useMobileCategory } from "@/app/api/hooks/useMobileCategory";
+import { useUser, useLogout } from "@/app/api/hooks/useAuth";
 import Link from "next/link";
 import { decodeHtml } from "@/libs/decodeHtml";
-import { TfiMenuAlt } from "react-icons/tfi";
 
 // ============================================================
 // HELPER: Menu item ka link banata hai
-// - "custom" type wale items ke liye custom_url use hota hai
-// - baaki sabke liye seo_url (SEO friendly slug) use hota hai
 // ============================================================
 const getItemHref = (item) => {
   if (item.type === "custom") return item.custom_url || "#";
@@ -37,11 +34,6 @@ const getItemHref = (item) => {
 
 // ============================================================
 // HELPER: Item ka koi real/valid link hai ya nahi
-// - "custom" type ke liye custom_url chahiye
-// - baaki ke liye seo_url ya custom_url mein se koi bhi ho
-// - agar dono nahi hain, toh yeh sirf grouping ke liye hai
-//   (pure accordion parent) — aise items ke liye Link render
-//   nahi karna, warna href="#" ki wajah se URL mein "#" chala jaata
 // ============================================================
 const hasRealLink = (item) => {
   if (item.type === "custom") return !!item.custom_url;
@@ -50,10 +42,6 @@ const hasRealLink = (item) => {
 
 // ============================================================
 // HELPER: Search query ke hisaab se menu tree ko filter karta hai
-// - Agar item ka apna title match kare, toh uske saare children
-//   bhi (unfiltered) dikhaye jaate hain
-// - Agar sirf koi descendant match kare, toh sirf wahi matching
-//   descendants dikhte hain (pruned tree)
 // ============================================================
 const filterMenuTree = (items, query) => {
   if (!query) return items;
@@ -76,8 +64,6 @@ const filterMenuTree = (items, query) => {
 
 // ============================================================
 // HELPER: Matching text ko highlight karta hai (bold + accent color)
-// - query ko case-insensitive tareeke se text mein dhoondhta hai
-// - matching part ko <mark> mein wrap karta hai
 // ============================================================
 const highlightMatch = (text, query) => {
   if (!query) return decodeHtml(text);
@@ -87,7 +73,6 @@ const highlightMatch = (text, query) => {
   const lowerQuery = query.toLowerCase();
   const matchIndex = lowerText.indexOf(lowerQuery);
 
-  // Query is text mein nahi mila (parent match hua tha, isme nahi) — plain text hi dikhao
   if (matchIndex === -1) return decoded;
 
   const before = decoded.slice(0, matchIndex);
@@ -107,19 +92,6 @@ const highlightMatch = (text, query) => {
 
 // ============================================================
 // COMPONENT: MenuNode
-// Recursive <li> row — kitni bhi nesting depth API se aaye,
-// yeh khud ko baar baar call karke handle kar leta hai.
-//
-// Accordion animation ab CSS grid-template-rows trick use karti
-// hai (0fr <-> 1fr) — max-height hack se zyada smooth aur
-// content ki actual height ke hisaab se accurate hoti hai, kitni
-// bhi lambi list ho.
-//
-// SEO/Accessibility notes:
-// - <ul>/<li> ka use karke browser aur crawlers ko clear
-//   hierarchy milti hai (plain <div> stack se better hai)
-// - aria-expanded batata hai screen readers ko ki submenu
-//   khula hai ya band
 // ============================================================
 const MenuNode = ({
   item,
@@ -132,31 +104,20 @@ const MenuNode = ({
   searchQuery,
 }) => {
   const hasChildren = item.children && item.children.length > 0;
-  // Search active hone par sab matching branches force-open rehte hain
   const isOpen = isSearching ? hasChildren : openItems.has(path);
   const submenuId = `submenu-${path}`;
-  // Item ka apna real link hai ya sirf grouping ke liye hai
   const hasLink = hasRealLink(item);
 
-  // Row ki khaali jagah (text/button ke alawa) pe click => accordion
-  // toggle. Sirf un items ke liye jinke children hain aur search active
-  // nahi hai (search mein toggle disable hai, sab already open dikhte hain)
   const isToggleRow = hasChildren && !isSearching;
   const handleRowClick = () => {
     if (isToggleRow) toggleItem(path);
   };
 
-  // Text pe click => hamesha navigate + menu close. stopPropagation isliye
-  // taaki row ka toggle click handler dobara fire na ho (warna toggle ho
-  // ke turant wapas bhi ho jaata — net effect zero)
   const handleLinkClick = (e) => {
     e.stopPropagation();
     closeMenu();
   };
 
-  // Text/label ke liye common classes — Link aur span dono mein use honge.
-  // Link: flex-1 sirf tab jab row toggle-clickable na ho (leaf ya searching).
-  // Span (no-link items): hamesha flex-1 — kyunki poori row hi toggle karti hai.
   const labelClassName = `${!hasLink || !isToggleRow ? "flex-1" : ""} text-[#2c3e50] transition-colors duration-200 ${
     hasLink ? "hover:text-[#98022e]" : ""
   } ${depth === 0 ? "font-bold text-[15px]" : "font-font text-[14px] text-gray-600"}`;
@@ -167,12 +128,6 @@ const MenuNode = ({
 
   return (
     <li className={depth === 0 ? "border-b border-gray-100" : ""}>
-      {/* ---------- ROW: link/text + expand/collapse button ----------
-          - Apne link wale items: text pe click navigate karega,
-            row ki baaki jagah pe click accordion toggle karega
-          - Sirf accordion (koi apna page nahi) wale items: plain text
-            (span) hai — na kahin navigate hoga, na URL mein "#" aayega,
-            poori row hi toggle ke liye clickable rehti hai */}
       <div
         onClick={handleRowClick}
         className={`w-full flex items-center justify-between px-5 ${depth === 0 ? "py-3" : "py-1"} ${
@@ -197,14 +152,10 @@ const MenuNode = ({
           </span>
         )}
 
-        {/* Search ke dauraan sab kuch already open hai, isliye toggle button
-            chhupa dete hain taaki confusing na lage */}
         {hasChildren && !isSearching && (
           <button
             type="button"
             onClick={(e) => {
-              // stopPropagation warna row ka onClick bhi fire hoga aur
-              // toggle do baar ho jaayega (net effect zero — bug)
               e.stopPropagation();
               toggleItem(path);
             }}
@@ -228,7 +179,6 @@ const MenuNode = ({
         )}
       </div>
 
-      {/* ---------- SUBMENU: grid-rows trick se smooth expand/collapse ---------- */}
       {hasChildren && (
         <div
           className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
@@ -260,31 +210,21 @@ const MenuNode = ({
 
 // ============================================================
 // COMPONENT: PhoneLeftMenu
-// Mobile drawer menu — hamburger button + left se slide hone
-// wala panel, jisme poora menu tree ul/li ke form mein render
-// hota hai.
 // ============================================================
 const PhoneLeftMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Set-based state — isse multiple accordion items ek saath khule reh sakte hain
-  const [openItems, setOpenItems] = useState(new Set());
+  // Set-based state initialized with "0" so the first category is open by default
+  const [openItems, setOpenItems] = useState(() => new Set(["0"]));
 
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Search input ka ref — clear button click hone par isipe focus wapas karte hain
   const searchInputRef = useRef(null);
-
-  // Bade menu tree ke liye typing lag avoid karta hai — filtering
-  // ek frame "deferred" ho jaati hai taaki input typing hamesha smooth rahe
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
   const { data, isLoading } = useMobileCategory();
   const menuItems = data?.data?.menu || [];
-  const heading = data?.data?.heading || "MENU";
 
-  // Auth state — PhoneHeader jaisa hi pattern: user object aur logout mutation
-  const { data: user, isLoading: isUserLoading } = useUser();
+  const { data: user } = useUser();
   const logoutMutation = useLogout();
   const isLoggedIn = !!user;
 
@@ -295,7 +235,6 @@ const PhoneLeftMenu = () => {
     [menuItems, deferredSearchQuery],
   );
 
-  // Total matching leaf-level results count karta hai — user ko "N results" dikhane ke liye
   const resultCount = useMemo(() => {
     const countLeaves = (items) =>
       items.reduce((sum, item) => {
@@ -307,7 +246,6 @@ const PhoneLeftMenu = () => {
     return countLeaves(filteredMenuItems);
   }, [filteredMenuItems]);
 
-  // Kisi bhi node ka open/close state toggle karta hai
   const toggleItem = (path) => {
     setOpenItems((prev) => {
       const next = new Set(prev);
@@ -322,24 +260,20 @@ const PhoneLeftMenu = () => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Logout par: menu bhi band ho jaye aur mutation trigger ho jaye
   const handleLogout = () => {
     closeMenu();
     logoutMutation.mutate();
   };
 
-  // Menu band hone par search reset ho jaye, taaki agli baar khulne pe
-  // poora tree fresh dikhe
+  // Menu khulne par search reset aur pehli category ko dubara open state par set karna
   useEffect(() => {
-    if (!isMenuOpen) {
+    if (isMenuOpen) {
+      setOpenItems(new Set(["0"]));
       setSearchQuery("");
     }
   }, [isMenuOpen]);
 
-  // NOTE: pehle yahan ek useEffect tha jo menu khulte hi search input
-  // pe autofocus kar deta tha — user ke kehne pe hata diya gaya hai.
-
-  // Menu khule hone par background scroll lock — smoother, distraction-free feel
+  // Background scroll lock
   useEffect(() => {
     if (isMenuOpen) {
       const original = document.body.style.overflow;
@@ -350,7 +284,7 @@ const PhoneLeftMenu = () => {
     }
   }, [isMenuOpen]);
 
-  // Escape key se bhi menu close ho jaye
+  // Escape key support
   useEffect(() => {
     if (!isMenuOpen) return;
     const handleKeyDown = (e) => {
@@ -362,7 +296,6 @@ const PhoneLeftMenu = () => {
 
   return (
     <div>
-      {/* ---------- HAMBURGER BUTTON: menu open/close trigger ---------- */}
       <button
         type="button"
         onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -378,7 +311,6 @@ const PhoneLeftMenu = () => {
         )}
       </button>
 
-      {/* ---------- BACKDROP: click karne se menu close ho jayega ---------- */}
       <div
         onClick={closeMenu}
         aria-hidden="true"
@@ -387,14 +319,12 @@ const PhoneLeftMenu = () => {
         }`}
       />
 
-      {/* ---------- DRAWER PANEL: left se slide hoke aata hai ---------- */}
       <div
         id="phone-left-menu-drawer"
         className={`fixed top-0 left-0 h-full w-[85%] max-w-[360px] bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* ---- Header bar ---- */}
         <div className="flex items-center justify-between bg-[#98022e] px-4 py-3 shrink-0">
           <span className="font-bold text-sm tracking-wide uppercase text-white">
             MENU
@@ -409,7 +339,6 @@ const PhoneLeftMenu = () => {
           </button>
         </div>
 
-        {/* ---- Quick search: category names ko client-side filter karta hai ---- */}
         <div className="px-4 py-3 border-b border-gray-100 shrink-0">
           <div className="relative">
             <Search
@@ -426,7 +355,6 @@ const PhoneLeftMenu = () => {
               className="w-full bg-gray-50 border border-gray-200 rounded-full pl-9 pr-9 py-2 text-[14px] text-[#2c3e50] outline-none transition-all duration-200 focus:border-[#98022e] focus:ring-4 focus:ring-[#98022e]/10 focus:bg-white"
             />
 
-            {/* Clear (X) button — sirf tab dikhta hai jab kuch type ho */}
             {searchQuery && (
               <button
                 type="button"
@@ -442,7 +370,6 @@ const PhoneLeftMenu = () => {
             )}
           </div>
 
-          {/* Result count — sirf searching ke dauraan dikhta hai */}
           {isSearching && !isLoading && (
             <p className="text-[12px] text-gray-500 mt-1.5 px-1">
               {resultCount} {resultCount === 1 ? "result" : "results"} found
@@ -450,14 +377,12 @@ const PhoneLeftMenu = () => {
           )}
         </div>
 
-        {/* ---- Menu list: semantic <nav> + <ul> for SEO/accessibility ---- */}
         <nav className="flex-1 overflow-y-auto" aria-label="Mobile navigation">
           {isLoading ? (
             <p className="px-5 py-6 text-[14px] text-gray-500">
               Loading menu...
             </p>
           ) : filteredMenuItems.length === 0 ? (
-            // Better empty state — icon ke saath, aur "clear search" shortcut
             <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
               <Search size={28} className="text-gray-300 mb-2" />
               <p className="text-[14px] text-gray-500 mb-3">
@@ -490,12 +415,9 @@ const PhoneLeftMenu = () => {
           )}
         </nav>
 
-        {/* ---- Bottom action bar: Login/Register (logged out) ya
-            Account/Logout (logged in), phone, bulk order ---- */}
         <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-3 space-y-2.5">
           <div className="flex items-center gap-2">
             {isLoggedIn ? (
-              // ---- LOGGED IN: "My Account" (naam ke saath) + "Logout" ----
               <>
                 <Link
                   href="/account"
@@ -503,7 +425,6 @@ const PhoneLeftMenu = () => {
                   className="flex-1 flex items-center justify-center gap-1.5 border border-[#98022e] text-[#98022e] text-[13px] font-semibold uppercase tracking-wide py-2 rounded-sm transition-all duration-200 hover:bg-[#98022e] hover:text-white active:scale-[0.97]"
                 >
                   <User size={14} />
-                  {/* firstname aane tak generic "My Account" dikhta rahega */}
                   {user?.firstname ? `Hi, ${user.firstname}` : "My Account"}
                 </Link>
                 <button
@@ -517,7 +438,6 @@ const PhoneLeftMenu = () => {
                 </button>
               </>
             ) : (
-              // ---- LOGGED OUT: "Login" + "Register" (original behaviour) ----
               <>
                 <Link
                   href="/account/login/"
