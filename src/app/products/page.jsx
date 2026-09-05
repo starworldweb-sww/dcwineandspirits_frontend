@@ -5,6 +5,9 @@ import { getQueryClient } from '@/libs/get-query-client'
 import { productKeys } from '@/libs/queryKeys'
 import { cookies } from 'next/headers'
 import { productsService } from '../api/services/productsService'
+import { generateCollectionPageSchema } from '@/libs/collectionPageSchema'
+import { generateBreadcrumbSchema } from '@/libs/breadCrumbSchema'
+import Script from 'next/script'
 
 
 
@@ -52,17 +55,68 @@ const page = async () => {
   const pagesData = await Promise.all(
     pageParams.map((p) => productsService.getAllProducts({ showNum: limit, pageParam: p }))
   );
+  console.log("pagesData", pagesData)
 
   queryClient.setQueryData(queryKey, {
     pages: pagesData,
     pageParams: pageParams,
   });
 
+  let productsCollectionSchema = null;
+  let productsBreadcrumbSchema = null;
+  try {
+    const firstPageData = pagesData[0];
+    if (firstPageData) {
+      productsCollectionSchema = generateCollectionPageSchema(
+        firstPageData.products?.items,
+        metadata.title,
+        metadata.description,
+        "products",
+        firstPageData.products?.total,
+        firstPageData.priceRange,
+      );
+
+      const productsBreadcrumbsData =
+        firstPageData.breadcrumbs && firstPageData.breadcrumbs.length > 1
+          ? firstPageData.breadcrumbs
+          : "products";
+
+      productsBreadcrumbSchema = generateBreadcrumbSchema(
+        productsBreadcrumbsData,
+        "products",
+        "https://www.dcwineandspirits.com",
+        "All Products",
+      );
+    }
+  } catch (e) {
+    console.error("Collection schema build failed:", e.message);
+  }
+
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProductsClient />
-    </HydrationBoundary>
+    <>
+      {productsCollectionSchema && (
+        <Script
+          id="products-collection-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(productsCollectionSchema),
+          }}
+        />
+      )}
+      {productsBreadcrumbSchema && (
+        <Script
+          id="products-breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(productsBreadcrumbSchema),
+          }}
+        />
+      )}
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ProductsClient />
+      </HydrationBoundary>
+    </>
   )
 }
 
