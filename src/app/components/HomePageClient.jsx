@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import WhyChooseUs from "./WhyChooseUs";
 import ExperimentalComponent from "./ExperimentalComponent";
 import LoveBanner from "./LoveBanner";
+import SeasonalComponent from "./SeasonalComponent";
 
 
 const HomePageClient = () => {
@@ -33,6 +34,7 @@ const HomePageClient = () => {
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
         <ExperimentalComponent/>
+        <SeasonalComponent/>
         <CategoryShowcase data={homeData?.topCategories} isLoading={isLoading} isError={isError} />
         <LoveBanner data={homeData?.loveBanners}/>
         <GiftsByOccasionHero

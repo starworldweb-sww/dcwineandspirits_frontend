@@ -11,7 +11,7 @@ import { cookies } from "next/headers";
 import { buildProductSchema } from "@/libs/productSchema";
 import { generateCollectionPageSchema } from "@/libs/collectionPageSchema";
 import { generateBreadcrumbSchema } from "@/libs/breadCrumbSchema";
-import Script from "next/script";
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
@@ -71,7 +71,7 @@ export async function generateMetadata({ params }) {
       canonical: `https://www.dcwineandspirits.com/${slug}/`,
     },
     openGraph: {
-      type: productMeta ? "product" : "website",
+      type: "website",
       url: `https://www.dcwineandspirits.com/${slug}/`,
       title: decodeHtml(meta?.meta_title) || decodeHtml(meta?.custom_title),
       description: decodeHtml(meta?.meta_description),
@@ -162,14 +162,14 @@ export default async function ProductsSlugPage({ params }) {
     return (
       <>
         {schema && (
-          <Script
+          <script
             id="product-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
           />
         )}
         {breadcrumbSchema && (
-          <Script
+          <script
             id="product-breadcrumb-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -186,7 +186,7 @@ export default async function ProductsSlugPage({ params }) {
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
   const filter = {};
-  const limit = 100;
+  const limit = 48;
 
   const queryKey = [...productKeys.bySlugOrId(slug), filter, limit];
 
@@ -236,7 +236,7 @@ export default async function ProductsSlugPage({ params }) {
   return (
     <>
       {categoryCollectionSchema && (
-        <Script
+        <script
           id="category-collection-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -245,7 +245,7 @@ export default async function ProductsSlugPage({ params }) {
         />
       )}
       {categoryBreadcrumbSchema && (
-        <Script
+        <script
           id="category-breadcrumb-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{

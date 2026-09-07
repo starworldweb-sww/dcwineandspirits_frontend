@@ -7,7 +7,7 @@ import { cookies } from 'next/headers'
 import { productsService } from '../api/services/productsService'
 import { generateCollectionPageSchema } from '@/libs/collectionPageSchema'
 import { generateBreadcrumbSchema } from '@/libs/breadCrumbSchema'
-import Script from 'next/script'
+
 
 
 
@@ -48,7 +48,7 @@ const page = async () => {
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
   console.log("currentPage", currentPage)
-  const limit = 100;
+  const limit = 48;
 
   const queryKey = [...productKeys.allProducts(limit)];
 
@@ -96,7 +96,7 @@ const page = async () => {
   return (
     <>
       {productsCollectionSchema && (
-        <Script
+        <script
           id="products-collection-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -105,7 +105,7 @@ const page = async () => {
         />
       )}
       {productsBreadcrumbSchema && (
-        <Script
+        <script
           id="products-breadcrumb-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
