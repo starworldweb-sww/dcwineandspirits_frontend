@@ -886,7 +886,7 @@ const CheckoutClient = () => {
     return () => { if (autoUpdateTimerRef.current) clearTimeout(autoUpdateTimerRef.current); };
   }, []);
 
-  // ── Setup Apple Pay / Google Pay via PaymentRequest ──
+ 
   useEffect(() => {
     if (!stripe || !total) return;
 
@@ -898,6 +898,7 @@ const CheckoutClient = () => {
       requestPayerEmail: true,
       requestPayerPhone: true,
       requestShipping: true,
+      disableWallets: ['link'],  
       shippingOptions: [
         {
           id: selectedShipping?.id || "default",
@@ -939,7 +940,7 @@ const CheckoutClient = () => {
           setExpressPaymentReady(true);
           setPaymentRequest(pr);
         } else {
-          
+
           setTimeout(() => {
             pr.canMakePayment().then((retryResult) => {
               if (retryResult) {
