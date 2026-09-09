@@ -778,8 +778,8 @@ const CheckoutClient = () => {
         payment_country_id: Number(billing.country_id) ?? 0,
         payment_address_format: "",
         payment_custom_field: "",
-        payment_method: isExpressFlow ? "Apple Pay" : (paymentCode === "cod" ? "Cash On Delivery" : "Credit/Debit Card"),
-        payment_code: isExpressFlow ? "stripe" : paymentCode,
+        payment_method: expressPaymentMethod ? "Apple Pay" : (paymentCode === "cod" ? "Cash On Delivery" : "Credit/Debit Card"),
+        payment_code: expressPaymentMethod ? "stripe" : paymentCode,
 
         shipping_firstname: resolvedShipping.firstname ?? "",
         shipping_lastname: resolvedShipping.lastname ?? "",
@@ -841,6 +841,7 @@ const CheckoutClient = () => {
       registerData, checkoutType, paymentCode, cartItems, subTotal, shippingCost, total,
       selectedShipping, orderNote, missingOrderId, draftIntentId, clientSecret, user,
       tipAmount, tax, discountAmount, coupon, couponData,
+      expressPaymentMethod
     ]
   );
 
@@ -934,18 +935,22 @@ const CheckoutClient = () => {
 
     pr.canMakePayment()
       .then((result) => {
-        const isApplePaySupportedBrowser =
-          typeof window !== "undefined" &&
-          window.ApplePaySession &&
-          window.ApplePaySession.canMakePayments &&
-          window.ApplePaySession.canMakePayments();
-
-        if (result || isApplePaySupportedBrowser) {
+        if (result) {
           setExpressPaymentReady(true);
           setPaymentRequest(pr);
         } else {
-          setExpressPaymentReady(false);
-          setPaymentRequest(null);
+          
+          setTimeout(() => {
+            pr.canMakePayment().then((retryResult) => {
+              if (retryResult) {
+                setExpressPaymentReady(true);
+                setPaymentRequest(pr);
+              } else {
+                setExpressPaymentReady(false);
+                setPaymentRequest(null);
+              }
+            });
+          }, 1000);
         }
       })
       .catch(() => {
