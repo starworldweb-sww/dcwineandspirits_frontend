@@ -19,9 +19,10 @@ import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
+  CardElement,
+  PaymentRequestButtonElement,
   useStripe,
   useElements,
-  CardElement,
 } from "@stripe/react-stripe-js";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import Modal from "@/app/components/ui/Modal";
@@ -176,10 +177,10 @@ const CheckoutClient = () => {
 
 
   const isLoggedIn = !!user?.customer_id;
-  
+
 
   const { data: addresses = [], refetch: refetchAddresses } = useGetAddresses(isLoggedIn);
-   
+
   const getZones = useZoneget();
   const { mutateAsync: placeOrderMut } = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
@@ -222,6 +223,12 @@ const CheckoutClient = () => {
   const [supportTeam, setSupportTeam] = useState("no");
   const [selectedTip, setSelectedTip] = useState("");
   const [customTipValue, setCustomTipValue] = useState("");
+
+  // ── Apple Pay / Express Checkout ──
+  const [paymentRequest, setPaymentRequest] = useState(null);
+  const [expressPaymentReady, setExpressPaymentReady] = useState(false);
+  const [expressPaymentMethod, setExpressPaymentMethod] = useState(null);
+  const [expressPaymentType, setExpressPaymentType] = useState(null);
 
   // --- discount ---------------
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -305,10 +312,10 @@ const CheckoutClient = () => {
     if (addr.city) parts.push(addr.city);
     if (addr.zone_name) parts.push(addr.zone_name);
     if (addr.country_name) parts.push(addr.country_name);
-     
+
     return parts.filter(Boolean).join(" ");
   };
-  
+
   // console.log("formatAddressLabel",)
   const populateAddressToBilling = (addr) => {
     if (!addr) return;
@@ -771,8 +778,8 @@ const CheckoutClient = () => {
         payment_country_id: Number(billing.country_id) ?? 0,
         payment_address_format: "",
         payment_custom_field: "",
-        payment_method: paymentCode === "cod" ? "Cash On Delivery" : "Credit/Debit Card",
-        payment_code: paymentCode,
+        payment_method: isExpressFlow ? "Apple Pay" : (paymentCode === "cod" ? "Cash On Delivery" : "Credit/Debit Card"),
+        payment_code: isExpressFlow ? "stripe" : paymentCode,
 
         shipping_firstname: resolvedShipping.firstname ?? "",
         shipping_lastname: resolvedShipping.lastname ?? "",
@@ -878,9 +885,130 @@ const CheckoutClient = () => {
     return () => { if (autoUpdateTimerRef.current) clearTimeout(autoUpdateTimerRef.current); };
   }, []);
 
-  // ══════════════════════════════════════════════════════════════════════
-  // FINAL "Place Order" — confirms Stripe payment against the draft order
-  // ══════════════════════════════════════════════════════════════════════
+  // ── Setup Apple Pay / Google Pay via PaymentRequest ──
+  useEffect(() => {
+    if (!stripe || !total) return;
+
+    const pr = stripe.paymentRequest({
+      country: "US",
+      currency: "usd",
+      total: { label: "DC Wine & Spirits", amount: Math.round(total * 100) },
+      requestPayerName: true,
+      requestPayerEmail: true,
+      requestPayerPhone: true,
+      requestShipping: true,
+      shippingOptions: [
+        {
+          id: selectedShipping?.id || "default",
+          label: selectedShipping?.name || "Shipping",
+          detail: selectedShipping?.label || "",
+          amount: Math.round(shippingCost * 100),
+        },
+      ],
+      walletOptions: {
+        applePay: {
+          requiredBillingContactFields: ["postalAddress", "name", "phone", "email"],
+          requiredShippingContactFields: ["postalAddress"],
+        },
+      },
+    });
+
+    pr.on("shippingaddresschange", (ev) => {
+      const isUS = !ev.shippingAddress || ev.shippingAddress.country === "US";
+      if (!isUS) {
+        ev.updateWith({ status: "invalid_shipping_address" });
+        return;
+      }
+      ev.updateWith({
+        status: "success",
+        shippingOptions: [
+          {
+            id: selectedShipping?.id || "default",
+            label: selectedShipping?.name || "Shipping",
+            detail: selectedShipping?.label || "",
+            amount: Math.round(shippingCost * 100),
+          },
+        ],
+      });
+    });
+
+    pr.canMakePayment()
+      .then((result) => {
+        const isApplePaySupportedBrowser =
+          typeof window !== "undefined" &&
+          window.ApplePaySession &&
+          window.ApplePaySession.canMakePayments &&
+          window.ApplePaySession.canMakePayments();
+
+        if (result || isApplePaySupportedBrowser) {
+          setExpressPaymentReady(true);
+          setPaymentRequest(pr);
+        } else {
+          setExpressPaymentReady(false);
+          setPaymentRequest(null);
+        }
+      })
+      .catch(() => {
+        setExpressPaymentReady(false);
+        setPaymentRequest(null);
+      });
+
+    pr.on("paymentmethod", async (event) => {
+      setExpressPaymentMethod(event.paymentMethod);
+      setExpressPaymentType(
+        event.paymentMethod.type === "card" ? "apple_pay" : event.paymentMethod.type
+      );
+
+      const payer = event.payer || {};
+      const bd = event.paymentMethod.billing_details || {};
+      const addr = bd.address || {};
+      const shipAddr = event.shippingAddress || {};
+
+      setBilling((prev) => ({
+        ...prev,
+        email: prev.email || payer.email || bd.email || "",
+        telephone: prev.telephone || payer.phone || bd.phone || "",
+        firstname: prev.firstname || (bd.name || payer.name || "").split(" ")[0] || "",
+        lastname: prev.lastname || (bd.name || payer.name || "").split(" ").slice(1).join(" ") || "",
+        address_1: prev.address_1 || addr.line1 || "",
+        address_2: prev.address_2 || addr.line2 || "",
+        city: prev.city || addr.city || "",
+        postcode: prev.postcode || addr.postal_code || "",
+      }));
+
+      // ── Shipping address ko bhi Apple Pay se bharo ──
+      if (!shippingSameAsBilling) {
+        const shipName = shipAddr.recipient || payer.name || "";
+        const shipParts = shipName.split(" ");
+
+        // region code se zone_id resolve karna hoga
+        const matchedZone = shippingZones.find(
+          (z) => z.code === shipAddr.region || z.name === shipAddr.region
+        );
+
+        setShipping((prev) => ({
+          ...prev,
+          firstname: prev.firstname || shipParts[0] || "",
+          lastname: prev.lastname || shipParts.slice(1).join(" ") || "",
+          address_1: prev.address_1 || (shipAddr.addressLine?.[0] ?? ""),
+          address_2: prev.address_2 || (shipAddr.addressLine?.slice(1).join(", ") ?? ""),
+          city: prev.city || shipAddr.city || "",
+          postcode: prev.postcode || shipAddr.postalCode || "",
+          zone_id: prev.zone_id || String(matchedZone?.zone_id || ""),
+          telephone: prev.telephone || payer.phone || "",
+        }));
+      }
+
+      event.complete("success");
+    });
+
+    return () => {
+      setExpressPaymentMethod(null);
+      setExpressPaymentType(null);
+    };
+  }, [stripe, total]);
+
+
   const handleConfirmOrder = async () => {
     setOrderError("");
 
@@ -901,29 +1029,53 @@ const CheckoutClient = () => {
       return;
     }
 
+    const isExpressFlow = !!expressPaymentMethod;
+    if (!isExpressFlow && paymentCode === "stripe") {
+      const cardEl = elements?.getElement?.(CardElement) ?? null;
+      if (!cardEl) {
+        setOrderError("Payment form is not ready yet. Please wait a moment and try again.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
-      const cardElement = elements.getElement(CardElement);
+      let pm = null;
 
-      const { error: pmError, paymentMethod: pm } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-        billing_details: {
-          name: `${billing.firstname ?? ""} ${billing.lastname ?? ""}`.trim(),
-          email: billing.email || registerData.email || undefined,
-          phone: billing.telephone || undefined,
-          address: {
-            line1: billing.address_1 || undefined,
-            line2: billing.address_2 || undefined,
-            city: billing.city || undefined,
-            postal_code: billing.postcode || undefined,
+      if (isExpressFlow) {
+        pm = expressPaymentMethod;
+      } else {
+        const cardEl =
+          elements?.getElement?.(CardElement) ??
+          null;
+
+        const { error: pmError, paymentMethod: newPm } = await stripe.createPaymentMethod({
+          type: "card",
+          ...(cardEl ? { card: cardEl } : {}),
+          billing_details: {
+            name: `${billing.firstname ?? ""} ${billing.lastname ?? ""}`.trim(),
+            email: billing.email || registerData.email || undefined,
+            phone: billing.telephone || undefined,
+            address: {
+              line1: billing.address_1 || undefined,
+              line2: billing.address_2 || undefined,
+              city: billing.city || undefined,
+              postal_code: billing.postcode || undefined,
+            },
           },
-        },
-      });
+        });
 
-      if (pmError) {
-        setOrderError(pmError.message);
+        if (pmError) {
+          setOrderError(pmError.message);
+          setIsSubmitting(false);
+          return;
+        }
+        pm = newPm;
+      }
+
+      if (!pm?.id) {
+        setOrderError("Payment method could not be created. Please try again.");
         setIsSubmitting(false);
         return;
       }
@@ -1004,6 +1156,15 @@ const CheckoutClient = () => {
     }
   };
 
+  // ── Auto-trigger confirm order as soon as Express (Apple Pay) returns a PM
+  useEffect(() => {
+    if (!expressPaymentMethod) return;
+    if (isSubmitting) return;
+    const t = setTimeout(() => handleConfirmOrder(), 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expressPaymentMethod]);
+
 
   const handleApplingCoupon = () => {
     mutate({ code: coupon, cartTotal: subTotal }, {
@@ -1059,7 +1220,7 @@ const CheckoutClient = () => {
   }, [subTotal]);
 
 
-  
+
   return (
     <main className="font-hind-madurai text-[#333333] mb-10">
       <div className="flex flex-col w-full">
@@ -1277,7 +1438,7 @@ const CheckoutClient = () => {
                 )}
 
                 {/* REGISTER FORM */}
-                {isLoggedIn  && addresses?.length === 0  && (
+                {isLoggedIn && addresses?.length === 0 && (
                   <div className="bg-[#eeeeee] rounded-[4px] p-6 md:p-8">
                     <h2
                       className={`font-sarabun text-[17px] font-bold text-[#333333] pb-2 mb-1`}
@@ -2277,6 +2438,29 @@ const CheckoutClient = () => {
 
                   <div className="bg-white border border-gray-200 rounded-[4px] p-6 shadow-sm">
                     <SectionHeader title="Payment Method" />
+
+                    {expressPaymentReady && paymentRequest && (
+                      <div className="mb-4">
+                        <PaymentRequestButtonElement
+                          options={{
+                            paymentRequest,
+                            style: {
+                              paymentRequestButton: {
+                                type: "buy",
+                                theme: "dark",
+                                height: "48px",
+                              },
+                            },
+                          }}
+                        />
+                        <div className="flex items-center gap-2 my-4">
+                          <div className="flex-1 h-px bg-gray-200" />
+                          <span className="text-[12px] text-gray-400">OR PAY WITH CARD</span>
+                          <div className="flex-1 h-px bg-gray-200" />
+                        </div>
+                      </div>
+                    )}
+
                     <label className={`flex flex-col gap-3 border rounded-lg p-4 cursor-pointer ${paymentCode === "stripe" ? "border-2 border-[#c99000] bg-[#fdf8ea]" : "border-gray-200"}`}>
                       <div className="flex items-center gap-3">
                         <input type="radio" checked={paymentCode === "stripe"} onChange={() => setPaymentCode("stripe")} className="accent-[#c99000] cursor-pointer" />

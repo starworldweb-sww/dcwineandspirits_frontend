@@ -95,8 +95,9 @@ const ProductListRow = ({ product }) => {
   );
 
   const productLink = product.seo_url
-    ? `/${product.seo_url}`
-    : `/${product.product_id}`;
+    ? `/${product.seo_url}/`
+    : `/${product.product_id}/`;
+     
   const productImage = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
@@ -305,8 +306,9 @@ const ProductGridCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showWishlistPopup, setShowWishlistPopup] = useState(false);
   const productLink = product.seo_url
-    ? `/${product.seo_url}`
-    : `/${product.product_id}`;
+    ? `/${product.seo_url}/`
+    : `/${product.product_id}/`;
+    console.log("productLink",productLink)
   const productImage = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
     : "/prosecco-gift-800x800.webp";
@@ -380,7 +382,7 @@ const ProductGridCard = ({ product }) => {
       )}
 
       <Link
-        href={productLink}
+        href={`${productLink}`}
         className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
       >
         <Image

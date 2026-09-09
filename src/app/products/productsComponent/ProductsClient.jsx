@@ -19,7 +19,6 @@ const ProductsClient = () => {
     return data.pages.flatMap((page) => page.allproducts || []);
   }, [data]);
 
-  console.log("data", data)
   const pages = useMemo(() => {
     if (!data?.pages) return [];
     return data.pages.flatMap((page) => page.page || []);

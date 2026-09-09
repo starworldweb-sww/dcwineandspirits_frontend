@@ -4,14 +4,15 @@ import React, { useState } from "react";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { toast } from "sonner";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
+import { useContactpost } from "../api/hooks/useContact";
+import { toast } from "sonner";
 
 // --- BRAND ACCENT ---
 const ACCENT = "#8c1a3c";
 
 const breadcrumbs = [
-  
+
   { label: "Contact Us", href: "/contact" },
 ];
 
@@ -29,8 +30,8 @@ const validationSchema = Yup.object({
 });
 
 const ContactClient = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
+  const {mutate:contactSubmit, isPending } = useContactpost()
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -41,20 +42,9 @@ const ContactClient = () => {
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      // 🔹 Yahan koi API call nahi hai — sirf local handling.
-      // Jab backend ready ho jaye, is block mein apna mutation/fetch call laga dena.
-      try {
-        setIsSubmitting(true);
-        
-
-        toast.success("Your message has been sent successfully!");
-        resetForm();
-      } catch (error) {
-        toast.error("Something went wrong. Please try again.");
-      } finally {
-        setIsSubmitting(false);
-        setSubmitting(false);
-      }
+      console.log("values",values)
+       contactSubmit(values)
+       resetForm()
     },
   });
 
@@ -220,10 +210,10 @@ const ContactClient = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isPending}
               className="w-full sm:w-auto sm:px-16 bg-black text-white text-[13px] font-hind-madurai font-semibold tracking-[1.5px] uppercase py-3.5 transition-colors duration-300 hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Sending..." : "Submit"}
+              {isPending ? "Sending..." : "Submit"}
             </button>
           </form>
         </div>
