@@ -27,22 +27,17 @@ function ViewAllOccasionsTile({ variant = "mobile" }) {
         <Gift size={isMobile ? 18 : 22} strokeWidth={2} />
       </span>
 
-      <span
-        className={`relative z-10 mt-2 font-semibold leading-snug ${isMobile ? "text-[12.5px] px-2" : "text-[15px] px-3"}`}
-      >
-        Explore
+      <span className={`relative z-10 mt-2 font-semibold leading-snug ${isMobile ? "text-[12.5px] px-2" : "text-[15px] px-3"}`}>
+        Explore 
         <br />
-        All Occasions
+       All Occasions
       </span>
     </Link>
   );
 }
 
-const GiftsByOccasionHero = ({
-  data,
-  isLoading: propLoading,
-  isError: propError,
-}) => {
+
+const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError }) => {
   const standalone = propLoading === undefined;
   const giftHookResult = useGetGiftByOccasion({ enabled: standalone });
 
@@ -58,22 +53,22 @@ const GiftsByOccasionHero = ({
     name: item.title,
     slug: item.seo_url,
     image: `${IMAGE_BASE_URL}${item.image}`,
-    href: item.custom_url ? item.custom_url : `/${item.seo_url}/`,
+    href:    item.custom_url ? item.custom_url : `/${item.seo_url}/`,
   }));
+
 
   console.log("GiftsByOccasionHero occasions:", occasions);
   return (
     <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
+
       <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10">
         <h2 className="text-2xl md:text-[24px] font-bold uppercase tracking-widest text-black font-sumana">
           Gifts By Occasion
         </h2>
         <p className="mt-3 text-[16px] md:text-base text-gray-700 leading-relaxed font-hind-madurai">
-          Celebrate every moment with thoughtfully curated wine gifts for every
-          occasion.
+          Celebrate every moment with thoughtfully curated wine gifts for every occasion.
           <br className="hidden md:block" />
-          From birthdays to anniversaries, find the perfect bottle or basket to
-          make it memorable.
+          From birthdays to anniversaries, find the perfect bottle or basket to make it memorable.
         </p>
       </div>
 
@@ -84,12 +79,10 @@ const GiftsByOccasionHero = ({
           Failed to load occasions. Please try again.
         </p>
       ) : occasions.length === 0 ? (
-        <p className="w-full text-center py-6 text-gray-400">
-          No occasions found.
-        </p>
+        <p className="w-full text-center py-6 text-gray-400">No occasions found.</p>
       ) : (
         <>
-          <div className="grid grid-cols-[1.3fr_1fr] gap-3 md:hidden">
+          <div className="grid grid-cols-2 gap-3 md:hidden">
             {occasions.map((item, index) => {
               const isHero = index === HERO_INDEX;
               return (
@@ -102,13 +95,13 @@ const GiftsByOccasionHero = ({
                   }`}
                 >
                   {isHero ? (
-                    <div className="relative h-full w-full min-h-[200px] aspect-[1/1]">
+                    <div className="relative h-full w-full min-h-[160px]">
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        sizes="55vw"
-                        className="object-cover object-[center_50%] transition-transform duration-300 group-hover:scale-105"
+                        sizes="50vw"
+                        className="object-cover object-[center_30%] transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 px-3 py-3">
@@ -124,7 +117,7 @@ const GiftsByOccasionHero = ({
                           src={item.image}
                           alt={item.name}
                           fill
-                          sizes="45vw"
+                          sizes="50vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" />

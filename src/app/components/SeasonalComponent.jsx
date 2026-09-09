@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FaRing, FaArrowRight } from 'react-icons/fa'
+import { FaGlassCheers, FaArrowRight } from 'react-icons/fa'
 import { HiSparkles } from 'react-icons/hi2'
 
 // ============================================================
@@ -102,9 +102,9 @@ const WeddingProductCard = ({ product }) => {
           blurDataURL={shimmerDataURL(400, 400)}
         />
 
-        {/* Small gold ring badge, top-right corner - wedding cue */}
+        {/* Small champagne-toast badge, top-right corner - wine/wedding cue */}
         <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm">
-          <FaRing className="h-3.5 w-3.5 text-[#98022e]" />
+          <FaGlassCheers className="h-3.5 w-3.5 text-[#98022e]" />
         </span>
       </div>
 
@@ -137,7 +137,7 @@ const SeasonalComponent = () => {
           ============================================================ */}
       <div className="relative h-[150px] w-full overflow-hidden md:h-[190px]">
         <Image
-          src="/mixed.png"
+          src="/whitecouple.png"
           alt="Wdding-Gift-Baskets-Dc-Wine-&-Spirits"
           fill
           priority
@@ -206,7 +206,7 @@ const SeasonalComponent = () => {
           {/* STEP 4b: CTA button - neeche product grid tak smooth
               scroll karta hai (#wedding-season-products anchor se)
               - Filhaal comment out kar diya hai */}
-          {/* <a
+          {/* 
             href="#wedding-season-products"
             className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[#98022e] shadow-md transition-transform duration-200 hover:scale-105"
           >
@@ -242,10 +242,10 @@ const SeasonalComponent = () => {
       <div className="relative mx-auto max-w-6xl px-3 pb-10 text-center 2xl:px-32">
         <Link
           href="/wedding-wine-gift-baskets/"
-          className="inline-flex items-center gap-2 rounded-full border border-[#98022e] px-6 py-2 text-xs font-semibold uppercase tracking-widest text-[#98022e] transition-colors duration-300 hover:bg-[#98022e] hover:text-white active:scale-95"
+          className="inline-flex items-center gap-2 bg-[#98022e] border border-white px-6 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:rounded-xl transition-colors duration-300 hover:bg-[#98022e] hover:text-white active:scale-95"
         >
           View All
-          <FaArrowRight className="h-3 w-3" />
+          <FaArrowRight className="h-2 w-2" />
         </Link>
       </div>
 
