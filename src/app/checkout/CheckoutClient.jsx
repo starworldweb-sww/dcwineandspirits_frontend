@@ -814,7 +814,7 @@ const CheckoutClient = () => {
         totals: [
           { code: "sub_total", title: "Sub-Total", value: subTotal, sort_order: 1 },
           { code: "shipping", title: selectedShipping?.name || "Shipping", value: shippingCost, sort_order: 3 },
-          ...(tipAmount > 0 ? [{ code: "tip", title: "Tip", value: tipAmount, sort_order: 5 }] : []),
+          ...(tipAmount > 0 ? [{ code: "tipatchk", title: "Tip Amount", value: tipAmount, sort_order: 5 }] : []),
           { code: "tax", title: "Tax", value: tax, sort_order: 6 },
           ...(discountAmount ? [{ code: "coupon", title: `Coupon (${coupon})`, value: -discountAmount, sort_order: 4 }] : []),
           { code: "total", title: "Total", value: total, sort_order: 9 },
@@ -886,7 +886,7 @@ const CheckoutClient = () => {
     return () => { if (autoUpdateTimerRef.current) clearTimeout(autoUpdateTimerRef.current); };
   }, []);
 
- 
+
   useEffect(() => {
     if (!stripe || !total) return;
 
@@ -898,7 +898,7 @@ const CheckoutClient = () => {
       requestPayerEmail: true,
       requestPayerPhone: true,
       requestShipping: true,
-      disableWallets: ['link'],  
+      disableWallets: ['link'],
       shippingOptions: [
         {
           id: selectedShipping?.id || "default",
@@ -1146,15 +1146,13 @@ const CheckoutClient = () => {
       const redirect =
         finalCheckoutType === "login" || finalCheckoutType === "register"
           ? `/account/order/info/?order_id=${orderId}`
-          : orderId
-            ? `/account/order/info/?order_id=${orderId}`
-            : "/";
+          : "/";
 
       sessionStorage.setItem("checkoutType", finalCheckoutType);
       sessionStorage.setItem("redirectAfterThankYou", redirect);
 
       cartItems.forEach((item) => clearCartMut(item.cart_id));
-      router.replace("/thank-you");
+      router.replace("/complete");
     } catch (err) {
       setOrderError(err?.message || "Something went wrong.");
     } finally {
