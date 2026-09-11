@@ -278,7 +278,7 @@ const BlogClient = ({
           <div className="flex-1 min-w-0">
             <div className="hidden md:flex justify-end mb-4">
               <Link
-                href="/blogs/rss"
+                href={`/blogs/${slug}/rss`}
                 className="flex items-center gap-1.5 text-sm text-[#98022e] hover:text-[#8c1a3c] transition-colors"
               >
                 <Rss size={16} />
@@ -288,9 +288,9 @@ const BlogClient = ({
 
             {category && (
               <div className="mb-6 pb-4 border-b border-gray-200">
-                <h2 className="font-sarabun text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                {/* <h2 className="font-sarabun text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                   {category.name}
-                </h2>
+                </h2> */}
                 {category.description && (
                   // <p className="text-gray-600 text-sm md:text-base">
                   //   {category.description}

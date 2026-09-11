@@ -53,7 +53,7 @@ const SortOptions = [
 
 const ShowOptions = [
   // { value: 24, label: "24" },
-  { value:48, label: "48" },
+  { value: 48, label: "48" },
   { value: 75, label: "75" },
   { value: 100, label: "100" },
 ];
@@ -97,10 +97,8 @@ const ProductListRow = ({ product }) => {
   const productLink = product.seo_url
     ? `/${product.seo_url}/`
     : `/${product.product_id}/`;
-     
-  const productImage = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
-    : "/prosecco-gift-800x800.webp";
+
+  const productImage = product.image && `https://www.dcwineandspirits.com/image/${product.image}` ;
   const brandName = product.manufacturer?.name || "";
   const displayPrice = product.special_price || product.price;
   const hasDiscount =
@@ -308,10 +306,9 @@ const ProductGridCard = ({ product }) => {
   const productLink = product.seo_url
     ? `/${product.seo_url}/`
     : `/${product.product_id}/`;
-    console.log("productLink",productLink)
-  const productImage = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
-    : "/prosecco-gift-800x800.webp";
+
+  const productImage = product.image && `https://www.dcwineandspirits.com/image/${product.image}`
+
   const displayPrice = product.special_price || product.price;
   const hasDiscount =
     product.special_price &&
@@ -531,8 +528,8 @@ const ProductsDynamicMain = ({
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
             className={`cursor-pointer transition-colors ${layout === "grid"
-                ? "text-[#98022e]"
-                : "text-black hover:text-[#98022e]"
+              ? "text-[#98022e]"
+              : "text-black hover:text-[#98022e]"
               }`}
           >
             <RiGridFill size={20} />
@@ -543,8 +540,8 @@ const ProductsDynamicMain = ({
             onClick={() => setLayout("list")}
             aria-label="List view"
             className={`cursor-pointer transition-colors ${layout === "list"
-                ? "text-[#98022e]"
-                : "text-black hover:text-[#98022e]"
+              ? "text-[#98022e]"
+              : "text-black hover:text-[#98022e]"
               }`}
           >
             <Logs size={20} />

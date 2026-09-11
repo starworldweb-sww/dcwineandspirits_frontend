@@ -33,7 +33,7 @@ const decodeHtml = (str) => {
 };
 
 const getImageUrl = (path) => {
-  if (!path) return "/prosecco-gift-800x800.webp";
+  if (!path) return "";
   if (path.startsWith("http")) return path;
   const cleanBase = (IMAGE_BASE || "").replace(/\/$/, "");
   const cleanPath = path.replace(/^\//, "");

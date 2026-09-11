@@ -12,7 +12,7 @@ import {
 const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 const getImageUrl = (path) => {
-  if (!path) return "/prosecco-gift-800x800.webp";
+  if (!path) return ""
   if (path.startsWith("http")) return path;
   const cleanBase = (IMAGE_BASE || "").replace(/\/$/, "");
   const cleanPath = path.replace(/^\//, "");

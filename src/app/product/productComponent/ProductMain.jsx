@@ -47,7 +47,7 @@ const hindMadurai = Hind_Madurai({
 const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 const getImageUrl = (path) => {
-  if (!path) return "/prosecco-gift-800x800.webp";
+  if (!path) return "";
   if (path.startsWith("http")) return path;
   const cleanBase = (IMAGE_BASE || "").replace(/\/$/, "");
   const cleanPath = path.replace(/^\//, "");
@@ -121,7 +121,7 @@ export default function ProductMain({ product }) {
   const productImages =
     product.images
       ?.map((img) => getImageUrl(typeof img === "string" ? img : img.image))
-      .filter((u) => u && u !== "/prosecco-gift-800x800.webp") || [];
+      .filter((u) => u && u !== "") || [];
 
   const allImages = productImages.length
     ? [productImage, ...productImages]

@@ -22,9 +22,8 @@ const breadcrumbs = [
 ];
 
 const getImageUrl = (path) =>
-  path
-    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${path}`
-    : "/prosecco-gift-800x800.webp";
+  path && `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${path}`
+   
 
 const WishlistClient = () => {
   // 1. Pagination state — current page number
