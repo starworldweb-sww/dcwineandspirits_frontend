@@ -155,12 +155,12 @@ export async function GET() {
         .filter(Boolean)
         .join(" ") || "DC Wine &amp; Spirits";
 
-      const descriptionSource = post.meta_description || post.description || "";
+      const descriptionSource = post.meta_description || "";
       const descriptionText = descriptionSource.startsWith("<")
         ? getExcerpt(descriptionSource)
         : stripHtml(descriptionSource) || post.title;
 
-      const contentHtml = post.content || post.description || "";
+      const contentHtml = post.content  || "";
       const imageUrl = getBlogImageUrl(post.image);
       const imageType = /\.png$/i.test(post.image || "")
         ? "image/png"
