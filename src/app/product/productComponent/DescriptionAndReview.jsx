@@ -2,8 +2,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Upload, X, ChevronDown } from "lucide-react";
+import { Upload, X, ChevronDown, Download, Star } from "lucide-react";
 import { Sumana } from "next/font/google";
+import { useUser } from "@/app/api/hooks/useAuth";
+import Link from "next/link";
+
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -27,10 +30,6 @@ const decodeHtml = (str) => {
   return txt.value;
 };
 
-const MOCK_USER = {
-  firstname: "John",
-  lastname: "Doe",
-};
 
 const SHIPPING_CONTENT_HTML = `
 <h2>Why Choose Our Delivery Service?</h2>
@@ -157,7 +156,8 @@ const DescriptionAndReview = ({ product = {} }) => {
   const reviewSectionRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const user = MOCK_USER;
+  // 2. useUser hook se logged-in user ka data lo (jaisa authService.js mein useAuth.js mein defined hai)
+  const { data: user } = useUser();
   const isUserLoggedIn = Boolean(user);
 
   const handleImageChange = (e) => {
@@ -250,39 +250,56 @@ const DescriptionAndReview = ({ product = {} }) => {
   const renderReviewsContent = () => (
     <div>
       {reviews.length > 0 ? (
-        <div className="mb-8 flex flex-col gap-0 border border-gray-200">
-          {reviews.map((review, index) => (
-            <div
-              key={review.review_id || index}
-              className="p-5 border-b border-gray-200 bg-white last:border-b-0"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold text-black text-[15px]">
-                  {review.author}
-                </h3>
-                <span className="text-gray-400 text-[13px]">
-                  {review.date_added
-                    ? new Date(review.date_added).toLocaleDateString("en-GB")
-                    : ""}
-                </span>
-              </div>
-              <p className="text-[15px] text-gray-700 mb-3">{review.text}</p>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((starNumber) => (
-                  <span
-                    key={starNumber}
-                    className={
-                      starNumber <= (review.rating || 0)
-                        ? "text-[#bd8f3a] text-lg"
-                        : "text-gray-300 text-lg"
-                    }
-                  >
-                    ★
+        <div className="mb-8 flex flex-col gap-4">
+          {reviews.map((review, index) => {
+            // Naam ka pehla letter avatar ke liye nikal liya
+            const initial = review.author?.charAt(0)?.toUpperCase() || "?";
+
+            return (
+              <div
+                key={review.review_id || index}
+                className="p-5 rounded-lg border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar circle */}
+                    <div className="w-10 h-10 rounded-full bg-[#98022e] text-white flex items-center justify-center font-bold text-[15px] flex-shrink-0">
+                      {initial}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-black text-[15px] leading-tight">
+                        {review.author}
+                      </h3>
+                      {/* Real star icons, naam ke seedha niche */}
+                      <div className="flex gap-0.5 mt-1">
+                        {[1, 2, 3, 4, 5].map((starNumber) => (
+                          <Star
+                            key={starNumber}
+                            size={14}
+                            className={
+                              starNumber <= (review.rating || 0)
+                                ? "fill-[#bd8f3a] text-[#bd8f3a]"
+                                : "fill-gray-200 text-gray-200"
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <span className="text-gray-400 text-[13px] whitespace-nowrap">
+                    {review.date_added
+                      ? new Date(review.date_added).toLocaleDateString("en-GB")
+                      : ""}
                   </span>
-                ))}
+                </div>
+
+                <p className="text-[15px] text-gray-700 leading-6">
+                  {review.text}
+                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-[15px] text-gray-700 mb-5">
@@ -290,36 +307,41 @@ const DescriptionAndReview = ({ product = {} }) => {
         </p>
       )}
 
-      <h2 className="font-['cambriaregular',Cambria,Georgia,serif] text-[19px] font-bold uppercase text-[#bd8f3a] mb-6 mt-6 border-t border-gray-300 pt-6">
+      <h2 className="font-sumana text-[19px] font-bold uppercase text-[#98022e] mb-6 mt-6 border-t border-gray-300 pt-6">
         Write a Review
       </h2>
 
       {!isUserLoggedIn ? (
-        <div className="text-[#8a6d3b] mb-10">
+        <div className="text-black font-sarabun                                                                                                                                                                                                                                                                                                                                                mb-10">
           <p className="text-[15px] mb-4">
             Please{" "}
             <a
               href="/login"
-              className="font-bold underline hover:text-black transition-colors"
+              className="font-bold underline text-[#98022e] hover:text-black transition-colors"
             >
               login
             </a>{" "}
             or{" "}
             <a
               href="/register"
-              className="font-bold underline hover:text-black transition-colors"
+              className="font-bold underline text-[#98022e] hover:text-black transition-colors"
             >
               register
             </a>{" "}
             to write a review.
           </p>
           <div className="flex gap-4">
-            <button className="bg-[#bd8f3a] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
+            <Link 
+            href="/account/login"
+            
+            className="bg-[#98022e] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl">
               Login
-            </button>
-            <button className="border border-[#bd8f3a] text-[#bd8f3a] hover:bg-[#bd8f3a] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95">
+            </Link>
+            <Link 
+            href="/register"
+            className="border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl">
               Register
-            </button>
+            </ Link>
           </div>
         </div>
       ) : (
@@ -332,7 +354,7 @@ const DescriptionAndReview = ({ product = {} }) => {
               type="text"
               name="author"
               placeholder="Your Name"
-              defaultValue={`${user.firstname} ${user.lastname || ""}`.trim()}
+             
               required
               className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-[#bd8f3a] text-[15px] bg-white"
             />
@@ -566,29 +588,38 @@ const DescriptionAndReview = ({ product = {} }) => {
         })}
       </div>
 
-      <div className="bg-[#f8f8f8] mt-6 py-8 px-6 text-center">
-        <h3 className="text-lg font-bold text-black mb-4">
-          {ASSISTANCE_BOX.heading}
-        </h3>
-        <p className="max-w-3xl mx-auto">
-          {ASSISTANCE_BOX.textBeforeLink}
-          <a
-            download={ASSISTANCE_BOX.downloadName}
-            href={ASSISTANCE_BOX.linkHref}
-            className="text-[#98022e] hover:underline"
-          >
-            {ASSISTANCE_BOX.linkText}
-          </a>
-          {ASSISTANCE_BOX.textBetweenLinkAndEmail}
-          <a
-            href={ASSISTANCE_BOX.emailHref}
-            className="text-[#98022e] hover:underline"
-          >
-            {ASSISTANCE_BOX.email}
-          </a>
-          {ASSISTANCE_BOX.textAfterEmail}
-        </p>
-      </div>
+      {/* assistance */}
+      {/* assistance */}
+<div className="bg-[#f8f8f8] mt-6 mx-1 sm:mx-0 py-7 px-5 sm:px-6 text-left sm:text-center rounded-lg sm:rounded-none">
+  <h3 className="text-lg font-bold text-black mb-3">
+    {ASSISTANCE_BOX.heading}
+  </h3>
+
+  <p className="max-w-3xl mx-auto text-[14px] leading-6 text-gray-600">
+    {ASSISTANCE_BOX.textBeforeLink}
+
+    <a
+      href={ASSISTANCE_BOX.linkHref}
+      download={ASSISTANCE_BOX.downloadName}
+      className="inline-flex items-center gap-1.5 whitespace-nowrap text-[#98022e] font-medium hover:underline"
+    >
+      <Download size={15} strokeWidth={2} />
+      <span>{ASSISTANCE_BOX.linkText}</span>
+    </a>
+
+    {ASSISTANCE_BOX.textBetweenLinkAndEmail}
+
+    <a
+      href={ASSISTANCE_BOX.emailHref}
+      className="text-[#98022e] font-medium hover:underline"
+    >
+      {ASSISTANCE_BOX.email}
+    </a>
+
+    {ASSISTANCE_BOX.textAfterEmail}
+  </p>
+</div>
+
 
       <style jsx global>{`
         .product-description-text h2,

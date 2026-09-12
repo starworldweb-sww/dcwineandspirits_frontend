@@ -34,7 +34,7 @@ const ShopByBrandDropdown = ({ onClose }) => {
               alt={brand.name}
               fill
               sizes="190px"
-              className="max-h-full max-w-[85%] object-contain !p-2"
+              className="max-h-full max-w-[90%] object-contain "
             />
           </Link>
         ))}

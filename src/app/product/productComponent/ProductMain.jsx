@@ -31,7 +31,6 @@ import { useAddToWishlist } from "@/app/api/hooks/wishlist/useAddToWishlist";
 import { addRecentProduct } from "@/libs/recentProducts";
 import { useCompareList } from "@/app/api/hooks/useCompareProducts";
 
-
 const sumana = Sumana({
   weight: ["400", "700"],
   subsets: ["latin"],
@@ -131,11 +130,14 @@ export default function ProductMain({ product }) {
 
   const originalPrice = product.price;
   const specialPrice = product.special_price;
-  const hasSpecialPrice = specialPrice !== null && specialPrice !== undefined && specialPrice !== "";
+  const hasSpecialPrice =
+    specialPrice !== null && specialPrice !== undefined && specialPrice !== "";
 
   const discountPercent = hasSpecialPrice
     ? Math.round(
-        ((Number(originalPrice) - Number(specialPrice)) / Number(originalPrice)) * 100,
+        ((Number(originalPrice) - Number(specialPrice)) /
+          Number(originalPrice)) *
+          100,
       )
     : 0;
 
@@ -192,7 +194,7 @@ export default function ProductMain({ product }) {
           ids.includes(String(v.product_option_value_id)),
         );
         if (selectedItems.length > 0) {
-          payload[key] = selectedItems.map((v) => v.name).join(", ")
+          payload[key] = selectedItems.map((v) => v.name).join(", ");
         }
         return;
       }
@@ -202,7 +204,7 @@ export default function ProductMain({ product }) {
         const selected = opt.values.find(
           (v) => String(v.product_option_value_id) === String(userValue),
         );
-        payload[key] = userValue
+        payload[key] = userValue;
         return;
       }
 
@@ -211,18 +213,18 @@ export default function ProductMain({ product }) {
         const selected = opt.values.find(
           (v) => String(v.product_option_value_id) === String(userValue),
         );
-        payload[key] = userValue
+        payload[key] = userValue;
         return;
       }
 
       if (optionType === "file") {
         if (!userValue) return;
-        payload[key] = userValue
+        payload[key] = userValue;
         return;
       }
 
       if (userValue != null && String(userValue).trim() !== "") {
-        payload[key] = userValue
+        payload[key] = userValue;
       }
     });
     return payload;
@@ -404,7 +406,6 @@ export default function ProductMain({ product }) {
 
             <div className="w-full flex-1 min-w-0 flex flex-col justify-between">
               <div className="bg-[#f8f8f8] p-5 sm:p-6 lg:min-h-[486px]">
-
                 <div className="sm:hidden pb-4 border-b border-gray-200">
                   <div className="flex items-center justify-between gap-4">
                     <div className={`${sumana.className}`}>
@@ -426,7 +427,7 @@ export default function ProductMain({ product }) {
                     </div>
 
                     {brandName && (
-                      <div className="relative w-[90px] h-[50px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                      <div className="relative w-[120px] h-[65px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
                         <Link
                           href={`/${brandurl}`}
                           className="w-full h-full flex items-center justify-center p-1.5"
@@ -436,7 +437,7 @@ export default function ProductMain({ product }) {
                               src={brandImage}
                               alt={brandName}
                               fill
-                              sizes="90px"
+                              sizes="120px"
                               className="!p-1.5 object-contain"
                             />
                           ) : (
@@ -452,19 +453,31 @@ export default function ProductMain({ product }) {
                   <div className="flex flex-col gap-1.5 text-sm mt-3 pt-3 border-t border-gray-100">
                     <div className="flex items-center gap-1">
                       {stock ? (
-                        <Check className="text-green-500" size={16} strokeWidth={3} />
+                        <Check
+                          className="text-green-500"
+                          size={16}
+                          strokeWidth={3}
+                        />
                       ) : (
-                        <X className="text-red-500" size={16} strokeWidth={2.5} />
+                        <X
+                          className="text-red-500"
+                          size={16}
+                          strokeWidth={2.5}
+                        />
                       )}
                       <span
                         className={
-                          stock ? "text-green-600 font-bold" : "text-red-600 font-bold"
+                          stock
+                            ? "text-green-600 font-bold"
+                            : "text-red-600 font-bold"
                         }
                       >
                         {stock ? "IN STOCK" : "OUT OF STOCK"}
                       </span>
                     </div>
-                    <span className="text-gray-600">Model: {product.model}</span>
+                    <span className="text-gray-600">
+                      Model: {product.model}
+                    </span>
                     {product.sku && (
                       <span className="text-gray-600 break-words">
                         SKU: {product.sku}
@@ -548,7 +561,7 @@ export default function ProductMain({ product }) {
                   </div>
 
                   {brandName && (
-                    <div className="relative w-[120px] h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
+                    <div className="relative w-[160px] h-[80px] flex-shrink-0 flex items-center justify-center bg-white border border-gray-200">
                       <Link
                         href={`/${brandurl}`}
                         className="w-full h-full flex items-center justify-center p-2"
@@ -558,7 +571,7 @@ export default function ProductMain({ product }) {
                             src={brandImage}
                             alt={brandName}
                             fill
-                            sizes="120px"
+                            sizes="160px"
                             className="!p-2 object-contain"
                           />
                         ) : (
@@ -578,7 +591,9 @@ export default function ProductMain({ product }) {
                       const key = String(opt.product_option_id);
                       const hasValues =
                         Array.isArray(opt.values) && opt.values.length > 0;
-                      const optionType = String(opt.type || opt.option_type || "")
+                      const optionType = String(
+                        opt.type || opt.option_type || "",
+                      )
                         .toLowerCase()
                         .trim();
                       const label = (
@@ -614,7 +629,10 @@ export default function ProductMain({ product }) {
                         );
                       }
 
-                      if (optionType === "select" || (optionType === "" && hasValues)) {
+                      if (
+                        optionType === "select" ||
+                        (optionType === "" && hasValues)
+                      ) {
                         const value = optionValues[key] || "";
                         return (
                           <div key={key}>
@@ -676,7 +694,10 @@ export default function ProductMain({ product }) {
                                         String(v.product_option_value_id)
                                       }
                                       onChange={() =>
-                                        setOptionValue(key, v.product_option_value_id)
+                                        setOptionValue(
+                                          key,
+                                          v.product_option_value_id,
+                                        )
                                       }
                                       className="w-4 h-4 accent-[#98022e] cursor-pointer"
                                     />
@@ -730,7 +751,9 @@ export default function ProductMain({ product }) {
                                       type="checkbox"
                                       checked={isChecked}
                                       onChange={() =>
-                                        toggleCheckbox(v.product_option_value_id)
+                                        toggleCheckbox(
+                                          v.product_option_value_id,
+                                        )
                                       }
                                       className="w-4 h-4 accent-[#98022e] cursor-pointer rounded"
                                     />
@@ -773,7 +796,9 @@ export default function ProductMain({ product }) {
                             <div className="flex items-center gap-3">
                               <label
                                 className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${
-                                  currentValue ? "text-[#98022e]" : "text-gray-700"
+                                  currentValue
+                                    ? "text-[#98022e]"
+                                    : "text-gray-700"
                                 }`}
                               >
                                 <input
@@ -793,7 +818,8 @@ export default function ProductMain({ product }) {
                                 <Upload size={16} />
                                 <span>
                                   {fileName ||
-                                    (typeof currentValue === "string" && currentValue
+                                    (typeof currentValue === "string" &&
+                                    currentValue
                                       ? "File chosen"
                                       : "Choose file")}
                                 </span>
@@ -826,7 +852,9 @@ export default function ProductMain({ product }) {
                       ) {
                         const currentValue = optionValues[key] || "";
                         const htmlType =
-                          optionType === "datetime" ? "datetime-local" : optionType;
+                          optionType === "datetime"
+                            ? "datetime-local"
+                            : optionType;
                         return (
                           <div key={key}>
                             {label}
@@ -926,9 +954,7 @@ export default function ProductMain({ product }) {
                       <Heart
                         size={16}
                         className={
-                          isInWishlist
-                            ? "fill-[#98022e] text-[#98022e]"
-                            : ""
+                          isInWishlist ? "fill-[#98022e] text-[#98022e]" : ""
                         }
                       />
                       {isInWishlist
@@ -951,7 +977,9 @@ export default function ProductMain({ product }) {
                         size={16}
                         className={isInCompare ? "text-[#98022e]" : ""}
                       />
-                      {isInCompare ? "Added to Compare" : "Compare this Product"}
+                      {isInCompare
+                        ? "Added to Compare"
+                        : "Compare this Product"}
                     </button>
                   </div>
                 </div>
@@ -1010,41 +1038,47 @@ export default function ProductMain({ product }) {
                 )}
               </div>
 
-           <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
-  <div className="grid grid-cols-4 divide-x divide-gray-200">
-    
-    <a 
-      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
-    >
-      <Gift size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
-      Free Gift Card
-    </a>
-    
-    <a  
-      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
-    >
-      <Truck size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
-      Fast Delivery
-    </a>
-<a
-    
-      download={true}
-      href="/bulk-order-form.xlsx"
-      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
-    >
-      <Download size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
-      Bulk Form
-    </a>
+              <div className="w-full bg-[#f8f8f8] border-t border-gray-200 mt-4">
+                <div className="grid grid-cols-4 divide-x divide-gray-200">
+                  <a className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center">
+                    <Gift
+                      size={16}
+                      className="text-[#98022e] sm:w-[18px] sm:h-[18px]"
+                    />
+                    Free Gift Card
+                  </a>
 
-    <a
-      href="/frequently-asked-questions/"
-      className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
-    >
-      <HelpCircle size={16} className="text-[#98022e] sm:w-[18px] sm:h-[18px]" />
-      FAQs
-    </a>
-  </div>
-</div>
+                  <a className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center">
+                    <Truck
+                      size={16}
+                      className="text-[#98022e] sm:w-[18px] sm:h-[18px]"
+                    />
+                    Fast Delivery
+                  </a>
+                  <a
+                    download={true}
+                    href="/bulk-order-form.xlsx"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+                  >
+                    <Download
+                      size={16}
+                      className="text-[#98022e] sm:w-[18px] sm:h-[18px]"
+                    />
+                    Bulk Form
+                  </a>
+
+                  <a
+                    href="/frequently-asked-questions/"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 sm:py-4 px-1 sm:px-2 text-[11px] sm:text-sm font-semibold text-black hover:text-[#98022e] transition-colors text-center"
+                  >
+                    <HelpCircle
+                      size={16}
+                      className="text-[#98022e] sm:w-[18px] sm:h-[18px]"
+                    />
+                    FAQs
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -63,7 +63,7 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const BlogClient = ({
+const  BlogClient = ({
   viewType,
   category,
   initialCategoryPosts,
@@ -566,6 +566,15 @@ const BlogClient = ({
           color: #1a1a1a;
           margin-top: 1.5rem;
           margin-bottom: 0.5rem;
+        }
+
+
+          .blog-article-body h4 {
+          font-size: 16px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-top: 1rem;
+          margin-bottom: 0.3rem;
         }
         .blog-article-body p {
           margin-bottom: 1rem;
