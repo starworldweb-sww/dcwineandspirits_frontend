@@ -160,6 +160,7 @@ const ProductListRow = ({ product }) => {
           src={productImage}
           alt={product.name}
           fill
+          priority
           sizes="(max-width: 640px) 100vw, 220px"
           className={`!p-2 object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />

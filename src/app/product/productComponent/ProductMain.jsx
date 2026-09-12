@@ -571,6 +571,7 @@ export default function ProductMain({ product }) {
                             src={brandImage}
                             alt={brandName}
                             fill
+                            priority
                             sizes="160px"
                             className="!p-2 object-contain"
                           />

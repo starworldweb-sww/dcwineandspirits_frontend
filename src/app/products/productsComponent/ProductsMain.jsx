@@ -205,6 +205,7 @@ const ProductListRow = ({ product }) => {
           src={imageUrl}
           alt={decodeHtml(product.name)}
           fill
+          priority
           sizes="(max-width: 640px) 100vw, 220px"
           className="!p-2 object-contain"
         />
@@ -321,6 +322,7 @@ const ProductGridCard = ({ product }) => {
           src={imageUrl}
           alt={decodeHtml(product.name)}
           fill
+          priority
           sizes="100vw"
           className="!p-2 object-contain"
         />

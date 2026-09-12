@@ -39,7 +39,7 @@ const ExperimentalComponent = () => {
       <div className="grid grid-cols-2 gap-2.5 px-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:px-32">
         {cards.map((card, i) => {
           const isMobileVisible =
-            card.title === 'Shop by Price' || card.title === 'Shop by Origin'
+            card.title === 'Shop by Price' || card.title === 'Gifts by Origin'
           const Icon = card.icon
           return (
             <Link

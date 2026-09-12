@@ -1,6 +1,16 @@
 export function buildProductSchema(product) {
   const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ?? "";
-  console.log("buildProductSchema product:", product);
+
+  // 🔹 Safe URL encoder (Spaces -> %20 & Double slashes prevention)
+  const safeUrl = (path) => {
+    if (!path) return "";
+    const fullUrl = path.startsWith("http")
+      ? path
+      : `${IMAGE_BASE.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+    return encodeURI(fullUrl.trim());
+  };
+
+  // 🔹 HTML entities & tags stripper
   const decodeAndStrip = (str) => {
     if (!str) return "";
     return str
@@ -15,45 +25,74 @@ export function buildProductSchema(product) {
       .trim();
   };
 
-  const hasReviews =
-    Number(product.review_count) > 0 && product.reviews?.length > 0;
+  // 🔹 Image processing (Main + Additional gallery images)
+  const mainImage = product?.image ? safeUrl(product.image) : null;
+  const additionalImages = Array.isArray(product?.images)
+    ? product.images
+        .map((img) => {
+          const imgPath = typeof img === "string" ? img : img?.image;
+          return imgPath ? safeUrl(imgPath) : null;
+        })
+        .filter(Boolean)
+    : [];
 
-  // special_price agar set hai to wahi effective price hai, warna price
-  const effectivePrice = product.special_price ?? product.price;
+  const imageList = Array.from(
+    new Set([mainImage, ...additionalImages].filter(Boolean))
+  );
+
+  // 🔹 Reviews & Rating safety checks
+  const reviewCount = Number(product?.review_count ?? 0);
+  const avgRating = Number(product?.average_rating ?? 0);
+  const hasAggregateRating = reviewCount > 0 && avgRating > 0;
+  const hasReviewList = Array.isArray(product?.reviews) && product.reviews.length > 0;
+
+  const effectivePrice = product?.special_price ?? product?.price;
   const hasDiscount =
-    product.special_price != null &&
-    Number(product.special_price) < Number(product.price);
+    product?.special_price != null &&
+    Number(product?.special_price) < Number(product?.price);
+
+  // 🔹 Exact Manufacturer/Brand determination
+  const brandName = product?.manufacturer?.name || null;
 
   return {
     "@context": "https://schema.org/",
     "@type": "Product",
-    name: product.name,
-    image: `${IMAGE_BASE}${product.image}`,
-    description: decodeAndStrip(product.description),
+    name: product?.name || "",
+    image: imageList.length > 1 ? imageList : imageList[0] || "",
+    description: decodeAndStrip(product?.description),
     sku: product?.sku || String(product?.model || product?.product_id),
-    mpn: product?.mpn || String(product?.model || product?.product_id),
     model: product?.model || String(product?.product_id),
+
+    ...(product?.mpn &&
+      String(product.mpn).trim() !== "" && {
+        mpn: String(product.mpn).trim(),
+      }),
+
     ...(product?.upc &&
       String(product.upc).trim() !== "" && {
-        upc: String(product.upc).trim(),
+        gtin12: String(product.upc).trim(),
       }),
-    brand: {
-      "@type": "Brand",
-      name: "DC Wine & Spirits",
-    },
-    manufacturer: {
-      "@type": "Organization",
-      name: product.manufacturer?.name,
-    },
+
+    ...(brandName && {
+      brand: {
+        "@type": "Brand",
+        name: brandName,
+      },
+      manufacturer: {
+        "@type": "Organization",
+        name: brandName,
+      },
+    }),
+
     offers: {
       "@type": "Offer",
-      url: `https://www.dcwineandspirits.com/${product.seo_url}/`,
+      url: `https://www.dcwineandspirits.com/${product?.seo_url || ""}/`,
       priceCurrency: "USD",
-      price: effectivePrice,
+      price: String(effectivePrice),
       validFrom: "2024-01-01",
       priceValidUntil: "2027-07-07",
       itemCondition: "https://schema.org/NewCondition",
-      availability: product.in_stock
+      availability: product?.in_stock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       seller: {
@@ -64,14 +103,14 @@ export function buildProductSchema(product) {
         {
           "@type": "UnitPriceSpecification",
           priceCurrency: "USD",
-          price: effectivePrice,
+          price: String(effectivePrice),
         },
         ...(hasDiscount
           ? [
               {
                 "@type": "UnitPriceSpecification",
                 priceCurrency: "USD",
-                price: product.price,
+                price: String(product.price),
                 priceType: "https://schema.org/ListPrice",
               },
             ]
@@ -82,7 +121,7 @@ export function buildProductSchema(product) {
         shippingRate: {
           "@type": "MonetaryAmount",
           minValue: "0",
-          maxValue: "30",
+          maxValue: "50",
           currency: "USD",
         },
         shippingDestination: {
@@ -128,27 +167,46 @@ export function buildProductSchema(product) {
         returnMethod: "https://schema.org/ReturnByMail",
       },
     },
-    ...(product.related_products?.length && {
-      isRelatedTo: product.related_products.map((p) => ({
-        "@type": "Product",
-        name: p.name,
-        url: `https://www.dcwineandspirits.com/${p.seo_url}/`,
-        image: p.image ? `${IMAGE_BASE}${p.image}` : undefined,
-      })),
+
+    // 🔹 Related Products mapping (Clean Lightweight Objects - No nested offers)
+    ...(product?.related_products?.length && {
+      isRelatedTo: product.related_products
+        .filter((p) => p?.name && p?.seo_url)
+        .map((p) => ({
+          "@type": "Product",
+          name: p.name,
+          url: `https://www.dcwineandspirits.com/${p.seo_url}/`,
+          ...(p.image && { image: safeUrl(p.image) }),
+        })),
     }),
-    ...(hasReviews && {
+
+    // 🔹 Aggregate Rating
+    ...(hasAggregateRating && {
       aggregateRating: {
         "@type": "AggregateRating",
-        ratingValue: product.average_rating,
-        reviewCount: product.review_count,
+        ratingValue: String(avgRating),
+        reviewCount: String(reviewCount),
+        bestRating: "5",
+        worstRating: "1",
       },
+    }),
+
+    // 🔹 Reviews List
+    ...(hasReviewList && {
       review: product.reviews.map((r) => ({
         "@type": "Review",
-        name: product.name,
-        author: { "@type": "Person", name: r.author },
+        author: {
+          "@type": "Person",
+          name: r.author || "Verified Buyer",
+        },
         datePublished: r.date_added,
-        reviewBody: r.text,
-        reviewRating: { "@type": "Rating", ratingValue: r.rating },
+        reviewBody: decodeAndStrip(r.text),
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: String(r.rating || 5),
+          bestRating: "5",
+          worstRating: "1",
+        },
       })),
     }),
   };
