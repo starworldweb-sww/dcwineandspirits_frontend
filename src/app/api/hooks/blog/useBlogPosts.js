@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { blogKeys } from "@/libs/queryKeys";       // jahan tumne blogKeys define kiya
 import { blogService } from "../../services/blogService"; // apna actual path daal dena
+import { getPostsAction } from "@/app/blogs/actions";
 
 export const useGetAllPosts = (params = {}, options = {}) => {
   return useQuery({
     queryKey: blogKeys.posts(params),
-    queryFn: () => blogService.getAllPosts(params),
+    queryFn: () => getPostsAction(params.page, params.limit),
     staleTime: 60 * 1000,
     ...options,
   });
@@ -15,11 +16,11 @@ export const useGetCategory = () => {
     queryKey: blogKeys.getCategory(),
     queryFn: () => blogService.getAllCategory(),
     staleTime: 60 * 1000,
-   
+
   });
 };
 
-export const useGetPostBySlug = (slug,initialData) => {
+export const useGetPostBySlug = (slug, initialData) => {
   return useQuery({
     queryKey: blogKeys.postBySlug(slug),
     queryFn: () => blogService.getPostBySlug(slug),
@@ -40,7 +41,7 @@ export const useSearchPosts = ({ keyword, page = 1, limit = 10 }) => {
   return useQuery({
     queryKey: blogKeys.search({ keyword, page, limit }),
     queryFn: () => blogService.searchByKeyword({ keyword, page, limit }),
-    enabled: !!keyword?.trim(), 
-    keepPreviousData: true, 
+    enabled: !!keyword?.trim(),
+    keepPreviousData: true,
   });
 };

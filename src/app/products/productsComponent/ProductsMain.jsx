@@ -78,7 +78,7 @@ const ProductListActions = ({ product }) => {
 
   const imageUrl = product.image
     ? `https://www.dcwineandspirits.com/image/${product.image}`
-    : "/prosecco-gift-800x800.webp";
+    : "";
 
   const handleAddToCart = async () => {
     if (!productId || isPending) return;
@@ -191,9 +191,8 @@ const ProductListRow = ({ product }) => {
   const productLink = `/${product.seo_url || product.product_id}/`;
   const brandName = product.brand || "Premium Brand";
   const description = product.description || product.name;
-  const imageUrl = product.image
-    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.image}`
-    : "/prosecco-gift-800x800.webp";
+  const imageUrl = product.image && `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${product.image}`
+    
   const displayPrice = product.special_price || product.price;
 
   return (
@@ -268,9 +267,7 @@ const ProductGridCard = ({ product }) => {
   );
 
   const productLink = `/${product.seo_url || product.custom_url}/`;
-  const imageUrl = product.image
-    ? `https://www.dcwineandspirits.com/image/${product.image}`
-    : "/prosecco-gift-800x800.webp";
+  const imageUrl = product.image && `https://www.dcwineandspirits.com/image/${product.image}` ;
   const displayPrice = product.special_price || product.price;
 
   const handleAddToCart = async (e) => {

@@ -12,7 +12,7 @@ const cards = [
   },
   {
     eyebrow: 'ORIGIN',
-    title: 'Shop by Origin',
+    title: 'Gifts by Origin',
     subtitle: 'Explore wines by country',
     icon: Globe,
     href: '/gifts-by-origin/',

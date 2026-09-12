@@ -120,33 +120,45 @@ const CartClient = () => {
     };
   }, [selectedCountryId, fetchZonesAsync]);
 
-  const handleGetQuote = async () => {
+
+  const handleGetQuote = async (zoneId = selectedZoneId) => {
     if (!selectedCountryId) {
       toast.error("Please select a country");
       return;
     }
-    if (!selectedZoneId) {
+
+    if (!zoneId) {
       toast.error("Please select a region/state");
       return;
     }
 
     const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
+
     setIsQuoteLoading(true);
     setQuoteRequested(true);
     setSelectedShippingOption(null);
+
     try {
       const result = await shippingRateService.getShippingRate(
         selectedCountryId,
-        selectedZoneId,
+        zoneId,
         totalQty || 1
       );
+
       if (result) {
         setEstimatedShipping(result);
+
         const allMatches = result.allMatches || [];
+
         const defaultOption = allMatches.length
           ? allMatches[0]
-          : { title: result.matchedCharge || "Standard Shipping", price: result.price };
+          : {
+            title: result.matchedCharge || "Standard Shipping",
+            price: result.price,
+          };
+
         setSelectedShippingOption(defaultOption);
+
         toast.success(
           allMatches.length > 1
             ? `${allMatches.length} shipping options available`
@@ -158,7 +170,9 @@ const CartClient = () => {
       }
     } catch (e) {
       setEstimatedShipping(null);
-      toast.error(e?.response?.data?.message || "Failed to fetch shipping rate");
+      toast.error(
+        e?.response?.data?.message || "Failed to fetch shipping rate"
+      );
     } finally {
       setIsQuoteLoading(false);
     }
@@ -247,7 +261,7 @@ const CartClient = () => {
           setSelectedShippingOption(null);
           setQuoteRequested(false);
           setShowClearConfirm(false);
-          
+
         },
         onError: (error) => {
           toast.error(error?.response?.data?.message || "Failed to clear cart");
@@ -290,11 +304,10 @@ const CartClient = () => {
               disabled={isFetching}
               aria-label={`Go to page ${pageNum}`}
               aria-current={pageNum === currentPage ? "page" : undefined}
-              className={`min-w-[32px] h-8 px-2 text-[13px] font-hind-madurai rounded-[3px] transition-colors disabled:cursor-not-allowed cursor-pointer ${
-                pageNum === currentPage
-                  ? "text-white"
-                  : "border border-[#d9d9d9] hover:bg-gray-50"
-              }`}
+              className={`min-w-[32px] h-8 px-2 text-[13px] font-hind-madurai rounded-[3px] transition-colors disabled:cursor-not-allowed cursor-pointer ${pageNum === currentPage
+                ? "text-white"
+                : "border border-[#d9d9d9] hover:bg-gray-50"
+                }`}
               style={pageNum === currentPage ? { backgroundColor: ACCENT } : undefined}
             >
               {pageNum}
@@ -703,10 +716,14 @@ const CartClient = () => {
                           <select
                             value={selectedZoneId}
                             onChange={(e) => {
+                              const zoneId = e.target.value;
                               setSelectedZoneId(e.target.value);
                               setEstimatedShipping(null);
                               setQuoteRequested(false);
                               setSelectedShippingOption(null);
+                              if (zoneId) {
+                                handleGetQuote(zoneId);
+                              }
                             }}
                             disabled={!selectedCountryId || isZonesLoading}
                             className="w-full border border-[#d9d9d9] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#98022e] bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -728,14 +745,14 @@ const CartClient = () => {
                           </select>
                         </div>
 
-                        <button
+                        {/* <button
                           onClick={handleGetQuote}
                           disabled={isQuoteLoading || !selectedCountryId || !selectedZoneId}
                           className="w-full bg-black text-white text-[12px] font-semibold uppercase tracking-wider py-2.5 rounded-[3px] hover:bg-[#1a1a1a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                           {isQuoteLoading && <Loader2 size={14} className="animate-spin" />}
                           {isQuoteLoading ? "Fetching Quotes..." : "Get Quotes"}
-                        </button>
+                        </button> */}
 
                         {quoteRequested && !isQuoteLoading && (
                           <div className="mt-3 pt-3 border-t border-gray-200">
@@ -756,11 +773,10 @@ const CartClient = () => {
                                           return (
                                             <label
                                               key={`${opt.title}-${opt.price}`}
-                                              className={`flex items-start justify-between gap-3 p-3 border rounded-[3px] cursor-pointer transition-colors ${
-                                                isSelected
-                                                  ? "border-[#98022e] bg-[#fff5f7]"
-                                                  : "border-gray-200 bg-white hover:bg-gray-50"
-                                              }`}
+                                              className={`flex items-start justify-between gap-3 p-3 border rounded-[3px] cursor-pointer transition-colors ${isSelected
+                                                ? "border-[#98022e] bg-[#fff5f7]"
+                                                : "border-gray-200 bg-white hover:bg-gray-50"
+                                                }`}
                                             >
                                               <div className="flex items-start gap-2">
                                                 <input

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link';
 import { User, Eye, Rss, ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { useGetAllPosts } from '../api/hooks/blog/useBlogPosts';
+import { useRouter } from 'next/navigation';
+
 
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
@@ -63,9 +65,10 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const BlogsClient = ({ initialData }) => {
+const BlogsClient = ({ initialData,initialPage=1 }) => {
   // 5) Pagination state - "page" seedha API ko jaata hai
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(initialPage);
 
   // 6) Real API call - service -> queryKey -> hook layer se
   const { data, isLoading, isFetching, isError } = useGetAllPosts({
@@ -78,9 +81,17 @@ const BlogsClient = ({ initialData }) => {
   const pagination = data?.pagination ?? { total: 0, page: 1, limit: BLOGS_PER_PAGE, totalPages: 1 };
   const totalPages = pagination.totalPages || 1;
 
+  useEffect(() => {
+    if (window.location.search) {
+      window.history.replaceState(null, "", "/blogs");
+    }
+  }, [currentPage]);
+  // BlogsClient.jsx
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
+    document.cookie = `blog_page=${page}; path=/; max-age=1800`; 
+    router.replace(`/blogs?page=${page}`, { scroll: false });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -238,8 +249,8 @@ const BlogsClient = ({ initialData }) => {
                 type="button"
                 onClick={() => handlePageChange(page)}
                 className={`w-9 h-9 flex items-center justify-center rounded border text-sm font-medium transition-colors cursor-pointer hover:rounded-xl ${page === currentPage
-                    ? "bg-[#98022e] border-[#98022e] text-white"
-                    : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
+                  ? "bg-[#98022e] border-[#98022e] text-white"
+                  : "border-gray-300 text-gray-600 hover:border-[#98022e] hover:text-[#98022e]"
                   }`}
               >
                 {page}
