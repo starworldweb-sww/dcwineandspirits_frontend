@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
+// import Script from "next/script";
 import Navbar from "./components/Navbar";
 import Stickynav from "./components/navcomponents/StickyNav";
 import OccasionBar from "./components/navcomponents/OccasionsBar";
@@ -105,7 +105,7 @@ export default async function RootLayout({ children }) {
     >
       <head>
         {/* Google Tag Manager */}
-        <Script id="gtm-script" strategy="afterInteractive">
+        <script id="gtm-script" strategy="afterInteractive">
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -113,7 +113,7 @@ export default async function RootLayout({ children }) {
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-PKSMBZ5');
           `}
-        </Script>
+        </script>
         {/* End Google Tag Manager */}
       </head>
       <body

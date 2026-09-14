@@ -15,6 +15,7 @@ import {
   Plus,
   ShoppingCart,
   HeartIcon,
+  Star,
 } from "lucide-react";
 import { Logs } from "lucide-react";
 import { RiGridFill } from "react-icons/ri";
@@ -42,6 +43,32 @@ const hindMadurai = Hind_Madurai({
   subsets: ["latin"],
   display: "swap",
 });
+
+// Minimal star rating — sirf tab dikhega jab review_count > 0 ho
+const ProductRating = ({ rating = 0, count = 0, className = "" }) => {
+  if (!count) return null;
+
+  const roundedRating = Math.round(rating);
+
+  return (
+    <div className={`flex items-center gap-1 ${className}`}>
+      <div className="flex items-center gap-[1px]">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={13}
+            className={
+              i < roundedRating
+                ? "fill-[#98022e] text-[#98022e]"
+                : "fill-gray-200 text-gray-200"
+            }
+          />
+        ))}
+      </div>
+      <span className="text-xs text-gray-500">({count})</span>
+    </div>
+  );
+};
 
 const SortOptions = [
   { value: "", label: "Default" },
@@ -161,6 +188,7 @@ const ProductListRow = ({ product }) => {
           alt={product.name}
           fill
           priority
+          
           sizes="(max-width: 640px) 100vw, 220px"
           className={`!p-2 object-contain ${isOutOfStock ? "opacity-50" : ""}`}
         />
@@ -206,6 +234,12 @@ const ProductListRow = ({ product }) => {
         >
           {decodeHtml(product.name)}
         </Link>
+
+        <ProductRating
+          rating={product.average_rating}
+          count={product.review_count}
+          className="mt-1"
+        />
 
         <div className="mt-3 flex items-center gap-2">
           <p className={`${sumana.className} text-2xl font-bold text-black`}>
@@ -424,6 +458,12 @@ const ProductGridCard = ({ product }) => {
       >
         {decodeHtml(product.name)}
       </Link>
+
+      <ProductRating
+        rating={product.average_rating}
+        count={product.review_count}
+        className="justify-center"
+      />
 
       <div
         className={`${hindMadurai.className} mt-2 flex items-center justify-center gap-2 font-sarabun`}

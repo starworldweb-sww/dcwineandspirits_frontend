@@ -208,6 +208,7 @@ export default async function ProductsSlugPage({ params }) {
   let categoryBreadcrumbSchema = null;
   try {
     const firstPageData = pagesData[0];
+
     if (firstPageData) {
       categoryCollectionSchema = generateCollectionPageSchema(
         firstPageData.products?.items,
