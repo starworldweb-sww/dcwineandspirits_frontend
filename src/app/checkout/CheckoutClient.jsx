@@ -42,6 +42,7 @@ import { useFormik } from "formik";
 import { useCoupon } from "../api/hooks/coupon/useCoupon";
 import { useupdatedCart } from "../api/hooks/cart/useUpdatedCart";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { useRemoveFromCart } from "../api/hooks/cart/useRemoveFromCart";
 
 const ACCENT = "#8c1a3c";
 const STRIPE_PUBLISHABLE_KEY = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -185,6 +186,7 @@ const CheckoutClient = () => {
   const { mutateAsync: placeOrderMut } = usePlaceOrder();
   const createPIMut = useCreatePaymentIntent();
   const { mutate: clearCartMut } = useClearCart();
+  const { mutate: DeleteCartMut } = useRemoveFromCart();
   const { data: couponData, mutate } = useCoupon();
   const { mutate: updateCart } = useupdatedCart();
   const [checkoutType, setCheckoutType] = useState("guest");
@@ -470,7 +472,7 @@ const CheckoutClient = () => {
   const effectiveZoneId = shippingSameAsBilling
     ? billing?.zone_id
     : shipping?.zone_id;
-
+  console.log("effectiveZoneId",effectiveZoneId)
   const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
     countryId: effectiveCountryId,
     zoneId: effectiveZoneId,
@@ -487,7 +489,7 @@ const CheckoutClient = () => {
         price: Number(match.price || 0),
       }));
     }
-    return SHIPPING_METHODS_FALLBACK;
+    return [];
   }, [shippingRate]);
   useEffect(() => {
     if (!SHIPPING_METHODS.length) return;
@@ -982,12 +984,12 @@ const CheckoutClient = () => {
         postcode: prev.postcode || addr.postal_code || "",
       }));
 
-      // ── Shipping address ko bhi Apple Pay se bharo ──
+      
       if (!shippingSameAsBilling) {
         const shipName = shipAddr.recipient || payer.name || "";
         const shipParts = shipName.split(" ");
 
-        // region code se zone_id resolve karna hoga
+       
         const matchedZone = shippingZones.find(
           (z) => z.code === shipAddr.region || z.name === shipAddr.region
         );
@@ -2132,11 +2134,11 @@ const CheckoutClient = () => {
                   <SectionHeader title="Shipping Method" />
 
                   <div className="space-y-4">
-                    {!effectiveCountryId ? (
-                      <div className="text-[13px] text-[#666] bg-white rounded-[3px] p-4 border border-dashed border-gray-300">
+                    {!effectiveCountryId  || !effectiveZoneId ? (
+                      <div className="text-[14px] text-[#666] bg-white font-semibold rounded-[3px] p-4 border border-dashed border-gray-300">
                         <p className="flex items-center gap-2">
                           <Truck size={16} className="text-gray-400" />
-                          Please select a Country and Region / State in your address to see available shipping rates.
+                          Shipping Rate - calculated after shipping address
                         </p>
                       </div>
                     ) : shippingRateLoading ? (
@@ -2374,7 +2376,7 @@ const CheckoutClient = () => {
                                         <button onClick={() => item.quantity > 1 && updateCart({ cart_id: item.cart_id, quantity: item.quantity - 1 })} className="px-1 py-0.5 hover:bg-gray-100 border-t border-gray-200 cursor-pointer"><ChevronDown size={10} /></button>
                                       </div>
                                     </div>
-                                    <button onClick={() => clearCartMut(item.cart_id)} className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer">
+                                    <button onClick={() => DeleteCartMut(item.cart_id)} className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer">
                                       <X size={13} />
                                     </button>
                                   </div>
