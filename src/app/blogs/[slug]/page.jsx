@@ -4,7 +4,6 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getQueryClient } from '@/libs/get-query-client';
 import { blogKeys } from '@/libs/queryKeys';
 import { blogService } from '@/app/api/services/blogService';
-import Script from 'next/script';
 import { generateArticleSchema } from '@/libs/aricleSchema';
 import { getMetaByType } from '@/libs/getMetaByType';
 
@@ -84,11 +83,11 @@ const page = async ({ params }) => {
   });
 
   const articleSchema = initialPostData ? generateArticleSchema(initialPostData) : null;
-
+   
   return (
     <div>
       {articleSchema && (
-        <Script
+        <script
           id="dynamicblog-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}

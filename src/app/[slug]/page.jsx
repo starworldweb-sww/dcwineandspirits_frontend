@@ -142,9 +142,12 @@ export default async function ProductsSlugPage({ params }) {
             ? product.breadcrumbs
             : slug;
 
+        // FIX: product.slug field exist nahi karta — product object mein
+        // sirf seo_url hota hai. Ab wahi use kar rahe hain taaki current
+        // product ka breadcrumb item sahi se ban sake.
         breadcrumbSchema = generateBreadcrumbSchema(
           breadcrumbsData,
-          product.slug,
+          product.seo_url,
           "https://www.dcwineandspirits.com",
           product.name,
         );
@@ -205,6 +208,7 @@ export default async function ProductsSlugPage({ params }) {
   let categoryBreadcrumbSchema = null;
   try {
     const firstPageData = pagesData[0];
+
     if (firstPageData) {
       categoryCollectionSchema = generateCollectionPageSchema(
         firstPageData.products?.items,
