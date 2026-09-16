@@ -44,4 +44,23 @@ export const useSearchPosts = ({ keyword, page = 1, limit = 10 }) => {
     enabled: !!keyword?.trim(),
     keepPreviousData: true,
   });
+}
+
+
+
+  
+
+
+  
+
+
+
+export const useGetPostsByAuthor = (authorFirstname, params = {}, options = {}) => {
+  return useQuery({
+    queryKey: blogKeys.postsByAuthor(authorFirstname, params),
+    queryFn: () => blogService.getPostsByAuthor(authorFirstname, params),
+    enabled: !!authorFirstname,
+    staleTime: 60 * 1000,
+    ...options,
+  });
 };

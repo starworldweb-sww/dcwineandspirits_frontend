@@ -1,22 +1,23 @@
-import React from 'react'
-import BlogClient from './BlogClient'
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { getQueryClient } from '@/libs/get-query-client';
-import { blogKeys } from '@/libs/queryKeys';
-import { blogService } from '@/app/api/services/blogService';
-import { generateArticleSchema } from '@/libs/aricleSchema';
-import { getMetaByType } from '@/libs/getMetaByType';
+import React from "react";
+import BlogClient from "./BlogClient";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getQueryClient } from "@/libs/get-query-client";
+import { blogKeys } from "@/libs/queryKeys";
+import { blogService } from "@/app/api/services/blogService";
+import { generateArticleSchema } from "@/libs/aricleSchema";
+import { getMetaByType } from "@/libs/getMetaByType";
+import AuthorBox from "./AuthorBox";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const allCategories = await blogService.getAllCategory();
   // const matchedCategory = allCategories?.find((c) => c.slug === slug);
-  const meta = await getMetaByType("blog", slug)
-  
+  const meta = await getMetaByType("blog", slug);
+
   if (meta) {
     return {
       title: `${meta?.meta_title}`,
-      description: meta.meta_description ,
+      description: meta.meta_description,
       alternates: {
         canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
       },
@@ -76,14 +77,17 @@ const page = async ({ params }) => {
   }
 
   const initialPostData = await blogService.getPostBySlug(slug);
+  console.log("initialPostData", initialPostData);
 
   await queryClient.prefetchQuery({
     queryKey: blogKeys.postBySlug(slug),
     queryFn: () => Promise.resolve(initialPostData),
   });
 
-  const articleSchema = initialPostData ? generateArticleSchema(initialPostData) : null;
-   
+  const articleSchema = initialPostData
+    ? generateArticleSchema(initialPostData)
+    : null;
+
   return (
     <div>
       {articleSchema && (
@@ -94,10 +98,7 @@ const page = async ({ params }) => {
         />
       )}
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <BlogClient
-          viewType="post"
-          initialPostData={initialPostData}
-        />
+        <BlogClient viewType="post" initialPostData={initialPostData} />
       </HydrationBoundary>
     </div>
   );

@@ -147,6 +147,8 @@ export default function ProductMain({ product }) {
     ? getImageUrl(product.manufacturer.image)
     : "";
 
+
+    console.log("manu img", product.manufacturer.image)
   const tagsRaw = product.tag
     ? String(product.tag)
         .split(",")

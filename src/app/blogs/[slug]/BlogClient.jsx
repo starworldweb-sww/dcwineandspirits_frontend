@@ -23,6 +23,7 @@ import {
   useGetPostBySlug,
   useSearchPosts,
 } from "@/app/api/hooks/blog/useBlogPosts";
+import AuthorBox from "./AuthorBox";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 const BLOGS_PER_PAGE = 10;
@@ -63,7 +64,19 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
-const  BlogClient = ({
+// Blog post data only gives us the author's first/last name (no slug),
+// but AuthorBox needs a slug to look the author up in libs/authors.js.
+// This turns "Sam Gera" into "sam-gera" — IMPORTANT: this must match the
+// exact `slug` format used in the AUTHORS array, or the lookup will miss
+// and AuthorBox will just fall back to showing the plain name.
+const slugifyAuthorName = (name) =>
+  (name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+
+const BlogClient = ({
   viewType,
   category,
   initialCategoryPosts,
@@ -484,6 +497,10 @@ const  BlogClient = ({
     .join(" ");
   const readingMinutes = getReadingTime(post.content);
 
+  // AuthorBox needs a slug (see slugifyAuthorName above) — derived from
+  // the post's author name since the post data itself has no slug field.
+  const authorSlug = slugifyAuthorName(authorName);
+
   const breadcrumbs = [
     { label: "Blogs", href: "/blogs" },
     { label: post.title, href: `/blogs/${post.slug}` },
@@ -513,10 +530,14 @@ const  BlogClient = ({
 
           <div className="flex items-center flex-wrap gap-4 text-sm text-gray-500 mb-6 pb-4 border-b border-gray-200">
             {authorName && (
-              <span className="flex items-center gap-1.5">
+              <Link
+                href={`/author/${slugifyAuthorName(authorName)}`}
+                className="flex items-center gap-1.5 text-gray-500 hover:text-[#98022e] transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <User size={15} className="text-[#98022e]" />
-                {authorName}
-              </span>
+                <span>{authorName}</span>
+              </Link>
             )}
             <span className="flex items-center gap-1.5">
               <Clock size={15} className="text-[#98022e]" />
@@ -532,6 +553,10 @@ const  BlogClient = ({
             </span>
           </div>
 
+          {/* Author card — was imported before but never actually
+              rendered anywhere in this file. Placed right under the
+              meta row, before the article content. */}
+
           <div
             className="blog-article-body"
             dangerouslySetInnerHTML={{ __html: post.content || "" }}
@@ -539,6 +564,11 @@ const  BlogClient = ({
         </article>
 
         {renderSidebar()}
+      </div>
+      <div>
+        {authorName && (
+          <AuthorBox authorSlug={authorSlug} fallbackName={authorName} />
+        )}
       </div>
 
       <style jsx global>{`
@@ -568,8 +598,7 @@ const  BlogClient = ({
           margin-bottom: 0.5rem;
         }
 
-
-          .blog-article-body h4 {
+        .blog-article-body h4 {
           font-size: 16px;
           font-weight: 700;
           color: #1a1a1a;
@@ -839,7 +868,7 @@ const  BlogClient = ({
             (legacy blog content ke inline col-lg-* /
             card-row / btn-blog markup ke liye)
             ========================================= */
-        
+
         .blog-article-body .row {
           display: flex;
           flex-wrap: wrap;

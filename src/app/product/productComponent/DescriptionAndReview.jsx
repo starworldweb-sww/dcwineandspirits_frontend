@@ -2,11 +2,10 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Upload, X, ChevronDown, Download, Star } from "lucide-react";
+import { Upload, X, ChevronDown, Download, Star, Headset } from "lucide-react";
 import { Sumana } from "next/font/google";
 import { useUser } from "@/app/api/hooks/useAuth";
 import Link from "next/link";
-
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -29,7 +28,6 @@ const decodeHtml = (str) => {
   txt.innerHTML = String(str);
   return txt.value;
 };
-
 
 const SHIPPING_CONTENT_HTML = `
 <h2>Why Choose Our Delivery Service?</h2>
@@ -331,17 +329,18 @@ const DescriptionAndReview = ({ product = {} }) => {
             to write a review.
           </p>
           <div className="flex gap-4">
-            <Link 
-            href="/account/login"
-            
-            className="bg-[#98022e] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl">
+            <Link
+              href="/account/login"
+              className="bg-[#98022e] hover:bg-black text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl"
+            >
               Login
             </Link>
-            <Link 
-            href="/register"
-            className="border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl">
+            <Link
+              href="/register"
+              className="border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white px-6 py-2 uppercase font-semibold text-[13px] tracking-wide transition-colors hover:cursor-pointer active:scale-95 hover:rounded-xl"
+            >
               Register
-            </ Link>
+            </Link>
           </div>
         </div>
       ) : (
@@ -354,7 +353,6 @@ const DescriptionAndReview = ({ product = {} }) => {
               type="text"
               name="author"
               placeholder="Your Name"
-             
               required
               className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-[#bd8f3a] text-[15px] bg-white"
             />
@@ -590,36 +588,41 @@ const DescriptionAndReview = ({ product = {} }) => {
 
       {/* assistance */}
       {/* assistance */}
-<div className="bg-[#f8f8f8] mt-6 mx-1 sm:mx-0 py-7 px-5 sm:px-6 text-left sm:text-center rounded-lg sm:rounded-none">
-  <h3 className="text-lg font-bold text-black mb-3">
-    {ASSISTANCE_BOX.heading}
-  </h3>
+          {/* assistance */}
+<div className="mt-6 mx-1 sm:mx-0 rounded-lg sm:rounded-none border border-gray-200 bg-[#f8f8f8]">
+  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6 px-5 sm:px-8">
+    {/* Icon badge — left anchor, replaces the generic centered-text feel */}
+    <div className="flex-shrink-0 w-11 h-11 rounded-full bg-[#98022e]/10 flex items-center justify-center">
+      <Headset size={20} className="text-[#98022e]" strokeWidth={2} />
+    </div>
 
-  <p className="max-w-3xl mx-auto text-[14px] leading-6 text-gray-600">
-    {ASSISTANCE_BOX.textBeforeLink}
+    <div className="flex-1 min-w-0">
+      <h3 className="text-base font-bold text-black mb-1">
+        {ASSISTANCE_BOX.heading}
+      </h3>
+      <p className="text-[14px] leading-6 text-gray-600">
+        {ASSISTANCE_BOX.textBeforeLink}
+        <a
+          href={ASSISTANCE_BOX.emailHref}
+          className="text-[#98022e] font-medium hover:underline"
+        >
+          {ASSISTANCE_BOX.email}
+        </a>
+        {ASSISTANCE_BOX.textAfterEmail}
+      </p>
+    </div>
 
+    {/* BULK ORDER FORM BUTTON -CTA */}
     <a
       href={ASSISTANCE_BOX.linkHref}
       download={ASSISTANCE_BOX.downloadName}
-      className="inline-flex items-center gap-1.5 whitespace-nowrap text-[#98022e] font-medium hover:underline"
+      className="flex-shrink-0 inline-flex items-center justify-center gap-2 border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white transition-all px-5 py-2.5 text-[13px] font-semibold uppercase tracking-wide whitespace-nowrap hover:rounded-xl"
     >
       <Download size={15} strokeWidth={2} />
-      <span>{ASSISTANCE_BOX.linkText}</span>
+      {ASSISTANCE_BOX.linkText}
     </a>
-
-    {ASSISTANCE_BOX.textBetweenLinkAndEmail}
-
-    <a
-      href={ASSISTANCE_BOX.emailHref}
-      className="text-[#98022e] font-medium hover:underline"
-    >
-      {ASSISTANCE_BOX.email}
-    </a>
-
-    {ASSISTANCE_BOX.textAfterEmail}
-  </p>
+  </div>
 </div>
-
 
       <style jsx global>{`
         .product-description-text h2,

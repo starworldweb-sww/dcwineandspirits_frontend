@@ -33,4 +33,13 @@ export const blogService = {
   },
 
 
+getPostsByAuthor: async (firstname, params = {}) => {
+  const { lastname, page = 1, limit = 10 } = params;
+  const { data } = await axiosInstance.get("/blog/posts/author", {
+    params: { firstname, lastname, page, limit },
+  });
+  return data?.data;
+},
+
+
 };

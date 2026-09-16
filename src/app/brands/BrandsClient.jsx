@@ -31,7 +31,7 @@ function BrandIndex({ alphabet }) {
     <section className="flex flex-wrap gap-x-4 gap-y-2 items-center mb-10 mt-6">
       <span className="font-bold text-[15px] text-[#333333]">Brand Index:</span>
       {alphabet.map((letter) => (
-        <a 
+        <a
           key={letter}
           href={`#brand-${letter}`}
           className="text-[15px] text-[#333333] hover:text-[#901c3f] transition-colors"
@@ -55,13 +55,16 @@ function BrandCard({ brand }) {
 
   const imageSrc = brand.image
     ? brand.image.startsWith("http")
-      ? brand.image
+      ? encodeURI(brand.image)
       : `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`
     : null;
-
+  console.log("brand.image", brand.image);
   return (
     // 3. Poora card ab Link ke andar wrap hai, onClick ki zaroorat nahi
-    <Link href={href} className="flex flex-col items-center cursor-pointer group">
+    <Link
+      href={href}
+      className="flex flex-col items-center cursor-pointer group"
+    >
       <div className="w-full h-[120px] bg-[#f4f4f4] rounded-sm flex items-center justify-center overflow-hidden transition-all duration-200 relative">
         {imageSrc ? (
           <Image
@@ -95,7 +98,8 @@ function BrandGroup({ letter, brands }) {
         <h2 className="text-[20px] font-bold text-[#333333] leading-none mb-2">
           {letter}
         </h2>
-        <div className="w-8 h-[2px] bg-[#901c3f]" /> {/* Wine color underline */}
+        <div className="w-8 h-[2px] bg-[#901c3f]" />{" "}
+        {/* Wine color underline */}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
@@ -123,10 +127,9 @@ const BrandsClient = () => {
 
   return (
     <main className="text-[#333333] select-none bg-white min-h-screen flex flex-col w-full">
-      
       {/* 1. HEADER WIDGET: Placed outside max-width container to take 100% width */}
       <div className="w-full">
-        <ProductsHeader categoryName="Brands"/>
+        <ProductsHeader categoryName="Brands" />
       </div>
 
       {/* 2. PAGE CONTENT: Constrained width to match the rest of the layout */}
@@ -157,7 +160,6 @@ const BrandsClient = () => {
           </>
         )}
       </div>
-
     </main>
   );
 };

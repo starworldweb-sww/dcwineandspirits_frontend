@@ -14,7 +14,7 @@ const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
 const BLOGS_PER_PAGE = 10; // API ka default limit bhi 10 hai (pagination.limit)
 
-// Breadcrumbs - login page ke breadcrumbs array jaisa hi pattern
+
 const breadcrumbs = [
   { label: "Blogs", href: "/blogs" },
 ];
