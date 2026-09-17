@@ -48,6 +48,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+ metadataBase: new URL(
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.dcwineandspirits.com"
+),
   title: "DC Wine & Spirits - Best Online Wine Gift Store",
   description:
     "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
