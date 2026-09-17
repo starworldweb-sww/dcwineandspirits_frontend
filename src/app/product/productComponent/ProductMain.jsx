@@ -150,9 +150,9 @@ export default function ProductMain({ product }) {
 
   
   const tagsRaw = product?.tag
-    ? String(product.tag)
+    ? String(product?.tag)
         .split(",")
-        .map((t) => t.trim())
+        .map((t) => t?.trim())
         .filter(Boolean)
     : [];
 

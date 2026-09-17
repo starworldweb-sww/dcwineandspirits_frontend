@@ -71,8 +71,16 @@ const AuthorBox = ({ authorSlug, fallbackName }) => {
     <div className="px-3 lg:px-5 2xl:px-32">
       <div className="my-8 flex items-center gap-3.5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         {authorHref ? (
-          <Link href={authorHref} className="shrink-0" aria-label={`View ${name}'s author page`}>
-            <Avatar src={author?.image} name={name} verified={Boolean(author)} />
+          <Link
+            href={authorHref}
+            className="shrink-0"
+            aria-label={`View ${name}'s author page`}
+          >
+            <Avatar
+              src={author?.image}
+              name={name}
+              verified={Boolean(author)}
+            />
           </Link>
         ) : (
           <Avatar src={author?.image} name={name} verified={Boolean(author)} />
@@ -82,7 +90,6 @@ const AuthorBox = ({ authorSlug, fallbackName }) => {
           {/* <p className="text-[10px] font-hind-madurai uppercase tracking-wider text-gray-400 mb-0.5">
             Written by
           </p> */}
-
           <div className="flex items-baseline flex-wrap gap-x-2">
             {authorHref ? (
               <Link
@@ -96,6 +103,13 @@ const AuthorBox = ({ authorSlug, fallbackName }) => {
                 {name}
               </p>
             )}
+
+            {author?.tag && (
+              <span className="text-[11px] font-sumana font-bold uppercase tracking-wide text-gray-500">
+                {author.tag}
+              </span>
+            )}
+
             {author?.title && (
               <>
                 <span className="text-gray-300 text-xs">•</span>

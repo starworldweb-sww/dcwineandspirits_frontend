@@ -192,7 +192,9 @@ export const blogKeys = {
   countViews: () => [...blogKeys.all, "count-views"],
   getCategory: () => [...blogKeys.all, "category"],
   search: (params) => [...blogKeys.all, "search", params],
-  postsByAuthor: (authorId, params) => [...blogKeys.all, "posts", "author", authorId, params]
+  postsByAuthor: (authorId, params) => [...blogKeys.all, "posts", "author", authorId, params],
+  recommendedPosts: (postId, params) => [...blogKeys.all, "posts", "recommended", postId, params],
+
 };
 
 export const manufacturerKeys = {

@@ -94,8 +94,6 @@ const StatBlock = ({ value, label, delay = 0, format }) => (
   </div>
 );
 
-// "badge" — optional small label shown top-left of the image, e.g.
-// "Most Popular" or "Most Recent". Normal grid cards don't pass this.
 const BlogCard = ({ post, badge }) => {
   const excerpt = stripHtml(post.description).slice(0, 150);
   const imgSrc = post.image?.startsWith("http")
@@ -174,13 +172,20 @@ const AuthorProfileHeader = ({ author, fallbackName }) => {
       `}</style>
 
       <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr] gap-10 md:gap-8 items-center px-6 sm:px-10 md:px-14 py-12 md:py-14">
-        {/* ---------- Left: name, title, bio, socials ---------- */}
         <div className="order-2 md:order-1 text-left">
           <h2
-            className="font-hind-madurai font-extrabold text-[#2b2b2b] leading-[0.98] text-[38px] sm:text-[50px] md:text-[58px] author-fade-slide-up"
+            className="font-hind-madurai font-extrabold text-[#2b2b2b] leading-[0.98] text-[38px] sm:text-[50px] md:text-[58px] author-fade-slide-up flex flex-wrap items-baseline gap-x-3 gap-y-1"
             style={{ animationDelay: "0.1s" }}
           >
-            {displayName}
+            <span>{displayName}</span>
+            {author?.tag && (
+              <span
+                className="font-hind-madurai text-[#2b2b2b] font-extrabold text-[25px] sm:text-[30px] md:text-[40px] leading-none"
+                
+              >
+                {author.tag}
+              </span>
+            )}
           </h2>
 
           {author?.title && (
@@ -309,6 +314,15 @@ const AuthorPostsClient = ({ authorSlug }) => {
 
   const authorPosts = data?.posts || [];
 
+  // Step 3.5: "All Posts" section ko views ke hisaab se descending order
+  // mein dikhana hai — isliye ek alag sorted array banaya, taaki original
+  // authorPosts (jo highlights/stats ke liye use hota hai) untouched rahe.
+  // Spread (`[...authorPosts]`) isliye kiya hai kyunki `.sort()` in-place
+  // mutate karta hai, aur hum authorPosts ko waise hi rakhna chahte hain.
+  const sortedByViews = [...authorPosts].sort(
+    (a, b) => (b.views || 0) - (a.views || 0),
+  );
+
   // Step 4: Agar slug AUTHORS list mein nahi mila (authorMeta null aaya),
   // toh kam se kam naam dikhane ke liye posts ke data se naam nikaal lo.
   // Ye sirf ek fallback hai — normal case mein authorMeta hi use hoga.
@@ -325,7 +339,7 @@ const AuthorPostsClient = ({ authorSlug }) => {
   const mostPopularPost =
     authorPosts.length > 0
       ? authorPosts.reduce((popular, current) =>
-          current.views > popular.views ? current : popular
+          current.views > popular.views ? current : popular,
         )
       : null;
 
@@ -335,20 +349,22 @@ const AuthorPostsClient = ({ authorSlug }) => {
       ? authorPosts.reduce((recent, current) =>
           new Date(current.date_created) > new Date(recent.date_created)
             ? current
-            : recent
+            : recent,
         )
       : null;
 
   // Agar same post dono categories mein aa gaya (e.g. sirf ek hi post hai
   // author ke paas), toh use dono jagah dikhane ki zaroorat nahi.
   const showBothHighlights =
-    mostPopularPost && mostRecentPost && mostPopularPost.post_id !== mostRecentPost.post_id;
+    mostPopularPost &&
+    mostRecentPost &&
+    mostPopularPost.post_id !== mostRecentPost.post_id;
 
   // ---- Step 8: Overall stats for the rolling counter row ----
   const totalBlogs = authorPosts.length;
   const totalViews = authorPosts.reduce(
     (sum, post) => sum + (post.views || 0),
-    0
+    0,
   );
 
   // Breadcrumb ab slug-based hai — route bhi /author/[slug] hi hai,
@@ -426,7 +442,7 @@ const AuthorPostsClient = ({ authorSlug }) => {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {authorPosts.map((post) => (
+              {sortedByViews.map((post) => (
                 <BlogCard key={post.post_id} post={post} />
               ))}
             </div>

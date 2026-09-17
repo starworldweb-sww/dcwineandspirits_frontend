@@ -63,4 +63,21 @@ export const useGetPostsByAuthor = (authorFirstname, params = {}, options = {}) 
     staleTime: 60 * 1000,
     ...options,
   });
+
+
+
+
+  
+};
+
+
+
+export const useGetRecommendedPosts = (postId, params = {}, options = {}) => {
+  return useQuery({
+    queryKey: blogKeys.recommendedPosts(postId, params),
+    queryFn: () => blogService.getRecommendedPosts(postId, params),
+    enabled: !!postId,
+    staleTime: 60 * 1000,
+    ...options,
+  });
 };

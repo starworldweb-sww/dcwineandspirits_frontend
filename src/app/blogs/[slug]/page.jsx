@@ -11,24 +11,85 @@ import AuthorBox from "./AuthorBox";
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const allCategories = await blogService.getAllCategory();
-  // const matchedCategory = allCategories?.find((c) => c.slug === slug);
+  const matchedCategory = allCategories?.find((c) => c.slug === slug);
   const meta = await getMetaByType("blog", slug);
 
-  if (meta) {
+  const canonicalUrl = `https://www.dcwineandspirits.com/blogs/${slug}`;
+
+  if (matchedCategory) {
+    const ogTitle =
+      meta?.meta_title || `${matchedCategory.name} | DC Wine and Spirits Blog`;
+    const ogDescription =
+      meta?.meta_description ||
+      `Browse ${matchedCategory.name} articles on DC Wine and Spirits.`;
+
     return {
-      title: `${meta?.meta_title}`,
-      description: meta.meta_description,
+      title: ogTitle,
+      description: ogDescription,
       alternates: {
-        canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title: ogTitle,
+        description: ogDescription,
+        url: canonicalUrl,
+        siteName: "DC Wine and Spirits",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: ogTitle,
+        description: ogDescription,
       },
     };
   }
 
+  const initialPostData = await blogService.getPostBySlug(slug);
+
+  const postImage = initialPostData?.image
+    ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${initialPostData.image}`
+    : null;
+
+  const ogTitle =
+    meta?.meta_title || initialPostData?.title || "Blog | DC Wine and Spirits";
+  const ogDescription =
+    meta?.meta_description || "Read the latest blog from DC Wine and Spirits.";
+
   return {
-    title: "Blog | DC Wine and Spirits",
-    description: "Read the latest blog from DC Wine and Spirits.",
+    title: ogTitle,
+    description: ogDescription,
     alternates: {
-      canonical: `https://www.dcwineandspirits.com/blogs/${slug}`,
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: ogTitle,
+      description: ogDescription,
+      url: canonicalUrl,
+      siteName: "DC Wine and Spirits",
+      type: "article",
+      publishedTime: initialPostData?.date_created,
+      modifiedTime: initialPostData?.date_updated,
+      authors: initialPostData
+        ? [
+            `${initialPostData.author_firstname} ${initialPostData.author_lastname}`,
+          ]
+        : undefined,
+      ...(postImage && {
+        images: [
+          {
+            url: postImage,
+            width: 1200,
+            height: 630,
+            alt: initialPostData?.title || ogTitle,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: ogTitle,
+      description: ogDescription,
+      ...(postImage && { images: [postImage] }),
     },
   };
 }
@@ -77,12 +138,31 @@ const page = async ({ params }) => {
   }
 
   const initialPostData = await blogService.getPostBySlug(slug);
+
+
   console.log("initialPostData", initialPostData);
 
   await queryClient.prefetchQuery({
     queryKey: blogKeys.postBySlug(slug),
     queryFn: () => Promise.resolve(initialPostData),
   });
+
+
+
+  // recommended fetch
+
+
+    const recommendedPosts = initialPostData
+  ? await blogService.getRecommendedPosts(initialPostData.post_id, { limit: 10 })
+  : null;
+
+if (initialPostData) {
+  await queryClient.prefetchQuery({
+    queryKey: blogKeys.recommendedPosts(initialPostData.post_id, { limit: 10 }),
+    queryFn: () => Promise.resolve(recommendedPosts),
+  });
+}
+
 
   const articleSchema = initialPostData
     ? generateArticleSchema(initialPostData)
