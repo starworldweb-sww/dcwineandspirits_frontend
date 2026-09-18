@@ -68,10 +68,7 @@ export function buildProductSchema(product) {
         mpn: String(product.mpn).trim(),
       }),
 
-    ...(product?.upc &&
-      String(product.upc).trim() !== "" && {
-        upc: String(product.upc).trim(),
-      }),
+   
 
     ...(brandName && {
       brand: {
