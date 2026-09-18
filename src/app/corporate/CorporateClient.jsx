@@ -195,6 +195,27 @@ export default function CorporateClient() {
       {/* Page header / breadcrumb — same pattern as account pages */}
       <ProductsHeader categoryName="Corporate Bulk Order" breadcrumbs={breadcrumbs} />
 
+
+{/* MAIN BANNER */}
+  <section className="relative min-h-[220px] md:min-h-[300px] flex items-center justify-center overflow-hidden">
+        <Image
+          src="/corporate/corporateMain.png"
+          alt="Corporate Gifting"
+          fill
+          priority
+          className="object-cover -z-10"
+        />
+        <div className="absolute inset-0 bg-[#1c1f22]/60 -z-10" />
+        <div className="text-center px-5 font-hind-madurai">
+         
+          <h2 className="text-white text-2xl md:text-4xl font-bold mb-3">
+            Corporate Gifting, Made Effortless
+          </h2>
+          <p className="text-white/90 text-sm md:text-base max-w-[600px] mx-auto">
+            Curated wine, champagne &amp; gourmet gift baskets to celebrate your team, clients &amp; partners.
+          </p>
+        </div>
+      </section>
       {/* Hero */}
       <section className="relative min-h-[280px] md:min-h-[360px] flex items-center py-10 px-4 overflow-hidden">
         <Image

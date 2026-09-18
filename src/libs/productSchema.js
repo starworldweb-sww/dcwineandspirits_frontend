@@ -70,7 +70,7 @@ export function buildProductSchema(product) {
 
     ...(product?.upc &&
       String(product.upc).trim() !== "" && {
-        gtin12: String(product.upc).trim(),
+        upc: String(product.upc).trim(),
       }),
 
     ...(brandName && {
