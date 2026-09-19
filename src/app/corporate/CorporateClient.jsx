@@ -5,6 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 
+import {
+  FiGift,
+  FiUsers,
+  FiTruck,
+  FiShield,
+  FiDownload,
+  FiSend,
+} from "react-icons/fi";
+import BulkSubmitPopUp from "./corporateComponent/BulkSumbitPopUp";
+import CorporateReasons from "./corporateComponent/CorporateReasons";
+import LaptopComponent from "./corporateComponent/LaptopComponent";
+import EngravedBottles from "./corporateComponent/EngravedBottles";
+import BulkOrderSteps from "./corporateComponent/BulkOrderSteps";
+
 const PRODUCT_TABS = ["Gift Baskets", "Wine", "Champagne"];
 
 const PRODUCTS = {
@@ -67,7 +81,8 @@ const PRODUCTS = {
       id: "WCG002",
       name: "Veuve Clicquot Rose & Assorted Godiva Chocolates Gift Basket",
       slug: "veuve-clicquot-rose-godiva-chocolates-gift-basket",
-      image: "/images/corporate/veuve-clicquot-rose-godiva-chocolates-gift-basket.webp",
+      image:
+        "/images/corporate/veuve-clicquot-rose-godiva-chocolates-gift-basket.webp",
     },
     {
       id: "WCG---",
@@ -85,7 +100,8 @@ const PRODUCTS = {
       id: "WCG015",
       name: "Caymus Cabernet Sauvignon Wine Gift Basket",
       slug: "caymus-cabernet-sauvignon-wine-gift-basket",
-      image: "/images/corporate/caymus-cabernet-sauvignon-wine-gift-basket.webp",
+      image:
+        "/images/corporate/caymus-cabernet-sauvignon-wine-gift-basket.webp",
     },
     {
       id: "WCG364",
@@ -97,7 +113,8 @@ const PRODUCTS = {
       id: "WCG182",
       name: "DAOU Soul of a Lion Wine & Cheese Gift Basket",
       slug: "daou-soul-of-a-lion-wine-cheese-gift-basket",
-      image: "/images/corporate/daou-soul-of-a-lion-wine-cheese-gift-basket.webp",
+      image:
+        "/images/corporate/daou-soul-of-a-lion-wine-cheese-gift-basket.webp",
     },
   ],
   Wine: [],
@@ -144,6 +161,20 @@ const BRANDS = [
   { name: "Moet & Chandon", slug: "moet-chandon" },
 ];
 
+// Key Features grid data — same pattern as Amazon Business "Key Features" section
+const KEY_FEATURES = [
+  { label: "Bulk Discounts", icon: "📦" },
+  { label: "Business Analytics", icon: "📊" },
+  { label: "Compliance Tools", icon: "📋" },
+  { label: "Bulk Purchasing", icon: "🛒" },
+  { label: "Business PAN", icon: "💳" },
+  { label: "Shipping & Delivery", icon: "🚚" },
+  { label: "Payment Methods", icon: "💰" },
+  { label: "Account Security", icon: "🔒" },
+  { label: "GST Invoice", icon: "🧾" },
+  { label: "Mobile App", icon: "📱" },
+];
+
 // --- BRAND ACCENT (DC Wine & Spirits) ---
 const ACCENT = "#98022e";
 
@@ -170,6 +201,7 @@ function FeatureCard({ icon, title, children, dark }) {
 
 export default function CorporateClient() {
   const [activeTab, setActiveTab] = useState("Gift Baskets");
+  const [showBulkPopup, setShowBulkPopup] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     businessName: "",
@@ -193,27 +225,85 @@ export default function CorporateClient() {
   return (
     <main className="font-['cambriaregular'] text-[#333333]">
       {/* Page header / breadcrumb — same pattern as account pages */}
-      <ProductsHeader categoryName="Corporate Bulk Order" breadcrumbs={breadcrumbs} />
+      <ProductsHeader
+        categoryName="Corporate Bulk Order"
+        breadcrumbs={breadcrumbs}
+      />
 
-
-{/* MAIN BANNER */}
-  <section className="relative min-h-[220px] md:min-h-[300px] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[320px] md:min-h-[440px] flex items-center overflow-hidden bg-white">
         <Image
-          src="/corporate/corporateMain.png"
+          src="/corporate/finalmainbanner.png"
           alt="Corporate Gifting"
           fill
           priority
-          className="object-cover -z-10"
+          className="object-contain object-center md:object-right"
         />
-        <div className="absolute inset-0 bg-[#1c1f22]/60 -z-10" />
-        <div className="text-center px-5 font-hind-madurai">
-         
-          <h2 className="text-white text-2xl md:text-4xl font-bold mb-3">
-            Corporate Gifting, Made Effortless
+        <div className="relative z-10 px-6 md:px-16 py-10 max-w-[600px] font-hind-madurai text-left">
+          <h2
+            className="text-2xl md:text-[38px] font-bold leading-tight mb-3"
+            style={{ fontFamily: "'cambriaregular', Georgia, serif" }}
+          >
+            <span className="text-[#1c1f22]">Corporate &amp;</span>
+            <br />
+            <span style={{ color: ACCENT }}>Bulk Gift Orders</span>
           </h2>
-          <p className="text-white/90 text-sm md:text-base max-w-[600px] mx-auto">
-            Curated wine, champagne &amp; gourmet gift baskets to celebrate your team, clients &amp; partners.
+
+          <p className="text-sm md:text-base max-w-[480px] text-[#666] mb-6">
+            Curated wine, champagne &amp; gourmet gift baskets to celebrate your
+            team, clients &amp; partners.
           </p>
+
+          {/* Feature icons row */}
+          <div className="grid grid-cols-4 gap-3 mb-7 max-w-[440px]">
+            {[
+              { Icon: FiGift, label: "Personalized Gifting" },
+              { Icon: FiUsers, label: "For Teams & Clients" },
+              { Icon: FiTruck, label: "Same Day Delivery" },
+              { Icon: FiShield, label: "Trusted Quality" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col items-center text-center gap-1.5"
+              >
+                <div
+                  className="w-10 h-10 rounded-full border flex items-center justify-center"
+                  style={{ borderColor: ACCENT, color: ACCENT }}
+                >
+                  <item.Icon size={18} />
+                </div>
+                <span className="text-[10px] md:text-[11px] leading-tight text-[#444]">
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA buttons */}
+          <div className="flex flex-nowrap gap-3 sm:gap-4">
+            <a
+              href="/bulk-order-form.xlsx"
+              download={"bulk_order_form.xlsx"}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-white px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide no-underline transition-colors"
+              style={{ backgroundColor: ACCENT }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#7e1a3c")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = ACCENT)
+              }
+            >
+              <FiDownload size={15} />
+              Download Bulk Order Form
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowBulkPopup(true)}
+              className="inline-flex text-white border-0 items-center justify-center gap-2 whitespace-nowrap px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer bg-[#98022e]"
+            >
+              <FiSend size={14} />
+              Submit Bulk Order Form
+            </button>
+          </div>
         </div>
       </section>
       {/* Hero */}
@@ -243,40 +333,53 @@ export default function CorporateClient() {
             download={"bulk_order_form.xlsx"}
             className="inline-block text-white px-7 py-3 font-semibold text-sm tracking-wide no-underline transition-colors font-hind-madurai"
             style={{ backgroundColor: ACCENT }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7e1a3c")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = ACCENT)}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#7e1a3c")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = ACCENT)
+            }
           >
             Download Our Bulk Order Form
           </a>
         </div>
       </section>
 
+      {/* keys */}
+
+      {/* Key Features */}
+  
+
+      {/* reasons */}
+      <BulkOrderSteps />
+      <CorporateReasons />
+      
+      <LaptopComponent />
+
       {/* Bottles + Lead form */}
       <section className="max-w-[1200px] mx-auto px-4 sm:px-5 -mt-8 md:-mt-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 shadow-lg">
-          <div className="relative bg-[#eeeeee] min-h-[260px] md:min-h-[320px]">
-            <Image
-              src=""
-              alt="Featured corporate gifting bottles"
-              fill
-              className="object-cover"
-            />
-          </div>
+          <div className="relative bg-[#eeeeee] min-h-[260px] md:min-h-[320px]"></div>
 
           <div className="bg-white px-6 py-8 md:px-10 md:py-8">
             <h3 className="text-xl font-bold text-center mb-1.5 font-hind-madurai">
               Let&apos;s Get Started
             </h3>
             <p className="text-xs text-center text-[#777] mb-4 leading-relaxed font-hind-madurai">
-              Please enter your contact information in the fields below and
-              we will be in touch within 24 hours.
+              Please enter your contact information in the fields below and we
+              will be in touch within 24 hours.
             </p>
             <hr className="border-t border-[#e5e5e5] mb-5" />
 
-            <form onSubmit={handleSubmit} className="space-y-4 font-hind-madurai">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 font-hind-madurai"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold block mb-1.5">Full Name</label>
+                  <label className="text-xs font-semibold block mb-1.5">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="fullName"
@@ -286,7 +389,9 @@ export default function CorporateClient() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold block mb-1.5">Business Name</label>
+                  <label className="text-xs font-semibold block mb-1.5">
+                    Business Name
+                  </label>
                   <input
                     type="text"
                     name="businessName"
@@ -299,7 +404,9 @@ export default function CorporateClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold block mb-1.5">Your Email ID</label>
+                  <label className="text-xs font-semibold block mb-1.5">
+                    Your Email ID
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -309,7 +416,9 @@ export default function CorporateClient() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold block mb-1.5">Your Phone No.</label>
+                  <label className="text-xs font-semibold block mb-1.5">
+                    Your Phone No.
+                  </label>
                   <input
                     type="tel"
                     name="phone"
@@ -321,7 +430,9 @@ export default function CorporateClient() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1.5">Message</label>
+                <label className="text-xs font-semibold block mb-1.5">
+                  Message
+                </label>
                 <textarea
                   name="message"
                   rows={4}
@@ -335,8 +446,12 @@ export default function CorporateClient() {
                 type="submit"
                 className="w-full text-white py-3.5 font-semibold text-sm tracking-wide transition-colors cursor-pointer"
                 style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7e1a3c")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = ACCENT)}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#7e1a3c")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = ACCENT)
+                }
               >
                 Submit
               </button>
@@ -345,211 +460,11 @@ export default function CorporateClient() {
         </div>
       </section>
 
-      {/* We Make Corporate Gifting Easy */}
-      <section className="max-w-[1100px] mx-auto px-5 mt-16 md:mt-[70px] text-center font-hind-madurai">
-        <h2 className="text-xl md:text-2xl font-bold mb-3.5">We Make Corporate Gifting Easy</h2>
-        <p className="text-sm text-[#666] leading-relaxed max-w-[760px] mx-auto">
-          Gift-giving isn&apos;t a rule, but it&apos;s a way to celebrate
-          performances, upscales, events, and networking in the office. So
-          come, charge up your office space with tokens of appreciation and
-          celebration.
-        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-10">
-          <FeatureCard icon="🛍️" title="Shop With Full Zeal">
-            <p className="text-[13px] text-[#777] leading-relaxed">
-              Discover an extensive selection of wine and spirits gifts,
-              paired with high-quality cheese, chocolates, and snacks.
-            </p>
-          </FeatureCard>
-          <FeatureCard icon="🎛️" title="Personalize & Customize">
-            <p className="text-[13px] text-[#777] leading-relaxed">
-              Deliver and handover gifts, selected with a sense of
-              thoughtfulness and understanding of the recipients.
-            </p>
-          </FeatureCard>
-          <FeatureCard icon="🤝" title="Build Relationships">
-            <p className="text-[13px] text-[#777] leading-relaxed">
-              Instill values by giving gifts that represent gratitude,
-              appreciation, and celebration.
-            </p>
-          </FeatureCard>
-          <FeatureCard icon="📞" title="Helpful Links" dark>
-            <p className="text-[13px] text-gray-300 mb-2.5">Active links for your assistance</p>
-            <p className="text-2xl font-bold mb-1" style={{ color: ACCENT }}>
-              24x7
-            </p>
-            <a
-              href="tel:+12024598489"
-              className="text-[13px] hover:underline"
-              style={{ color: ACCENT }}
-            >
-              Call Now (202) 459-8489
-            </a>
-          </FeatureCard>
-        </div>
-      </section>
-
-      {/* Your Gift-Giving is Our Commitment */}
-      {/* <section className="bg-[#f4f4f4] mt-16 md:mt-[70px] py-12 md:py-[60px] px-5 font-hind-madurai">
-        <div className="max-w-[1100px] mx-auto text-center">
-          <h2 className="text-xl md:text-2xl font-bold mb-3.5">Your Gift-Giving is Our Commitment.</h2>
-          <p className="text-sm text-[#666] leading-relaxed max-w-[820px] mx-auto mb-10">
-            DC Wine and Spirits has been tying together relationships
-            for a long time, with impressive gifts that are unrivalled in
-            quality. We recognise the value of gratitude and appreciation in
-            your workspace. So, there are gifts for all of your current and
-            future customers, clients, coworkers, and other business
-            partners.
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {COMMITMENT_ITEMS.map((item) => (
-              <Link
-                key={item.label}
-                href="#"
-                className="text-white py-9 px-4 no-underline flex flex-col items-center gap-3.5 text-sm font-semibold transition-colors"
-                style={{ backgroundColor: ACCENT }}
-              >
-                <span className="text-2xl">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
-      {/* Pair Any Wine or Spirit */}
-      <section className="max-w-[1200px] mx-auto px-5 mt-16 md:mt-[70px] text-center font-hind-madurai">
-        <h2 className="text-xl md:text-2xl font-bold mb-3.5">
-          Pair Any Wine or Spirit with Any of Your Favourite Gift Basket.
-        </h2>
-        <p className="text-sm text-[#666] leading-relaxed max-w-[760px] mx-auto mb-7">
-          To make gift-giving more personal, we also offer the option to
-          pair any wine or spirit with any gift basket of your choice. So,
-          craft impressive assortments and place your orders right away!
-        </p>
-
-        {/* Tabs */}
-        {/* <div className="flex justify-center flex-wrap mb-9">
-          {PRODUCT_TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-7 py-2.5 text-sm font-semibold cursor-pointer border -ml-px first:ml-0 transition-colors ${
-                activeTab === tab ? "text-white" : "bg-white text-[#333333]"
-              }`}
-              style={{
-                borderColor: ACCENT,
-                backgroundColor: activeTab === tab ? ACCENT : "white",
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div> */}
-
-        {/* Product grid */}
-        {/* {activeProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 text-left">
-            {activeProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/${product.slug}/`}
-                className="text-[#333333] no-underline group"
-              >
-                <div className="aspect-square bg-[#f6f6f6] flex items-center justify-center mb-2.5 overflow-hidden">
-                  <div className="relative w-[90%] h-[90%]">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-contain group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-[#999] mb-1">{product.id}</p>
-                <p className="text-[13px] leading-snug m-0">{product.name}</p>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-[#999] py-10">No products available in this category yet.</p>
-        )} */}
-      </section>
-
-      {/* Bulk Order / Small Order */}
-      <section className="mt-16 md:mt-[70px] py-12 md:py-[60px] px-5 bg-[#333333]/[0.04] font-hind-madurai">
-        <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
-            <h3 className="text-xl font-bold mb-1">Bulk Order</h3>
-            <p className="text-xs text-[#777] mb-4">5 recipients or more</p>
-            <div className="flex flex-wrap gap-4">
-              <a
-                href="tel:2024598489"
-                className="border px-5 py-3 text-[13px] font-semibold no-underline transition-colors"
-                style={{ borderColor: "#333333", color: "#333333" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#333333";
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "#333333";
-                }}
-              >
-                📞 Call us today (202) 459-8489
-              </a>
-              <a
-                href="/bulk-order-form.xlsx"
-                download={"bulk_order_form.xlsx"}
-                className="text-white px-5 py-3 text-[13px] font-semibold no-underline transition-colors"
-                style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7e1a3c")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = ACCENT)}
-              >
-                ⬇ Download Our Large Order Form
-              </a>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-1">Small Order</h3>
-            <p className="text-xs text-[#777] mb-4">Less than 5 recipients</p>
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="text-[13px] text-[#555]">Simply place your order online</span>
-              <Link
-                href="/gift-baskets"
-                className="text-white px-7 py-3 text-[13px] font-semibold no-underline transition-colors"
-                style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7e1a3c")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = ACCENT)}
-              >
-                Shop Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Price tier banners */}
-      
-
-      {/* Featured Brands */}
-      {/* <section className="max-w-[1200px] mx-auto px-5 mb-16 text-center font-hind-madurai">
-        <h2 className="text-xl font-bold mb-8">Featured Brands</h2>
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-6 items-center">
-          {BRANDS.map((brand) => (
-            <Link key={brand.slug} href={`/${brand.slug}/`} className="relative h-[60px]">
-              <Image
-                src={`/images/brands/${brand.slug}.png`}
-                alt={brand.name}
-                fill
-                className="object-contain"
-              />
-            </Link>
-          ))}
-        </div>
-      </section> */}
+      <BulkSubmitPopUp
+        open={showBulkPopup}
+        onClose={() => setShowBulkPopup(false)}
+      />
     </main>
   );
 }
