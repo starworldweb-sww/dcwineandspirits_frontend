@@ -65,6 +65,22 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
+const CURRENCY_SYMBOL = "$";
+
+// Product names are stored HTML-encoded in the DB (&amp; etc.)
+const decodeHtml = (str) =>
+  (str || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+
+const formatPrice = (price) => {
+  const num = Number(price);
+  return isNaN(num) ? "" : `${CURRENCY_SYMBOL}${num.toFixed(2)}`;
+};
+
 // Blog post data only gives us the author's first/last name (no slug),
 // but AuthorBox needs a slug to look the author up in libs/authors.js.
 // This turns "Sam Gera" into "sam-gera" — IMPORTANT: this must match the
@@ -593,6 +609,11 @@ const BlogClient = ({
   // the post's author name since the post data itself has no slug field.
   const authorSlug = slugifyAuthorName(authorName);
 
+  // Only show products that have a slug, otherwise the link would be dead
+  const relatedProducts = (post.related_products ?? []).filter(
+    (item) => item.slug,
+  );
+
   const breadcrumbs = [
     { label: "Blogs", href: "/blogs" },
     { label: post.title, href: `/blogs/${post.slug}` },
@@ -651,6 +672,38 @@ const BlogClient = ({
             className="blog-article-body"
             dangerouslySetInnerHTML={{ __html: post.content || "" }}
           />
+
+          {relatedProducts.length > 0 && (
+            <section className="mt-10 pt-6 border-t border-gray-200">
+              <h2 className="font-hind-madurai text-xl font-semibold text-gray-800 mb-4">
+                Related Products
+              </h2>
+
+              <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 list-none m-0 p-0">
+                {relatedProducts.map((item) => (
+                  <li key={item.product_id}>
+                    <Link href={`/${item.slug}`} className="group block">
+                      <div className="relative w-full aspect-square bg-gray-50 rounded mb-2">
+                        <Image
+                          src={getBlogImageUrl(item.image)}
+                          alt={decodeHtml(item.name)}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-contain p-2"
+                        />
+                      </div>
+                      <h3 className="text-sm text-gray-800 group-hover:text-[#98022e] line-clamp-2">
+                        {decodeHtml(item.name)}
+                      </h3>
+                      <p className="text-sm font-semibold text-[#98022e] mt-1">
+                        {formatPrice(item.price)}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </article>
 
         {renderSidebar()}
@@ -810,9 +863,9 @@ const BlogClient = ({
           color: #4a2c2a;
         }
 
-        /* legacy OpenCart blog content classes — kept scoped under
-           .blog-article-body so purane blog posts (jo inhi classnames ke
-           saath content bhejte hain) yahan bhi sahi render ho jayein */
+        /* Legacy OpenCart blog content classes — scoped under
+           .blog-article-body so older posts that ship these class names
+           still render correctly */
         .blog-article-body .blog1.blog-by-s {
           margin: 20px 0px;
         }
@@ -955,8 +1008,8 @@ const BlogClient = ({
 
         /* =========================================
             Old OpenCart/Bootstrap grid classes
-            (legacy blog content ke inline col-lg-* /
-            card-row / btn-blog markup ke liye)
+            (for legacy blog content using inline col-lg-* /
+            card-row / btn-blog markup)
             ========================================= */
 
         .blog-article-body .row {

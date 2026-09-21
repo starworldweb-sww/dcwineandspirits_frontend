@@ -137,13 +137,20 @@ const DescriptionAndReview = ({ product = {} }) => {
   }, [hasDescription, hasSpecifications]);
 
   // ============================================================
-  // NEW: Mobile/Tab accordion state — sab band, sirf "reviews"
-  // default open. Ek time pe ek hi panel open (standard accordion).
+  // NEW: Mobile/Tab accordion state — ab EK se zyada panels
+  // ek saath open reh sakte hain (array of open keys), pehle sirf
+  // ek hi khula rehta tha. "description" aur "reviews" dono
+  // default open hain; baaki tabs click karke khulenge.
   // ============================================================
-  const [openAccordion, setOpenAccordion] = useState("reviews");
+  const [openAccordions, setOpenAccordions] = useState([
+    "description",
+    "reviews",
+  ]);
 
   const toggleAccordion = (key) => {
-    setOpenAccordion((prev) => (prev === key ? null : key));
+    setOpenAccordions((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    );
   };
 
   const [rating, setRating] = useState(0);
@@ -534,14 +541,16 @@ const DescriptionAndReview = ({ product = {} }) => {
       </div>
 
       {/* ============================================================
-          NEW: MOBILE/TAB — accordion, sirf "lg" se neeche dikhega.
+          MOBILE/TAB — accordion, sirf "lg" se neeche dikhega.
           Order: Description, Specifications, Shipping, Reviews
-          (visibleTabs already isi order me hai). Sab band, sirf
-          "reviews" default open.
+          (visibleTabs already isi order me hai). "description" aur
+          "reviews" default open (openAccordions array me), baaki
+          click karke khulenge. Ab ek se zyada panels ek saath
+          open reh sakte hain.
       ============================================================ */}
       <div className="lg:hidden">
         {visibleTabs.map((tab) => {
-          const isOpen = openAccordion === tab.key;
+          const isOpen = openAccordions.includes(tab.key);
           return (
             <div key={tab.key} className="border-b border-gray-200">
               <button
