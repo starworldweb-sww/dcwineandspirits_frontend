@@ -350,8 +350,7 @@ export default function CorporateClient() {
       {/* Key Features */}
   
 
-      {/* reasons */}
-      <BulkOrderSteps />
+      {/* */}
       <CorporateReasons />
       
       <LaptopComponent />
