@@ -675,9 +675,9 @@ const BlogClient = ({
 
           {relatedProducts.length > 0 && (
             <section className="mt-10 pt-6 border-t border-gray-200">
-              <h2 className="font-hind-madurai text-xl font-semibold text-gray-800 mb-4">
+              <h3 className="font-hind-madurai text-xl font-semibold text-gray-800 mb-4">
                 Related Products
-              </h2>
+              </h3>
 
               <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 list-none m-0 p-0">
                 {relatedProducts.map((item) => (
@@ -692,9 +692,9 @@ const BlogClient = ({
                           className="object-contain p-2"
                         />
                       </div>
-                      <h3 className="text-sm text-gray-800 group-hover:text-[#98022e] line-clamp-2">
+                      <h4 className="text-sm text-gray-800 group-hover:text-[#98022e] line-clamp-2">
                         {decodeHtml(item.name)}
-                      </h3>
+                      </h4>
                       <p className="text-sm font-semibold text-[#98022e] mt-1">
                         {formatPrice(item.price)}
                       </p>
