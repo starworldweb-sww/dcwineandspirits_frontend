@@ -6,6 +6,16 @@ import { Upload, X, ChevronDown, Download, Star, Headset } from "lucide-react";
 import { Sumana } from "next/font/google";
 import { useUser } from "@/app/api/hooks/useAuth";
 import Link from "next/link";
+import { useWriteReview } from "@/app/api/hooks/useReview";
+
+import { toast } from "sonner";
+import { compressImage } from "@/libs/compressedimage";
+
+// Image upload is temporarily disabled for customer-submitted reviews —
+// the OpenCart admin panel also reads/writes oc_review.image as a file
+// path, and our base64 approach isn't compatible with that yet. Flip
+// this back to true once that's resolved.
+const IMAGE_UPLOAD_ENABLED = false;
 
 const sumana = Sumana({
   weight: ["400", "700"],
@@ -104,9 +114,10 @@ const DescriptionAndReview = ({ product = {} }) => {
   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
   const totalReviews = product.review_count ?? reviews.length;
 
-  // Kis tab me actual data hai — sirf usi tab ka button/section render hoga.
-  // Reviews hamesha render hoga (data ho ya na ho), Shipping static content hai
-  // (product data pe depend nahi karta) isliye wo bhi hamesha available rahega.
+  // Only show a tab's button/section if that tab actually has data.
+  // Reviews always renders (whether there is data or not), and Shipping
+  // is static content (doesn't depend on product data), so it's always
+  // available too.
   const hasDescription = Boolean(String(rawDescription).trim());
   const hasSpecifications = attributes.length > 0;
 
@@ -123,7 +134,7 @@ const DescriptionAndReview = ({ product = {} }) => {
   const visibleTabs = TABS.filter((t) => t.visible);
 
   // ============================================================
-  // Desktop tab state — UNCHANGED, wahi purana behaviour.
+  // Desktop tab state — unchanged, same behavior as before.
   // ============================================================
   const [activeTab, setActiveTab] = useState(
     () => visibleTabs[0]?.key || "reviews",
@@ -137,10 +148,10 @@ const DescriptionAndReview = ({ product = {} }) => {
   }, [hasDescription, hasSpecifications]);
 
   // ============================================================
-  // NEW: Mobile/Tab accordion state — ab EK se zyada panels
-  // ek saath open reh sakte hain (array of open keys), pehle sirf
-  // ek hi khula rehta tha. "description" aur "reviews" dono
-  // default open hain; baaki tabs click karke khulenge.
+  // Mobile/tablet accordion state — more than one panel can now
+  // stay open at the same time (array of open keys), whereas
+  // before only one could be open at once. "description" and
+  // "reviews" are open by default; the rest open on click.
   // ============================================================
   const [openAccordions, setOpenAccordions] = useState([
     "description",
@@ -154,52 +165,102 @@ const DescriptionAndReview = ({ product = {} }) => {
   };
 
   const [rating, setRating] = useState(0);
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [previews, setPreviews] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
 
   const reviewSectionRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // 2. useUser hook se logged-in user ka data lo (jaisa authService.js mein useAuth.js mein defined hai)
+  // Get the logged-in user's data via the useUser hook (defined in useAuth.js)
   const { data: user } = useUser();
   const isUserLoggedIn = Boolean(user);
 
-  const handleImageChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    if (selectedImages.length + newFiles.length > 5) {
-      alert("You can only upload up to 5 images.");
-      return;
+  // Derive the productId from the product prop, and set up the review
+  // submission mutation hook. isPending is destructured as "isSubmitting"
+  // so the button's disabled/text logic below keeps working unchanged.
+  const productId = product?.product_id;
+  const { mutate: writeReview, isPending: isSubmitting } =
+    useWriteReview(productId);
+
+  // Single image only — compress it in the browser (via the Canvas-based
+  // compressImage helper), then convert it to a base64 data URL so it can
+  // be sent as a plain JSON field alongside the rest of the review.
+  // NOTE: this handler is currently unreachable while IMAGE_UPLOAD_ENABLED
+  // is false, since the input that triggers it is disabled below.
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setIsCompressingImage(true);
+    try {
+      const compressedFile = await compressImage(file);
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(compressedFile);
+      });
+
+      setSelectedImage(base64);
+      setPreviewUrl(base64);
+    } catch (error) {
+      console.error("Image compression failed:", error);
+      toast.error(
+        "We couldn't process the selected image. Please try a different file.",
+      );
+    } finally {
+      setIsCompressingImage(false);
+      // Allow selecting the same file again after removing it
+      e.target.value = "";
     }
-    setSelectedImages((prevImages) => [...prevImages, ...newFiles]);
-    const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
-    setPreviews((prevPreviews) => [...prevPreviews, ...newPreviewUrls]);
   };
 
-  const removeImage = (indexToRemove) => {
-    setSelectedImages((prevImages) =>
-      prevImages.filter((_, index) => index !== indexToRemove),
-    );
-    setPreviews((prevPreviews) =>
-      prevPreviews.filter((_, index) => index !== indexToRemove),
-    );
+  const removeImage = () => {
+    setSelectedImage(null);
+    setPreviewUrl(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (rating === 0) {
-      alert("Please select a rating!");
+      toast.error("Please select a rating before submitting your review.");
       return;
     }
-    setIsSubmitting(true);
-    setTimeout(() => {
-      alert("Thank You For Your Review! (this is a fake/mock submit)");
-      e.target.reset();
-      setRating(0);
-      setSelectedImages([]);
-      setPreviews([]);
-      setIsSubmitting(false);
-    }, 600);
+
+    const formEl = e.target;
+    const formData = new FormData(formEl);
+    const author = formData.get("author");
+    const text = formData.get("text");
+
+    // Plain JSON payload now — the image (if any) is already a base64
+    // data URL string, so there's no need for multipart/FormData here.
+    // While IMAGE_UPLOAD_ENABLED is false, selectedImage will always be
+    // null, so "image" is simply omitted from the payload.
+    const payload = {
+      product_id: productId,
+      author,
+      text,
+      rating,
+      image: selectedImage || undefined,
+    };
+
+    writeReview(payload, {
+      onSuccess: () => {
+        toast.success("Thank you — your review has been submitted!");
+        formEl.reset();
+        setRating(0);
+        setSelectedImage(null);
+        setPreviewUrl(null);
+      },
+      onError: (error) => {
+        toast.error(
+          error?.response?.data?.message ||
+            "Something went wrong while submitting your review. Please try again.",
+        );
+      },
+    });
   };
 
   const getTabButtonClass = (tabName) => {
@@ -212,9 +273,9 @@ const DescriptionAndReview = ({ product = {} }) => {
   };
 
   // ============================================================
-  // NEW: Content renderers — desktop tabs aur mobile accordion
-  // dono isi ek function se content lete hain, taaki JSX duplicate
-  // na ho.
+  // Content renderers — both the desktop tabs and the mobile
+  // accordion pull their content from these same functions, so
+  // the JSX isn't duplicated.
   // ============================================================
   const renderDescriptionContent = () => (
     <div
@@ -257,7 +318,7 @@ const DescriptionAndReview = ({ product = {} }) => {
       {reviews.length > 0 ? (
         <div className="mb-8 flex flex-col gap-4">
           {reviews.map((review, index) => {
-            // Naam ka pehla letter avatar ke liye nikal liya
+            // Get the first letter of the reviewer's name for the avatar
             const initial = review.author?.charAt(0)?.toUpperCase() || "?";
 
             return (
@@ -275,7 +336,7 @@ const DescriptionAndReview = ({ product = {} }) => {
                       <h3 className="font-bold text-black text-[15px] leading-tight">
                         {review.author}
                       </h3>
-                      {/* Real star icons, naam ke seedha niche */}
+                      {/* Star rating, directly under the name */}
                       <div className="flex gap-0.5 mt-1">
                         {[1, 2, 3, 4, 5].map((starNumber) => (
                           <Star
@@ -317,11 +378,11 @@ const DescriptionAndReview = ({ product = {} }) => {
       </h2>
 
       {!isUserLoggedIn ? (
-        <div className="text-black font-sarabun                                                                                                                                                                                                                                                                                                                                                mb-10">
+        <div className="text-black font-sarabun mb-10">
           <p className="text-[15px] mb-4">
             Please{" "}
             <a
-              href="/login"
+              href="/account/login"
               className="font-bold underline text-[#98022e] hover:text-black transition-colors"
             >
               login
@@ -383,55 +444,69 @@ const DescriptionAndReview = ({ product = {} }) => {
             not translated!
           </p>
 
+          {/* Image upload — disabled for now (see IMAGE_UPLOAD_ENABLED
+              above). The input can't be clicked and never fires
+              handleImageChange, so customers can't attach an image. */}
           <div className="mb-8">
             <label className="block text-[14px] font-semibold text-black mb-2">
               Image
             </label>
 
             <div
-              onClick={() => fileInputRef.current.click()}
-              className="w-full border-2 border-dashed border-gray-200 p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={
+                IMAGE_UPLOAD_ENABLED
+                  ? () => fileInputRef.current.click()
+                  : undefined
+              }
+              aria-disabled={!IMAGE_UPLOAD_ENABLED}
+              className={`w-full border-2 border-dashed border-gray-200 p-8 flex flex-col items-center justify-center gap-2 transition-colors ${
+                IMAGE_UPLOAD_ENABLED
+                  ? "cursor-pointer hover:bg-gray-50"
+                  : "cursor-not-allowed opacity-50"
+              }`}
             >
               <Upload size={24} className="text-black" />
               <p className="text-[15px] font-medium text-black">
-                Choose a file{" "}
-                <span className="font-normal text-gray-500">
-                  or drag it here.
-                </span>
+                {!IMAGE_UPLOAD_ENABLED
+                  ? "Image upload is temporarily unavailable."
+                  : isCompressingImage
+                    ? "Processing image..."
+                    : (
+                      <>
+                        Choose a file{" "}
+                        <span className="font-normal text-gray-500">
+                          or drag it here.
+                        </span>
+                      </>
+                    )}
               </p>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleImageChange}
-                multiple
                 accept="image/*"
+                disabled={!IMAGE_UPLOAD_ENABLED || isCompressingImage}
                 className="hidden"
               />
             </div>
 
-            {previews.length > 0 && (
-              <div className="flex flex-wrap gap-4 mt-4">
-                {previews.map((previewUrl, index) => (
-                  <div
-                    key={index}
-                    className="relative w-20 h-20 border border-gray-200 rounded-sm overflow-hidden"
-                  >
-                    <Image
-                      src={previewUrl}
-                      alt="preview"
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-0 right-0 bg-red-500 text-white p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
+            {IMAGE_UPLOAD_ENABLED && previewUrl && (
+              <div className="relative w-20 h-20 border border-gray-200 rounded-sm overflow-hidden mt-4">
+                <Image
+                  src={previewUrl}
+                  alt="preview"
+                  fill
+                  sizes="80px"
+                  unoptimized
+                  className="object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-0 right-0 bg-red-500 text-white p-1 hover:bg-red-600 transition-colors"
+                >
+                  <X size={12} />
+                </button>
               </div>
             )}
           </div>
@@ -493,7 +568,7 @@ const DescriptionAndReview = ({ product = {} }) => {
   return (
     <main className="px-3 2xl:px-32 py-3">
       {/* ============================================================
-          DESKTOP — UNCHANGED, purana tabs behaviour "lg" aur upar
+          DESKTOP — unchanged, original tabs behavior from "lg" and up
       ============================================================ */}
       <div className="hidden lg:block">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 border-y border-gray-200 justify-center pt-4 font-sumana">
@@ -541,12 +616,11 @@ const DescriptionAndReview = ({ product = {} }) => {
       </div>
 
       {/* ============================================================
-          MOBILE/TAB — accordion, sirf "lg" se neeche dikhega.
+          MOBILE/TABLET — accordion, only shown below the "lg" breakpoint.
           Order: Description, Specifications, Shipping, Reviews
-          (visibleTabs already isi order me hai). "description" aur
-          "reviews" default open (openAccordions array me), baaki
-          click karke khulenge. Ab ek se zyada panels ek saath
-          open reh sakte hain.
+          (visibleTabs is already in this order). "description" and
+          "reviews" are open by default (see openAccordions), the rest
+          open on click. More than one panel can be open at once.
       ============================================================ */}
       <div className="lg:hidden">
         {visibleTabs.map((tab) => {
@@ -595,43 +669,41 @@ const DescriptionAndReview = ({ product = {} }) => {
         })}
       </div>
 
-      {/* assistance */}
-      {/* assistance */}
-          {/* assistance */}
-<div className="mt-6 mx-1 sm:mx-0 rounded-lg sm:rounded-none border border-gray-200 bg-[#f8f8f8]">
-  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6 px-5 sm:px-8">
-    {/* Icon badge — left anchor, replaces the generic centered-text feel */}
-    <div className="flex-shrink-0 w-11 h-11 rounded-full bg-[#98022e]/10 flex items-center justify-center">
-      <Headset size={20} className="text-[#98022e]" strokeWidth={2} />
-    </div>
+      {/* Assistance / bulk order box */}
+      <div className="mt-6 mx-1 sm:mx-0 rounded-lg sm:rounded-none border border-gray-200 bg-[#f8f8f8]">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6 px-5 sm:px-8">
+          {/* Icon badge — left anchor, replaces the generic centered-text feel */}
+          <div className="flex-shrink-0 w-11 h-11 rounded-full bg-[#98022e]/10 flex items-center justify-center">
+            <Headset size={20} className="text-[#98022e]" strokeWidth={2} />
+          </div>
 
-    <div className="flex-1 min-w-0">
-      <h3 className="text-base font-bold text-black mb-1">
-        {ASSISTANCE_BOX.heading}
-      </h3>
-      <p className="text-[14px] leading-6 text-gray-600">
-        {ASSISTANCE_BOX.textBeforeLink}
-        <a
-          href={ASSISTANCE_BOX.emailHref}
-          className="text-[#98022e] font-medium hover:underline"
-        >
-          {ASSISTANCE_BOX.email}
-        </a>
-        {ASSISTANCE_BOX.textAfterEmail}
-      </p>
-    </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-black mb-1">
+              {ASSISTANCE_BOX.heading}
+            </h3>
+            <p className="text-[14px] leading-6 text-gray-600">
+              {ASSISTANCE_BOX.textBeforeLink}
+              <a
+                href={ASSISTANCE_BOX.emailHref}
+                className="text-[#98022e] font-medium hover:underline"
+              >
+                {ASSISTANCE_BOX.email}
+              </a>
+              {ASSISTANCE_BOX.textAfterEmail}
+            </p>
+          </div>
 
-    {/* BULK ORDER FORM BUTTON -CTA */}
-    <a
-      href={ASSISTANCE_BOX.linkHref}
-      download={ASSISTANCE_BOX.downloadName}
-      className="flex-shrink-0 inline-flex items-center justify-center gap-2 border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white transition-all px-5 py-2.5 text-[13px] font-semibold uppercase tracking-wide whitespace-nowrap hover:rounded-xl"
-    >
-      <Download size={15} strokeWidth={2} />
-      {ASSISTANCE_BOX.linkText}
-    </a>
-  </div>
-</div>
+          {/* Bulk order form download CTA */}
+          <a
+            href={ASSISTANCE_BOX.linkHref}
+            download={ASSISTANCE_BOX.downloadName}
+            className="flex-shrink-0 inline-flex items-center justify-center gap-2 border border-[#98022e] text-[#98022e] hover:bg-[#98022e] hover:text-white transition-all px-5 py-2.5 text-[13px] font-semibold uppercase tracking-wide whitespace-nowrap hover:rounded-xl"
+          >
+            <Download size={15} strokeWidth={2} />
+            {ASSISTANCE_BOX.linkText}
+          </a>
+        </div>
+      </div>
 
       <style jsx global>{`
         .product-description-text h2,
@@ -697,7 +769,7 @@ const DescriptionAndReview = ({ product = {} }) => {
           font-weight: 700;
         }
 
-        /* --- NEW: Description ke andar h2/h3/li/p ki extra styling --- */
+        /* Extra styling for h2/h3/li/p inside the description block */
         .product-description-text h2 {
           display: block;
           color: rgb(51, 51, 51);

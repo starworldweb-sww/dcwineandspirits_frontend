@@ -222,3 +222,10 @@ export const sitemapKeys = {
   blogCategories: () => [...sitemapKeys.lists(), "blog-categories"],
   information: () => [...sitemapKeys.lists(), "information"],
 };
+
+
+
+export const reviewKeys = {
+  all: ["reviews"],
+  byProduct: (productId) => ["reviews", "product", productId],
+};

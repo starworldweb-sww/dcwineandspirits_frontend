@@ -25,6 +25,7 @@ import {
   useGetRecommendedPosts,
 } from "@/app/api/hooks/blog/useBlogPosts";
 import AuthorBox from "./AuthorBox";
+import BlogRelatedProducts from "./BlogRelatedProducts";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 const BLOGS_PER_PAGE = 10;
@@ -63,22 +64,6 @@ const getBlogImageUrl = (imagePath) => {
   const cleanBase = (IMAGE_BASE_URL || "").replace(/\/$/, "");
   const cleanPath = imagePath.replace(/^\//, "");
   return `${cleanBase}/${cleanPath}`;
-};
-
-const CURRENCY_SYMBOL = "$";
-
-// Product names are stored HTML-encoded in the DB (&amp; etc.)
-const decodeHtml = (str) =>
-  (str || "")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-
-const formatPrice = (price) => {
-  const num = Number(price);
-  return isNaN(num) ? "" : `${CURRENCY_SYMBOL}${num.toFixed(2)}`;
 };
 
 // Blog post data only gives us the author's first/last name (no slug),
@@ -609,11 +594,6 @@ const BlogClient = ({
   // the post's author name since the post data itself has no slug field.
   const authorSlug = slugifyAuthorName(authorName);
 
-  // Only show products that have a slug, otherwise the link would be dead
-  const relatedProducts = (post.related_products ?? []).filter(
-    (item) => item.slug,
-  );
-
   const breadcrumbs = [
     { label: "Blogs", href: "/blogs" },
     { label: post.title, href: `/blogs/${post.slug}` },
@@ -673,37 +653,9 @@ const BlogClient = ({
             dangerouslySetInnerHTML={{ __html: post.content || "" }}
           />
 
-          {relatedProducts.length > 0 && (
-            <section className="mt-10 pt-6 border-t border-gray-200">
-              <h3 className="font-hind-madurai text-xl font-semibold text-gray-800 mb-4">
-                Related Products
-              </h3>
-
-              <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 list-none m-0 p-0">
-                {relatedProducts.map((item) => (
-                  <li key={item.product_id}>
-                    <Link href={`/${item.slug}`} className="group block">
-                      <div className="relative w-full aspect-square bg-gray-50 rounded mb-2">
-                        <Image
-                          src={getBlogImageUrl(item.image)}
-                          alt={decodeHtml(item.name)}
-                          fill
-                          sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-contain p-2"
-                        />
-                      </div>
-                      <h4 className="text-sm text-gray-800 group-hover:text-[#98022e] line-clamp-2">
-                        {decodeHtml(item.name)}
-                      </h4>
-                      <p className="text-sm font-semibold text-[#98022e] mt-1">
-                        {formatPrice(item.price)}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          {/* Related products slider — renders nothing if the post has
+              no linkable products */}
+          <BlogRelatedProducts products={post.related_products} />
         </article>
 
         {renderSidebar()}
