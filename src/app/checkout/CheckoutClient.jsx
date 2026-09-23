@@ -1173,7 +1173,7 @@ const CheckoutClient = () => {
 
 
   const handleApplingCoupon = () => {
-    mutate({ code: coupon, cartTotal: subTotal }, {
+    mutate({ code: coupon, cartTotal: subTotal, customerId: user?.customer_id ?? 0 }, {
       onSuccess: (data) => {
         if (!data?.success) {
           toast.error(data?.message);
