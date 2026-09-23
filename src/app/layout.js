@@ -18,6 +18,7 @@ import { mobileCategoryKeys } from "@/libs/queryKeys";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import ProductViewTabs from "./components/ProductViewsTabs";
 import AgeVerificationGate from "./components/AgeVerification";
+import { generateOnlineStoreSchema } from "@/libs/onlineStoreSchema";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +27,7 @@ const geistSans = Geist({
 
 const sumana = Sumana({
   subsets: ["latin"],
-  weight: ["400", "700"], 
+  weight: ["400", "700"],
   variable: "--font-sumana",
 });
 
@@ -48,9 +49,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
- metadataBase: new URL(
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.dcwineandspirits.com"
-),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.dcwineandspirits.com",
+  ),
   title: "DC Wine & Spirits - Best Online Wine Gift Store",
   description:
     "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
@@ -77,8 +78,8 @@ export const metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image", 
-    site: "@dcwine_spirits", 
+    card: "summary_large_image",
+    site: "@dcwine_spirits",
     title: "DC Wine & Spirits - Best Online Wine Gift Store",
     description:
       "Shop at DC Wine & Spirits wide selection of wine and champagne gifts. Visit our online store for fast delivery, great prices & best customer service in USA.",
@@ -88,10 +89,9 @@ export const metadata = {
   },
 };
 
-
+const onlineStoreSchema = generateOnlineStoreSchema();
 
 export default async function RootLayout({ children }) {
-
   const queryClient = getQueryClient();
 
   await Promise.all([
@@ -99,7 +99,6 @@ export default async function RootLayout({ children }) {
       queryKey: mobileCategoryKeys.list(),
       queryFn: getMobileCategories,
     }),
-
   ]);
   return (
     <html
@@ -107,6 +106,15 @@ export default async function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
     >
       <head>
+        {/* online store schema */}
+
+        <script
+          id="online-store-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(onlineStoreSchema),
+          }}
+        />
         {/* Google Tag Manager */}
         <script id="gtm-script" strategy="afterInteractive">
           {`
@@ -133,7 +141,6 @@ export default async function RootLayout({ children }) {
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-
 
         <Provider>
           <GoToTopButton />
