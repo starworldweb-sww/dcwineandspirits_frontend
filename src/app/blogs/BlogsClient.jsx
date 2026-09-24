@@ -65,6 +65,15 @@ const getBlogImageUrl = (imagePath) => {
   return `${cleanBase}/${cleanPath}`;
 };
 
+// Author ke naam se slug banata hai ("Sam Gera" -> "sam-gera").
+// BlogClient wale helper jaisa hi hai, taaki dono jagah same slug bane.
+const slugifyAuthorName = (name) =>
+  (name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+
 const BlogsClient = ({ initialData,initialPage=1 }) => {
   // 5) Pagination state - "page" seedha API ko jaata hai
   const router = useRouter();
@@ -186,10 +195,13 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
                         isliye comment-count meta yahan se hata diya hai */}
                     <div className="flex items-center flex-wrap gap-4 text-sm text-gray-500 mb-2">
                       {authorName && (
-                        <span className="flex items-center gap-1.5">
+                        <Link
+                          href={`/author/${slugifyAuthorName(authorName)}`}
+                          className="flex items-center gap-1.5 hover:text-[#98022e] transition-colors"
+                        >
                           <User size={15} className="text-[#98022e]" />
                           {authorName}
-                        </span>
+                        </Link>
                       )}
                       <span className="flex items-center gap-1.5">
                         <Clock size={15} className="text-[#98022e]" />

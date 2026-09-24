@@ -5,6 +5,6 @@ import { couponService } from "../../services/couponService"
 
 export const useCoupon = () => {
     return useMutation({
-        mutationFn: ({code,cartTotal}) => couponService.getCoupon(code, cartTotal),
+        mutationFn: ({code,cartTotal, customerId}) => couponService.getCoupon(code, cartTotal, customerId),
     })
 }

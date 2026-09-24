@@ -42,4 +42,20 @@ getPostsByAuthor: async (firstname, params = {}) => {
 },
 
 
+
+
+
+
+ getRecommendedPosts: async (postId, params = {}) => {
+    const { limit = 4 } = params;
+    const { data } = await axiosInstance.get(`/blog/posts/${postId}/recommended`, {
+      params: { limit },
+    });
+    return data?.data;
+  },
+
 };
+
+
+
+

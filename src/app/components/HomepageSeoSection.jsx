@@ -77,6 +77,9 @@ export default function HomepageSeoSection({ data: propData, isLoading: propLoad
             className={`
               font-hind-madurai text-sm md:text-base text-gray-800 leading-relaxed
 
+
+              [&_h1]:font-sumana [&_h1]:text-2xl [&_h1]:md:text-3xl [&_h2]:text-black [&_h1]:mb-3 [&_h1]:mt-8 [&_h1:first-child]:mt-0
+
               /* H2 Styling */
               [&_h2]:font-sumana [&_h2]:text-2xl [&_h2]:md:text-3xl [&_h2]:text-black [&_h2]:mb-3 [&_h2]:mt-8 [&_h2:first-child]:mt-0
 

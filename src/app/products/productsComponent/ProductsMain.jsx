@@ -197,9 +197,12 @@ const ProductListRow = ({ product }) => {
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 py-6 border-b border-gray-200">
+      {/* FIX: mobile pe "aspect-square" hata ke "aspect-[4/3]" diya —
+          isse image box ki height kam hoti hai (width zyada, height kam).
+          "sm:" pe pehle jaisa "aspect-auto" + fixed 220x220 hi rakha hai. */}
       <Link
         href={productLink}
-        className="relative w-full aspect-square sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group"
+        className="relative w-full aspect-[4/3] sm:w-[220px] sm:h-[220px] sm:aspect-auto flex-shrink-0 bg-white flex items-center justify-center group"
       >
         <Image
           src={imageUrl}
@@ -298,7 +301,11 @@ const ProductGridCard = ({ product }) => {
 
   return (
     // 1. h-full -> card apni grid cell ka pura height le, taaki row ke saare cards match karein
-    <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-5">
+    // FIX (height aur kam — mobile only): padding "p-3" ko mobile pe "p-2"
+    // kar diya, "sm:p-5" se desktop pe pehle jaisa hi rahega. Image height
+    // (h-[140px]) jaan-boojh kar nahi chhui — sirf iske aas-paas ki
+    // spacing/text sizes chhoti ki hain.
+    <div className="h-full flex flex-col items-center text-center bg-white border border-gray-200 p-2 sm:p-5">
       <AddToCartPopup
         isOpen={showCartPopup}
         onClose={() => setShowCartPopup(false)}
@@ -313,18 +320,26 @@ const ProductGridCard = ({ product }) => {
 
       {/* 2. Image ko fixed-height box do (aspect-square ki jagah), taaki alag
              products ke alag intrinsic image sizes ho tab bhi sab ek jaisa
-             dikhein - box aur bottle dono same box mein center hoke fit honge */}
+             dikhein - box aur bottle dono same box mein center hoke fit honge
+
+         FIX (height kam karo — mobile only): "h-[200px]" ko mobile pe
+         "h-[140px]" kar diya, "sm:h-[200px]" se desktop pe pehle jaisa
+         hi rahega. */}
       <Link
         href={productLink}
-        className="relative w-full h-[200px] flex items-center justify-center flex-shrink-0"
+        className="relative w-full h-[140px] sm:h-[200px] flex items-center justify-center flex-shrink-0"
       >
+        {/* FIX (whitespace kam — mobile only): image ke andar ka padding
+            "!p-2" se "!p-0.5" kar diya, "sm:!p-2" se desktop pe pehle
+            jaisa hi rahega. Isse image box ke andar zyada jagah legi,
+            aas-paas ki khaali white space kam ho jayegi. */}
         <Image
           src={imageUrl}
           alt={decodeHtml(product.name)}
           fill
           priority
           sizes="100vw"
-          className="!p-2 object-contain"
+          className="!p-0.5 sm:!p-2 object-contain"
         />
 
         {/* Wishlist — bottom-right corner badge, mobile & tablet only */}
@@ -357,28 +372,41 @@ const ProductGridCard = ({ product }) => {
 
       {/* 3. FIX: line-clamp leak fix — fixed "h-[2.8em]" + explicit
              "leading-[1.4]" taaki box height exactly "2 lines × 1.4em"
-             ke barabar ho, koi extra sliver leak na ho neeche. */}
+             ke barabar ho, koi extra sliver leak na ho neeche.
+
+         FIX (height aur kam — mobile only): "mt-4" -> "mt-1 sm:mt-4",
+         font size "text-[14px] sm:text-[16px]", "leading-[1.15] sm:leading-[1.4]"
+         (line-height tight), box height "h-[2.1em] sm:h-[2.8em]",
+         "mb-1" -> "mb-0.5 sm:mb-1" — sab mobile pe aur chhote,
+         desktop (sm aur upar) pe pehle jaisa hi. */}
       <Link
         href={productLink}
-        className={`${hindMadurai.className} mt-4 text-[16px] leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.8em] mb-1 font-hind-madurai w-full`}
+        className={`${hindMadurai.className} mt-1 sm:mt-4 text-[14px] sm:text-[16px] leading-[1.15] sm:leading-[1.4] text-[#1c2b4b] hover:text-[#98022e] transition-colors line-clamp-2 overflow-hidden h-[2.1em] sm:h-[2.8em] mb-0.5 sm:mb-1 font-hind-madurai w-full`}
       >
         {decodeHtml(product.name)}
       </Link>
 
+      {/* FIX (height aur kam — mobile only): "mt-1" -> "mt-0.5 sm:mt-2",
+          "text-base" -> "text-sm sm:text-base" — mobile pe price ke
+          upar ka gap aur font size thoda aur chhota, desktop same. */}
       <p
-        className={`${hindMadurai.className} mt-2 text-base text-gray-600 font-semibold`}
+        className={`${hindMadurai.className} mt-0.5 sm:mt-2 text-sm sm:text-base text-gray-600 font-semibold`}
       >
         ${Number(displayPrice || 0).toFixed(2)}
       </p>
 
       {/* 4. Button row — mobile pe sirf Add to Cart (full width),
-             desktop pe Add to Cart + wishlist icon bagal mein. */}
+             desktop pe Add to Cart + wishlist icon bagal mein.
+
+         FIX (height aur kam — mobile only): button ka top-bottom
+         padding "py-1" -> "py-0.5 sm:py-1.5 lg:py-2", mobile pe aur
+         patla button, desktop pehle jaisa hi. */}
       <div className="mt-auto w-[90%] flex items-center gap-2">
         <button
           type="button"
           onClick={handleAddToCart}
           disabled={isPending || !productId}
-          className={`${hindMadurai.className} flex-1 bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
+          className={`${hindMadurai.className} flex-1 bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wide text-sm py-0.5 sm:py-1.5 lg:py-2 transition-all cursor-pointer hover:rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rounded-none`}
         >
           <span className="text-[12px]">
             {isPending ? "Adding..." : "Add to Cart"}

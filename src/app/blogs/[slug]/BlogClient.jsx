@@ -22,8 +22,10 @@ import {
   useGetCategory,
   useGetPostBySlug,
   useSearchPosts,
+  useGetRecommendedPosts,
 } from "@/app/api/hooks/blog/useBlogPosts";
 import AuthorBox from "./AuthorBox";
+import BlogRelatedProducts from "./BlogRelatedProducts";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 const BLOGS_PER_PAGE = 10;
@@ -158,6 +160,17 @@ const BlogClient = ({
 
   const suggestions = searchData?.posts || [];
 
+  // Recommended posts — only relevant on a single post page, keyed off
+  // the current post's id. Disabled entirely on the category listing
+  // view so it never fires an extra request there.
+  const { data: recommendedData } = useGetRecommendedPosts(
+    viewType === "post" ? post?.post_id : null,
+    { limit: 10 },
+    { enabled: viewType === "post" && !!post?.post_id },
+  );
+
+  const recommendedPosts = recommendedData?.posts ?? [];
+
   const handleSidebarSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
@@ -258,6 +271,86 @@ const BlogClient = ({
           ))}
         </div>
       </div>
+
+      {viewType === "post" && recommendedPosts.length > 0 && (
+        <section aria-labelledby="recommended-heading">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-1 h-5 bg-[#98022e] rounded-full" />
+            <h3
+              id="recommended-heading"
+              className="font-hind-madurai text-lg font-semibold text-gray-800"
+            >
+              Recommended Articles
+            </h3>
+          </div>
+
+          <ul className="space-y-3 list-none m-0 p-0">
+            {recommendedPosts.map((item, index) => {
+              const itemAuthorName = [
+                item.author_firstname,
+                item.author_lastname,
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+              return (
+                <li key={item.post_id}>
+                  <Link
+                    href={`/blogs/${item.slug}`}
+                    className="group flex gap-3.5 p-3 rounded-xl border border-gray-100 bg-white hover:border-[#98022e]/20 hover:shadow-[0_4px_16px_rgba(152,2,46,0.08)] transition-all duration-200"
+                  >
+                    <div className="relative w-[88px] h-[88px] shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={getBlogImageUrl(item.image)}
+                        alt={item.title}
+                        fill
+                        sizes="176px"
+                        quality={90}
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        style={{ objectFit: "cover" }}
+                      />
+                    
+                    </div>
+
+                    <div className="min-w-0 flex flex-col justify-center gap-1.5">
+                      <h4 className="text-[13.5px] font-semibold text-gray-800 group-hover:text-[#98022e] transition-colors line-clamp-2 leading-snug">
+                        {item.title}
+                      </h4>
+                      <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 text-[11.5px] text-gray-400">
+                        {itemAuthorName && (
+                          <span className="flex items-center gap-1">
+                            <User
+                              size={11}
+                              className="text-[#98022e]"
+                              aria-hidden="true"
+                            />
+                            <span>{itemAuthorName}</span>
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Eye
+                            size={11}
+                            className="text-[#98022e]"
+                            aria-hidden="true"
+                          />
+                          <span>{item.views ?? 0}</span>
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-[#98022e] opacity-0 group-hover:opacity-100 transition-opacity">
+                        Read Blog
+                        <ArrowRight
+                          size={11}
+                          className="group-hover:translate-x-0.5 transition-transform"
+                        />
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </aside>
   );
 
@@ -516,6 +609,7 @@ const BlogClient = ({
             <Image
               src={getBlogImageUrl(post.image)}
               alt={post.title}
+              priority
               fill
               sizes="100vw"
               className="object-cover"
@@ -547,10 +641,7 @@ const BlogClient = ({
               <Eye size={15} className="text-[#98022e]" />
               {post.views ?? 0} View(s)
             </span>
-            <span className="flex items-center gap-1.5">
-              <MessageCircle size={15} className="text-[#98022e]" />
-              {post.comments ? "Comments open" : "Comments closed"}
-            </span>
+          
           </div>
 
           {/* Author card — was imported before but never actually
@@ -561,6 +652,10 @@ const BlogClient = ({
             className="blog-article-body"
             dangerouslySetInnerHTML={{ __html: post.content || "" }}
           />
+
+          {/* Related products slider — renders nothing if the post has
+              no linkable products */}
+          <BlogRelatedProducts products={post.related_products} />
         </article>
 
         {renderSidebar()}
@@ -720,9 +815,9 @@ const BlogClient = ({
           color: #4a2c2a;
         }
 
-        /* legacy OpenCart blog content classes — kept scoped under
-           .blog-article-body so purane blog posts (jo inhi classnames ke
-           saath content bhejte hain) yahan bhi sahi render ho jayein */
+        /* Legacy OpenCart blog content classes — scoped under
+           .blog-article-body so older posts that ship these class names
+           still render correctly */
         .blog-article-body .blog1.blog-by-s {
           margin: 20px 0px;
         }
@@ -865,8 +960,8 @@ const BlogClient = ({
 
         /* =========================================
             Old OpenCart/Bootstrap grid classes
-            (legacy blog content ke inline col-lg-* /
-            card-row / btn-blog markup ke liye)
+            (for legacy blog content using inline col-lg-* /
+            card-row / btn-blog markup)
             ========================================= */
 
         .blog-article-body .row {

@@ -141,18 +141,18 @@ export default function ProductMain({ product }) {
       )
     : 0;
 
-  const brandName = product.manufacturer?.name || "";
-  const brandurl = product.manufacturer?.manufacturer_seo_url || "";
-  const brandImage = product.manufacturer?.image
-    ? getImageUrl(product.manufacturer.image)
+  const brandName = product?.manufacturer?.name || "";
+  const brandurl = product?.manufacturer?.manufacturer_seo_url || "";
+  const brandImage = product?.manufacturer?.image
+    ? getImageUrl(product?.manufacturer?.image)
     : "";
 
 
-    console.log("manu img", product.manufacturer.image)
-  const tagsRaw = product.tag
-    ? String(product.tag)
+  
+  const tagsRaw = product?.tag
+    ? String(product?.tag)
         .split(",")
-        .map((t) => t.trim())
+        .map((t) => t?.trim())
         .filter(Boolean)
     : [];
 

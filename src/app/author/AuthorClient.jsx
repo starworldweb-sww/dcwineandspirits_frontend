@@ -82,8 +82,13 @@ const AuthorCard = ({ author }) => {
     >
       <AuthorAvatar author={author} />
 
-      <h3 className="mt-5 text-[19px] font-hind-madurai font-semibold text-[#333333]">
-        {author.name}
+      <h3 className="mt-5 text-[19px] font-hind-madurai font-semibold text-[#333333] flex flex-wrap items-baseline justify-center gap-x-1.5">
+        <span>{author.name}</span>
+        {author.tag && (
+          <span className="text-[14px] font-hind-madurai font-semibold text-gray-600">
+            {author.tag}
+          </span>
+        )}
       </h3>
 
       <p
@@ -101,25 +106,20 @@ const AuthorCard = ({ author }) => {
 const AuthorClient = () => {
   return (
     <div className="font-['cambriaregular'] text-[#333333] w-full">
-      <ProductsHeader
-        categoryName="Our Authors"
-        breadcrumbs={breadcrumbs}
-      />
+      <ProductsHeader categoryName="Our Authors" breadcrumbs={breadcrumbs} />
 
-      <div className="w-full px-3 lg:px-3 2xl:px-32 py-12 md:py-16">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-[26px] md:text-[32px] font-hind-madurai font-bold text-[#333333] mb-3">
+      <div className="w-full px-3 lg:px-3 2xl:px-32 py-12 md:py-8">
+        <div className="text-center mb-14 md:mb-20">
+         
+
+          <h2 className="text-[30px] sm:text-[38px] md:text-[46px] font-hind-madurai font-extrabold text-[#2b2b2b] leading-[1.1] mb-4">
             Meet Our Authors
           </h2>
 
-          <div
-            className="w-16 h-[2px] mx-auto"
-            style={{ backgroundColor: ACCENT }}
-          />
 
-          <p className="text-[14px] font-hind-madurai text-[#555555] mt-4 max-w-2xl mx-auto leading-[1.7]">
-            The team behind our wine, champagne, and gift curation — sharing
-            expertise so you can find the perfect bottle every time.
+          <p className="text-[14.5px] md:text-[15.5px] font-hind-madurai text-[#666666] max-w-2xl mx-auto leading-[1.8]">
+            The team behind our wine, champagne, and gift curation
+            sharing expertise so you can find the perfect bottle every time.
           </p>
         </div>
 

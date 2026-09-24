@@ -20,3 +20,25 @@ export const useContactpost = () => {
 
     })
 }
+
+export const useBulkOrder = () => {
+    return useMutation({
+        mutationFn: async (formData) => {
+            const res = await axiosInstance.post(`/contact/bulk-order`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            return res?.data;
+        },
+        onSuccess: (data) => {
+            toast.success(data?.message)
+            console.log(data)
+        },
+        onError: (err) => {
+            toast.error(err?.response?.data?.message || "Something went wrong. Please try again.")
+            console.log(err?.message)
+        }
+
+    })
+}
