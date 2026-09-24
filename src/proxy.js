@@ -61,43 +61,41 @@ async function checkRedirect(slug, fullUrl) {
 export async function proxy(request) {
     const { pathname } = request.nextUrl;
 
-    const isStaticOrApi =
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        pathname.startsWith('/favicon') ||
-        pathname.includes('.');
+    const isExcluded =
+        pathname.startsWith('/account') ||
+        pathname.startsWith('/cart') ||
+        pathname.startsWith('/checkout');
 
-    if (!isStaticOrApi) {
+    if (!isExcluded) {
 
-       
+        
         if (pathname !== pathname.toLowerCase()) {
             const url = request.nextUrl.clone();
             url.pathname = pathname.toLowerCase();
             return NextResponse.redirect(url, 301);
         }
 
-        const page = request.nextUrl.searchParams.get('page');
-
-        if (page && Number(page) > 1) {
-            const url = new URL(request.nextUrl.pathname, request.nextUrl.origin);
-            request.nextUrl.searchParams.forEach((value, key) => {
-                if (key !== 'page') url.searchParams.set(key, value);
-            });
-
+        const pageMatch = pathname.match(/^(.*?)\/page\/\d+\/?.*$/);
+        if (pageMatch) {
+            const baseSlug = pageMatch[1];
+            const url = new URL(`${baseSlug}/`, request.nextUrl.origin);
             return NextResponse.redirect(url, 301);
         }
 
-        const slug = pathname.replace(/^\/|\/$/g, '');
-        const fullRequestUrl = request.nextUrl.href;
-        const productionUrl = fullRequestUrl.replace(
-            request.nextUrl.origin,
-            process.env.NEXTAUTH_URL
-        );
+        const page = request.nextUrl.searchParams.get('page');
+        if (page) {
+            const url = new URL(pathname, request.nextUrl.origin);
+            return NextResponse.redirect(url, 301);
+        }
 
-        const destination = await checkRedirect(slug, productionUrl);
-
-        if (destination) {
-            return NextResponse.redirect(destination, 301);
+        const limit = request.nextUrl.searchParams.get('limit');
+        if (limit) {
+            const url = new URL(pathname, request.nextUrl.origin);
+            return NextResponse.redirect(url, 301);
+        }
+        if (pathname === '/index.php') {
+            const url = new URL('/', request.nextUrl.origin);
+            return NextResponse.redirect(url, 301);
         }
     }
 
