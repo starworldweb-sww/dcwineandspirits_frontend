@@ -309,7 +309,6 @@ const BlogClient = ({
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         style={{ objectFit: "cover" }}
                       />
-                    
                     </div>
 
                     <div className="min-w-0 flex flex-col justify-center gap-1.5">
@@ -641,7 +640,6 @@ const BlogClient = ({
               <Eye size={15} className="text-[#98022e]" />
               {post.views ?? 0} View(s)
             </span>
-          
           </div>
 
           {/* Author card — was imported before but never actually
@@ -1093,6 +1091,11 @@ const BlogClient = ({
           .blog-article-body .col-lg-1 {
             width: 8.33333333%;
           }
+        }
+
+        .blog-article-body h2[id],
+        .blog-article-body h3[id] {
+          scroll-margin-top: 100px;
         }
 
         /* Mobile */
