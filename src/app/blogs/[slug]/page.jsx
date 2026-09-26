@@ -7,13 +7,16 @@ import { blogService } from "@/app/api/services/blogService";
 import { generateArticleSchema } from "@/libs/aricleSchema";
 import { getMetaByType } from "@/libs/getMetaByType";
 import AuthorBox from "./AuthorBox";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
+  const meta = await getMetaByType("blog", slug);
+  if (!meta) {
+    notFound();
+  }
   const allCategories = await blogService.getAllCategory();
   const matchedCategory = allCategories?.find((c) => c.slug === slug);
-  const meta = await getMetaByType("blog", slug);
-
   const canonicalUrl = `https://www.dcwineandspirits.com/blogs/${slug}`;
 
   if (matchedCategory) {
@@ -44,7 +47,14 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const initialPostData = await blogService.getPostBySlug(slug);
+
+  let initialPostData = null;
+  try {
+    initialPostData = await blogService.getPostBySlug(slug);
+  } catch (error) {
+   
+    notFound();
+  }
 
   const postImage = initialPostData?.image
     ? `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${initialPostData.image}`
@@ -137,36 +147,38 @@ const page = async ({ params }) => {
     );
   }
 
-  const initialPostData = await blogService.getPostBySlug(slug);
+  let initialPostData = null;
+  try {
+    initialPostData = await blogService.getPostBySlug(slug);
+  } catch (error) {
+    console.log("Post not found for slug:", slug, error?.response?.status);
+    notFound();
+  }
 
-
-  console.log("initialPostData", initialPostData);
+  if (!initialPostData) {
+    notFound();
+  }
 
   await queryClient.prefetchQuery({
     queryKey: blogKeys.postBySlug(slug),
     queryFn: () => Promise.resolve(initialPostData),
   });
 
+  const recommendedPosts = await blogService.getRecommendedPosts(
+    initialPostData.post_id,
+    {
+      limit: 10,
+    }
+  );
 
-
-  // recommended fetch
-
-
-    const recommendedPosts = initialPostData
-  ? await blogService.getRecommendedPosts(initialPostData.post_id, { limit: 10 })
-  : null;
-
-if (initialPostData) {
   await queryClient.prefetchQuery({
-    queryKey: blogKeys.recommendedPosts(initialPostData.post_id, { limit: 10 }),
+    queryKey: blogKeys.recommendedPosts(initialPostData.post_id, {
+      limit: 10,
+    }),
     queryFn: () => Promise.resolve(recommendedPosts),
   });
-}
 
-
-  const articleSchema = initialPostData
-    ? generateArticleSchema(initialPostData)
-    : null;
+  const articleSchema = generateArticleSchema(initialPostData);
 
   return (
     <div>
