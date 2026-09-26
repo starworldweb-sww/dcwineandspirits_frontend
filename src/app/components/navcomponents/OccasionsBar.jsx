@@ -8,7 +8,10 @@ import { useOccasionMenu } from "@/app/api/hooks/category/useOccasionMenu";
 const ICONS = [Gem, GraduationCap, Gift, Cake, Martini, Home];
 
 const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
+  // 1. Agar parent se data diya gaya hai to hook ko disable kar dete hain
   const hookResult = useOccasionMenu({ enabled: !data && !propLoading });
+
+  // 2. Prop-based data ko priority do, warna hook wala data use karo
   const finalData = data !== undefined ? data : hookResult.data;
   const isLoading = propLoading !== undefined ? propLoading : hookResult.isLoading;
   const isError = propError !== undefined ? propError : hookResult.isError;
@@ -21,7 +24,7 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
 
   return (
     <div className="w-full bg-[#f2f2f2] border-y border-gray-200 px-3 2xl:px-32 hidden md:block">
-      <div className="flex items-center justify-between flex-wrap gap-x-3 gap-y-2 py-2 2xl:py-3">
+      <div className="flex items-center justify-between flex-wrap gap-y-2 py-2 2xl:py-3">
         {occasions.map((occasion, index) => {
           const Icon = ICONS[index % ICONS.length];
           const active = index === 0;
@@ -29,7 +32,11 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
           const slug = occasion.seo_url || occasion.custom_url || occasion.href;
 
           return (
-            <React.Fragment key={occasion.id || label}>
+           
+            <div
+              key={occasion.id || label}
+              className="flex items-center pr-3 border-r border-gray-300 last:border-r-0 last:pr-0"
+            >
               <Link
                 href={`/${slug}`}
                 className={`flex font-sumana items-center gap-1.5 text-[14px] font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
@@ -45,11 +52,7 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
                 />
                 {label}
               </Link>
-
-              {index < occasions.length - 1 && (
-                <span className="hidden sm:block h-4 w-px bg-gray-300" />
-              )}
-            </React.Fragment>
+            </div>
           );
         })}
       </div>
