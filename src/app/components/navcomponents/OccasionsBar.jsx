@@ -21,7 +21,7 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
 
   return (
     <div className="w-full bg-[#f2f2f2] border-y border-gray-200 px-3 2xl:px-32 hidden md:block">
-      <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-2 py-2 2xl:py-3">
+      <div className="flex items-center justify-between flex-wrap gap-x-3 gap-y-2 py-2 2xl:py-3">
         {occasions.map((occasion, index) => {
           const Icon = ICONS[index % ICONS.length];
           const active = index === 0;
