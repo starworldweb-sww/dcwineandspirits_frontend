@@ -57,6 +57,10 @@ const nextConfig = {
       fallback: [],
     };
   },
+
+
+    htmlLimitedBots: /.*/,
+
 };
 
 export default nextConfig;

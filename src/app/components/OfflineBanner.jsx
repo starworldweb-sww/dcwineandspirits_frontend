@@ -119,9 +119,9 @@ export default function OfflineScreen() {
       <div className="ofp-inner">
         <SignalIcon ok={!isOffline} />
 
-        <h1 id="ofp-title" className="ofp-title">
+        <p id="ofp-title" className="ofp-title">
           {isOffline ? TEXT.offlineTitle : TEXT.backTitle}
-        </h1>
+        </p>
         <p id="ofp-body" className="ofp-body">
           {isOffline ? TEXT.offlineBody : TEXT.backBody}
         </p>

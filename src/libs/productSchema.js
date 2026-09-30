@@ -1,3 +1,6 @@
+import { decodeHtml } from "./decodeHtml";
+
+
 export function buildProductSchema(product) {
   const IMAGE_BASE = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL ?? "";
 
@@ -11,19 +14,22 @@ export function buildProductSchema(product) {
   };
 
   // 🔹 HTML entities & tags stripper
-  const decodeAndStrip = (str) => {
-    if (!str) return "";
-    return str
+const decodeAndStrip = (str) => {
+  if (!str) return "";
+
+  const decode = (s) =>
+    s
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
-      .replace(/&amp;/g, "&")
       .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
+      .replace(/&#0?39;/g, "'")
       .replace(/&nbsp;/g, " ")
-      .replace(/<[^>]*>/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
+      .replace(/&amp;/g, "&");
+
+  return decode(decode(str).replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+};
 
   // 🔹 Image processing (Main + Additional gallery images)
   const mainImage = product?.image ? safeUrl(product.image) : null;
@@ -52,12 +58,12 @@ export function buildProductSchema(product) {
     Number(product?.special_price) < Number(product?.price);
 
   // 🔹 Exact Manufacturer/Brand determination
-  const brandName = product?.manufacturer?.name || null;
+  const brandName = decodeHtml(product?.manufacturer?.name) || null;
 
   return {
     "@context": "https://schema.org/",
     "@type": "Product",
-    name: product?.name || "",
+    name: decodeHtml(product?.name) || "",
     image: imageList.length > 1 ? imageList : imageList[0] || "",
     description: decodeAndStrip(product?.description),
     sku: product?.sku || String(product?.model || product?.product_id),
@@ -67,8 +73,6 @@ export function buildProductSchema(product) {
       String(product.mpn).trim() !== "" && {
         mpn: String(product.mpn).trim(),
       }),
-
-   
 
     ...(brandName && {
       brand: {
@@ -171,7 +175,7 @@ export function buildProductSchema(product) {
         .filter((p) => p?.name && p?.seo_url)
         .map((p) => ({
           "@type": "Product",
-          name: p.name,
+          name: decodeHtml(p.name),
           url: `https://www.dcwineandspirits.com/${p.seo_url}/`,
           ...(p.image && { image: safeUrl(p.image) }),
         })),
@@ -194,7 +198,7 @@ export function buildProductSchema(product) {
         "@type": "Review",
         author: {
           "@type": "Person",
-          name: r.author || "Verified Buyer",
+          name: decodeHtml(r.author) || "Verified Buyer",
         },
         datePublished: r.date_added,
         reviewBody: decodeAndStrip(r.text),

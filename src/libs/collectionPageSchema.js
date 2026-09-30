@@ -1,3 +1,5 @@
+import { decodeHtml } from "./decodeHtml";
+
 export const generateCollectionPageSchema = (
   products,
   categoryName,
@@ -19,7 +21,7 @@ export const generateCollectionPageSchema = (
           "@type": "ListItem",
           position: index + 1,
           url: `${baseUrl}/${productSlug}/`,
-          name: product.name,
+          name: decodeHtml(product.name),
         };
       })
     : [];
@@ -73,7 +75,7 @@ export const generateCollectionPageSchema = (
       numberOfItems,
       itemListElement,
     },
-   
+
     additionalProperty: [
       {
         "@type": "PropertyValue",

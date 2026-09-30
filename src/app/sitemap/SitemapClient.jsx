@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductsHeader from "../components/TittleAndBreadcrumb";
 import { useGetSitemapData } from "../api/hooks/useSitemapData";
 import { FileText, FolderOpen } from "lucide-react";
+import { decodeHtml } from "@/libs/decodeHtml";
 
 const staticAccountLinks = [
   // {
@@ -36,11 +37,19 @@ const staticInfoHeading = {
   heading: "Information",
   items: [
     { label: "Coupon & Deals", href: "/coupon-and-deals" },
-    { label: "Frequently Asked Questions", href: "/frequently-asked-questions" },
+    {
+      label: "Frequently Asked Questions",
+      href: "/frequently-asked-questions",
+    },
     { label: "About Us", href: "/about-us" },
-    { label: "Delivery & Shipping Policy", href: "/shipping-and-delivery-policy" },
+    {
+      label: "Delivery & Shipping Policy",
+      href: "/shipping-and-delivery-policy",
+    },
     { label: "Return Policy", href: "/return-policy" },
     // { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Login", href:"/account/login" },
+    { label: "Register", href:"/register" },
     { label: "Terms & Conditions", href: "/terms" },
     { label: "Contact Us", href: "/contact" },
   ],
@@ -66,18 +75,27 @@ const renderCategoryTree = (categories, depth = 0) => {
   if (!categories || !categories.length) return null;
 
   return (
-    <ul className="space-y-2" style={{ paddingLeft: depth > 0 ? "1.25rem" : 0 }}>
+    <ul
+      className="space-y-2"
+      style={{ paddingLeft: depth > 0 ? "1.25rem" : 0 }}
+    >
       {categories.map((cat) => (
         <li key={cat.id}>
           <Link
             href={`/${cat.slug}`}
             className="group flex items-start text-[#8a1538] hover:underline"
           >
-            {cat.children && cat.children.length > 0 ? <FolderIcon /> : <FileIcon />}
-            <span className="font-medium">{cat.name}</span>
+            {cat.children && cat.children.length > 0 ? (
+              <FolderIcon />
+            ) : (
+              <FileIcon />
+            )}
+            <span className="font-medium">{decodeHtml(cat.name)}</span>
           </Link>
           {cat.children && cat.children.length > 0 && (
-            <div className="mt-2">{renderCategoryTree(cat.children, depth + 1)}</div>
+            <div className="mt-2">
+              {renderCategoryTree(cat.children, depth + 1)}
+            </div>
           )}
         </li>
       ))}
@@ -106,14 +124,12 @@ const SitemapClient = () => {
 
   const categoryTree = data?.categories?.tree || [];
   const brands = data?.brands || [];
-  const blogs = data?.blogs || [];
+ 
   const blogCategories = data?.blogCategories || [];
   const infoPages = data?.infoPages || [];
 
-
-  
   const infoPageUrls = new Map(
-    staticInfoHeading.items.map((i) => [i.href, i.label])
+    staticInfoHeading.items.map((i) => [i.href, i.label]),
   );
 
   return (
@@ -150,7 +166,7 @@ const SitemapClient = () => {
                           className="flex items-start text-[#8a1538] hover:underline"
                         >
                           <FileIcon />
-                          <span>{item.label}</span>
+                          <span>{decodeHtml(item.label)}</span>
                         </Link>
                       </li>
                     ))}
@@ -171,7 +187,7 @@ const SitemapClient = () => {
                             className="flex items-start text-[#8a1538] hover:underline"
                           >
                             <FileIcon />
-                            <span>{label || info.name}</span>
+                            <span>{decodeHtml(label || info.name)}</span>
                           </Link>
                         </li>
                       );
@@ -188,7 +204,7 @@ const SitemapClient = () => {
                           className="flex items-start text-[#8a1538] hover:underline"
                         >
                           <FileIcon />
-                          <span>{staticInfo.label}</span>
+                          <span>{decodeHtml(staticInfo.label)}</span>
                         </Link>
                       </li>
                     ))}
@@ -205,7 +221,7 @@ const SitemapClient = () => {
                           className="flex items-start text-[#8a1538] hover:underline"
                         >
                           <FileIcon />
-                          <span>{brand.name}</span>
+                          <span>{decodeHtml(brand.name)}</span>
                         </Link>
                       </li>
                     ))}
@@ -225,24 +241,12 @@ const SitemapClient = () => {
                           className="flex items-start text-[#8a1538] hover:underline font-medium"
                         >
                           <FolderIcon />
-                          <span>{bc.name}</span>
+                          <span>{decodeHtml(bc.name)}</span>
                         </Link>
                       </li>
                     ))}
                     <li className="pt-3 border-t border-gray-100">
-                      <ul className="space-y-2 pl-6">
-                        {blogs.slice(0, 10).map((blog) => (
-                          <li key={blog.id}>
-                            <Link
-                              href={`/blogs/${blog.slug}`}
-                              className="flex items-start text-[#8a1538] hover:underline text-sm"
-                            >
-                              <FileIcon />
-                              <span>{blog.name}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                     
                     </li>
                   </ul>
                 ) : (
@@ -254,7 +258,7 @@ const SitemapClient = () => {
                           className="flex items-start text-[#8a1538] hover:underline"
                         >
                           <FileIcon />
-                          <span>{blog.name}</span>
+                          <span>{decodeHtml(blog.name)}</span>
                         </Link>
                       </li>
                     ))}

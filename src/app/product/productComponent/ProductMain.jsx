@@ -67,7 +67,7 @@ export default function ProductMain({ product }) {
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const [quantity, setQuantity] = useState(1);
-
+  console.log("product details", product)
   const rawOptions = Array.isArray(product.options) ? product.options : [];
 
   const initialOptionValues = useMemo(() => {
