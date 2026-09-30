@@ -68,7 +68,7 @@ export async function proxy(request) {
 
     if (!isExcluded) {
 
-        
+
         if (pathname !== pathname.toLowerCase()) {
             const url = request.nextUrl.clone();
             url.pathname = pathname.toLowerCase();
@@ -97,6 +97,20 @@ export async function proxy(request) {
             const url = new URL('/', request.nextUrl.origin);
             return NextResponse.redirect(url, 301);
         }
+
+        const slug = pathname.replace(/^\/|\/$/g, '');
+        const fullRequestUrl = request.nextUrl.href;
+        const productionUrl = fullRequestUrl.replace(
+            request.nextUrl.origin,
+            process.env.NEXTAUTH_URL
+        );
+
+        const destination = await checkRedirect(slug, productionUrl);
+
+        if (destination) {
+            return NextResponse.redirect(destination, 301);
+        }
+        
     }
 
 

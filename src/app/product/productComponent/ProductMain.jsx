@@ -67,8 +67,11 @@ export default function ProductMain({ product }) {
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("center center");
   const [quantity, setQuantity] = useState(1);
-  console.log("product details", product)
-  const rawOptions = Array.isArray(product.options) ? product.options : [];
+
+  const rawOptions = useMemo(
+    () => (Array.isArray(product.options) ? product.options : []),
+    [product.options],
+  );
 
   const initialOptionValues = useMemo(() => {
     const init = {};
@@ -82,9 +85,10 @@ export default function ProductMain({ product }) {
             ? String(firstValue.product_option_value_id)
             : "";
       } else {
-        init[key] = opt.text_value != null ? String(opt.text_value) : "";
+        init[key] = "";
       }
     });
+    console.log("init", init)
     return init;
   }, [rawOptions]);
 
@@ -135,10 +139,10 @@ export default function ProductMain({ product }) {
 
   const discountPercent = hasSpecialPrice
     ? Math.round(
-        ((Number(originalPrice) - Number(specialPrice)) /
-          Number(originalPrice)) *
-          100,
-      )
+      ((Number(originalPrice) - Number(specialPrice)) /
+        Number(originalPrice)) *
+      100,
+    )
     : 0;
 
   const brandName = product?.manufacturer?.name || "";
@@ -148,12 +152,12 @@ export default function ProductMain({ product }) {
     : "";
 
 
-  
+
   const tagsRaw = product?.tag
     ? String(product?.tag)
-        .split(",")
-        .map((t) => t?.trim())
-        .filter(Boolean)
+      .split(",")
+      .map((t) => t?.trim())
+      .filter(Boolean)
     : [];
 
   const handleImageChange = (clickedImage) => {
@@ -261,7 +265,7 @@ export default function ProductMain({ product }) {
       if (res?.success) {
         setShowCartPopup(true);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const handleAddToWishlistClick = async () => {
@@ -324,11 +328,10 @@ export default function ProductMain({ product }) {
                     <div
                       key={`${imageUrl}-${index}`}
                       onClick={() => handleImageChange(imageUrl)}
-                      className={`relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
-                        mainImage === imageUrl
-                          ? "border-[#98022e]"
-                          : "border-gray-200"
-                      }`}
+                      className={`relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${mainImage === imageUrl
+                        ? "border-[#98022e]"
+                        : "border-gray-200"
+                        }`}
                     >
                       <Image
                         src={imageUrl}
@@ -357,9 +360,8 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-[486px] ${
-                  hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
-                }`}
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-[486px] ${hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
+                  }`}
               >
                 {hasSpecialPrice && discountPercent > 0 && (
                   <>
@@ -599,6 +601,7 @@ export default function ProductMain({ product }) {
                       )
                         .toLowerCase()
                         .trim();
+                      console.log("opt", opt)
                       const label = (
                         <label
                           htmlFor={`option-${key}`}
@@ -606,7 +609,10 @@ export default function ProductMain({ product }) {
                         >
                           {opt.name}
                           {opt.required && (
-                            <span className="text-red-500 ml-1">*</span>
+                            <>
+                              <span className="text-red-500 ml-1">*</span>
+                              <span className="pl-3">{opt?.text_value}</span>
+                            </>
                           )}
                         </label>
                       );
@@ -798,11 +804,10 @@ export default function ProductMain({ product }) {
                             {label}
                             <div className="flex items-center gap-3">
                               <label
-                                className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${
-                                  currentValue
-                                    ? "text-[#98022e]"
-                                    : "text-gray-700"
-                                }`}
+                                className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${currentValue
+                                  ? "text-[#98022e]"
+                                  : "text-gray-700"
+                                  }`}
                               >
                                 <input
                                   type="file"
@@ -822,7 +827,7 @@ export default function ProductMain({ product }) {
                                 <span>
                                   {fileName ||
                                     (typeof currentValue === "string" &&
-                                    currentValue
+                                      currentValue
                                       ? "File chosen"
                                       : "Choose file")}
                                 </span>
@@ -948,11 +953,10 @@ export default function ProductMain({ product }) {
                       type="button"
                       onClick={handleAddToWishlistClick}
                       disabled={isAddingToWishlist || isInWishlist}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${
-                        isInWishlist
-                          ? "text-[#98022e]"
-                          : "text-gray-700 hover:text-[#98022e]"
-                      }`}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${isInWishlist
+                        ? "text-[#98022e]"
+                        : "text-gray-700 hover:text-[#98022e]"
+                        }`}
                     >
                       <Heart
                         size={16}
@@ -970,11 +974,10 @@ export default function ProductMain({ product }) {
                     <button
                       type="button"
                       onClick={handleToggleCompare}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer ${
-                        isInCompare
-                          ? "text-[#98022e]"
-                          : "text-gray-700 hover:text-[#98022e]"
-                      }`}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer ${isInCompare
+                        ? "text-[#98022e]"
+                        : "text-gray-700 hover:text-[#98022e]"
+                        }`}
                     >
                       <Repeat
                         size={16}
