@@ -26,6 +26,7 @@ import {
 } from "@/app/api/hooks/blog/useBlogPosts";
 import AuthorBox from "./AuthorBox";
 import BlogRelatedProducts from "./BlogRelatedProducts";
+import ReadingProgress from "./ReadingProgress";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 const BLOGS_PER_PAGE = 10;
@@ -374,6 +375,7 @@ const BlogClient = ({
 
     return (
       <div className="w-full bg-white">
+      
         <ProductsHeader
           categoryName={category?.name || "Blog Category"}
           breadcrumbs={breadcrumbs}
@@ -440,7 +442,7 @@ const BlogClient = ({
                     >
                       <Link
                         href={`/blogs/${postItem.slug}`}
-                        className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md overflow-hidden bg-gray-100"
+                        className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[350px] rounded-md overflow-hidden bg-gray-100"
                       >
                         <Image
                           src={getBlogImageUrl(postItem.image)}
@@ -599,19 +601,30 @@ const BlogClient = ({
   ];
 
   return (
+
+
+
+
+    // single blog post view
     <div className="w-full bg-white">
+      <ReadingProgress/>
       <ProductsHeader categoryName={post.title} breadcrumbs={breadcrumbs} />
 
       <div className="px-3 2xl:px-32 py-8 md:py-12 flex flex-col lg:flex-row gap-10">
         <article className="flex-1 min-w-0">
-          <div className="relative w-full h-[280px] md:h-[420px] rounded-md overflow-hidden bg-gray-100 mb-5">
+                   {/* Height fixed hai, bg-gray-100 hata diya */}
+          {/* Fixed height nahi hai, image apni natural height leti hai */}
+          <div className="relative w-full rounded-md overflow-hidden bg-gray-100 mb-5">
             <Image
               src={getBlogImageUrl(post.image)}
               alt={post.title}
               priority
-              fill
+              width={1200}
+              height={630}
               sizes="100vw"
-              className="object-cover"
+              // Step 1: min-h aur max-h image ki height ko 280px se 500px ke beech rakhte hain
+              // Step 2: object-cover isliye, taaki limit cross hone par image stretch na ho (khaali jagah bhi nahi aayegi)
+              className="w-full h-auto object-contain"
             />
             <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
               <span className="block text-lg font-bold">{day}</span>

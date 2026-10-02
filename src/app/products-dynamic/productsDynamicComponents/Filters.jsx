@@ -236,9 +236,9 @@ const Filters = ({
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-1 py-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 min-w-0">
-            <h2 className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none shrink-0">
+            <span className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none shrink-0">
               Filter
-            </h2>
+            </span>
             {/* FIX: text pill ("1 applied") ki jagah ab ek chhota compact
                 circular number badge — kam jagah leta hai, header row
                 squeeze nahi hoti */}

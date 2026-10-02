@@ -23,6 +23,15 @@ const sumana = Sumana({
   display: "swap",
 });
 
+
+
+const formatReviewDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", { timeZone: "UTC" });
+};
+
 const decodeHtml = (str) => {
   if (!str) return "";
   if (typeof window === "undefined") {
@@ -354,9 +363,8 @@ const DescriptionAndReview = ({ product = {} }) => {
                   </div>
 
                   <span className="text-gray-400 text-[13px] whitespace-nowrap">
-                    {review.date_added
-                      ? new Date(review.date_added).toLocaleDateString("en-GB")
-                      : ""}
+                     {formatReviewDate(review.date_added)}
+                     
                   </span>
                 </div>
 
