@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CircleX, Minus, Plus, Check } from "lucide-react";
 import { Box, Slider, Input, Typography, Stack } from "@mui/material";
 import { decodeHtml } from "@/libs/decodeHtml";
+import { getImageUrl } from "@/libs/imageUrl";
 
 const NAVY = "#14213d";
 const ACCENT = "#98022e";
@@ -15,6 +16,9 @@ const STATIC_AVAILABILITY = [
 ];
 
 const AUTO_CLOSE_DELAY_MS = 500;
+
+  
+
 
 const PriceSlider = ({ min, max, value, onCommit }) => {
   const [dragValue, setDragValue] = useState(value ?? [min, max]);
@@ -171,7 +175,7 @@ const Filters = ({
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
-
+console.log("Filters data:", data);
   const closeTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -239,9 +243,7 @@ const Filters = ({
             <span className="font-['Sarabun',sans-serif] text-xl font-bold text-black leading-none shrink-0">
               Filter
             </span>
-            {/* FIX: text pill ("1 applied") ki jagah ab ek chhota compact
-                circular number badge — kam jagah leta hai, header row
-                squeeze nahi hoti */}
+            {/* Applied Pill */}
             {activeFilterCount > 0 && (
               <span
                 className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-bold text-white bg-[#98022e] leading-none animate-[fadeIn_0.2s_ease-out]"
@@ -323,36 +325,43 @@ const Filters = ({
             isApplied={isBrandsApplied}
             onToggle={() => setBrandsOpen((p) => !p)}
           />
-          {brandsOpen && (
-            <div className="flex flex-col px-4 py-2 h-64 overflow-y-auto overflow-x-hidden">
-              {data.brands.map((brand) => (
-                <label
-                  key={brand?.manufacturer_id}
-                  className="flex items-center gap-3 py-2.5 cursor-pointer min-w-0"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedBrandIds.includes(brand?.manufacturer_id)}
-                    onChange={() => toggleBrand(brand?.manufacturer_id)}
-                    className="w-4 h-4 flex-shrink-0"
-                    style={{ accentColor: ACCENT }}
-                  />
-                  <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative border border-[#e33d889e]">
-                    <Image
-                      fill
-                      loading="lazy"
-                      src={`${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL}${brand?.image}`}
-                      alt={brand?.name}
-                      className="object-contain"
-                    />
-                  </div>
-                  <span className="font-sarabun text-sm text-[#374254] min-w-0 flex-1 truncate text-[12px]">
-                    {decodeHtml(brand?.name)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
+        {brandsOpen && (
+  <div className="flex flex-col px-4 py-2 h-64 overflow-y-auto overflow-x-hidden">
+    {data.brands.map((brand) => {
+      const imgSrc = getImageUrl(brand?.image);
+
+      return (
+        <label
+          key={brand?.manufacturer_id}
+          className="flex items-center gap-3 py-2.5 cursor-pointer min-w-0"
+        >
+          <input
+            type="checkbox"
+            checked={selectedBrandIds.includes(brand?.manufacturer_id)}
+            onChange={() => toggleBrand(brand?.manufacturer_id)}
+            className="w-4 h-4 flex-shrink-0"
+            style={{ accentColor: ACCENT }}
+          />
+          <div className="w-[36px] h-[28px] flex items-center justify-center flex-shrink-0 relative border border-[#e33d889e]">
+            {imgSrc && (
+              <Image
+                fill
+
+                src={imgSrc}
+                alt={decodeHtml(brand?.name) || ""}
+                sizes="36px"
+                className="object-contain"
+              />
+            )}
+          </div>
+          <span className="font-sarabun text-sm text-[#374254] min-w-0 flex-1 truncate text-[12px]">
+            {decodeHtml(brand?.name)}
+          </span>
+        </label>
+      );
+    })}
+  </div>
+)}
         </>
       )}
 

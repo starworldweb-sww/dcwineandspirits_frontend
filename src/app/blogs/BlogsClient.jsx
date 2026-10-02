@@ -177,6 +177,7 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
                     <Image
                       src={getBlogImageUrl(post.image)}
                       alt={post.title}
+                      priority
                       fill
                       sizes="(max-width: 768px) 100vw, 420px"
                       className="object-cover"
