@@ -12,7 +12,7 @@ export const useContactpost = () => {
         },
         onSuccess: (data) => {
             toast.success(data?.message)
-            console.log(data)
+           
         },
         onError:(err)=>{
             console.log(err?.message)

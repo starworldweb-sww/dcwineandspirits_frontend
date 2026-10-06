@@ -27,7 +27,7 @@ export async function generateMetadata({ params }) {
       // limit 1 — hume sirf category ki image chahiye, poori list nahi
       categoryData = await productsService.getProductBySlugOrId(slug, {}, 1, 1);
 
-      console.log("Category data for og:", categoryData);
+    
     } catch (e) {
       console.error("Category OG image fetch failed:", e.message);
     }
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }) {
   const rawImage = productData?.image || categoryData?.image || meta?.image;
 
   const ogImage = rawImage ? `${IMAGE_BASE_URL}${rawImage}` : FALLBACK_IMAGE;
-  console.log("OG Image URL:", ogImage);
+
 
   return {
     title:
@@ -133,7 +133,7 @@ export default async function ProductsSlugPage({ params }) {
     try {
       const product = await productsService.getSingleProductDetails(slug);
 
-      console.log("Product single:", product);
+     
       if (product) {
         schema = buildProductSchema(product);
 
@@ -151,7 +151,7 @@ export default async function ProductsSlugPage({ params }) {
           "https://www.dcwineandspirits.com",
           product.name,
         );
-        console.log("Product schema:", schema);
+     
       }
     } catch (e) {
       console.error("Schema fetch failed:", e.message);

@@ -472,7 +472,7 @@ const CheckoutClient = () => {
   const effectiveZoneId = shippingSameAsBilling
     ? billing?.zone_id
     : shipping?.zone_id;
-  console.log("effectiveZoneId",effectiveZoneId)
+  
   const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
     countryId: effectiveCountryId,
     zoneId: effectiveZoneId,
@@ -984,12 +984,12 @@ const CheckoutClient = () => {
         postcode: prev.postcode || addr.postal_code || "",
       }));
 
-      
+
       if (!shippingSameAsBilling) {
         const shipName = shipAddr.recipient || payer.name || "";
         const shipParts = shipName.split(" ");
 
-       
+
         const matchedZone = shippingZones.find(
           (z) => z.code === shipAddr.region || z.name === shipAddr.region
         );
@@ -1142,7 +1142,25 @@ const CheckoutClient = () => {
           finalCheckoutType = "guest";
         }
       }
+      // ── Data for Google Customer Reviews opt-in ──
+      const addDays = (n) => {
+        const d = new Date();
+        d.setDate(d.getDate() + n);
+        const pad = (x) => String(x).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      };
 
+      sessionStorage.setItem(
+        "reviewOptInData",
+        JSON.stringify({
+          orderId: String(orderId),
+          customerEmail: billing.email || registerData.email,
+          deliveryCountry: "US", // you only ship to the US
+          estimatedDeliveryDate: addDays(3), // "2 to 3 days" standard delivery
+        })
+      );
+
+     
       clearMissingOrder();
       setCoupon("");
       const redirect =
@@ -2134,7 +2152,7 @@ const CheckoutClient = () => {
                   <SectionHeader title="Shipping Method" />
 
                   <div className="space-y-4">
-                    {!effectiveCountryId  || !effectiveZoneId ? (
+                    {!effectiveCountryId || !effectiveZoneId ? (
                       <div className="text-[14px] text-[#666] bg-white font-semibold rounded-[3px] p-4 border border-dashed border-gray-300">
                         <p className="flex items-center gap-2">
                           <Truck size={16} className="text-gray-400" />
