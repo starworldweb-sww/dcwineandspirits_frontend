@@ -88,7 +88,7 @@ export default function ProductMain({ product }) {
         init[key] = "";
       }
     });
-    console.log("init", init)
+    console.log("init", init);
     return init;
   }, [rawOptions]);
 
@@ -139,10 +139,10 @@ export default function ProductMain({ product }) {
 
   const discountPercent = hasSpecialPrice
     ? Math.round(
-      ((Number(originalPrice) - Number(specialPrice)) /
-        Number(originalPrice)) *
-      100,
-    )
+        ((Number(originalPrice) - Number(specialPrice)) /
+          Number(originalPrice)) *
+          100,
+      )
     : 0;
 
   const brandName = product?.manufacturer?.name || "";
@@ -151,13 +151,11 @@ export default function ProductMain({ product }) {
     ? getImageUrl(product?.manufacturer?.image)
     : "";
 
-
-
   const tagsRaw = product?.tag
     ? String(product?.tag)
-      .split(",")
-      .map((t) => t?.trim())
-      .filter(Boolean)
+        .split(",")
+        .map((t) => t?.trim())
+        .filter(Boolean)
     : [];
 
   const handleImageChange = (clickedImage) => {
@@ -265,7 +263,7 @@ export default function ProductMain({ product }) {
       if (res?.success) {
         setShowCartPopup(true);
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   const handleAddToWishlistClick = async () => {
@@ -328,10 +326,11 @@ export default function ProductMain({ product }) {
                     <div
                       key={`${imageUrl}-${index}`}
                       onClick={() => handleImageChange(imageUrl)}
-                      className={`relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${mainImage === imageUrl
-                        ? "border-[#98022e]"
-                        : "border-gray-200"
-                        }`}
+                      className={`relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 border-2 cursor-pointer overflow-hidden bg-white p-1 transition-all ${
+                        mainImage === imageUrl
+                          ? "border-[#98022e]"
+                          : "border-gray-200"
+                      }`}
                     >
                       <Image
                         src={imageUrl}
@@ -360,8 +359,9 @@ export default function ProductMain({ product }) {
                   setIsImageHovered(false);
                   setZoomOrigin("center center");
                 }}
-                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-[486px] ${hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
-                  }`}
+                className={`relative w-full min-w-0 lg:flex-none flex justify-center items-center bg-white border border-gray-200 overflow-hidden cursor-zoom-in aspect-square lg:aspect-auto lg:h-[486px] ${
+                  hasMultipleImages ? "lg:w-[486px]" : "lg:w-[582px]"
+                }`}
               >
                 {hasSpecialPrice && discountPercent > 0 && (
                   <>
@@ -601,7 +601,7 @@ export default function ProductMain({ product }) {
                       )
                         .toLowerCase()
                         .trim();
-                      console.log("opt", opt)
+                      console.log("opt", opt);
                       const label = (
                         <label
                           htmlFor={`option-${key}`}
@@ -623,10 +623,16 @@ export default function ProductMain({ product }) {
                         const currentValue = optionValues[key] || "";
                         return (
                           <div key={key}>
-                            {label}
+                            <div className="flex items-center gap-2 mb-1">
+                              {label}
+                            <span className="text-sm text-gray-500 block font-semibold mb-1 ">(Max 100 Characters)</span>
+                              
+                           </div>
+                            
                             <textarea
                               id={`option-${key}`}
                               rows={4}
+                              maxLength={100}
                               value={currentValue}
                               onChange={(e) =>
                                 setOptionValue(key, e.target.value)
@@ -634,6 +640,7 @@ export default function ProductMain({ product }) {
                               placeholder={opt.name}
                               className="block w-full h-[100px] lg:h-[120px] p-3 border border-gray-300 bg-white rounded-sm shadow-sm focus:ring-1 focus:ring-[#c99000] focus:border-[#c99000] outline-none transition-all resize-y text-gray-600 italic"
                             />
+                           
                           </div>
                         );
                       }
@@ -804,10 +811,11 @@ export default function ProductMain({ product }) {
                             {label}
                             <div className="flex items-center gap-3">
                               <label
-                                className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${currentValue
-                                  ? "text-[#98022e]"
-                                  : "text-gray-700"
-                                  }`}
+                                className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-sm bg-white cursor-pointer hover:bg-gray-50 text-sm transition-colors ${
+                                  currentValue
+                                    ? "text-[#98022e]"
+                                    : "text-gray-700"
+                                }`}
                               >
                                 <input
                                   type="file"
@@ -827,7 +835,7 @@ export default function ProductMain({ product }) {
                                 <span>
                                   {fileName ||
                                     (typeof currentValue === "string" &&
-                                      currentValue
+                                    currentValue
                                       ? "File chosen"
                                       : "Choose file")}
                                 </span>
@@ -953,10 +961,11 @@ export default function ProductMain({ product }) {
                       type="button"
                       onClick={handleAddToWishlistClick}
                       disabled={isAddingToWishlist || isInWishlist}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${isInWishlist
-                        ? "text-[#98022e]"
-                        : "text-gray-700 hover:text-[#98022e]"
-                        }`}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed ${
+                        isInWishlist
+                          ? "text-[#98022e]"
+                          : "text-gray-700 hover:text-[#98022e]"
+                      }`}
                     >
                       <Heart
                         size={16}
@@ -974,10 +983,11 @@ export default function ProductMain({ product }) {
                     <button
                       type="button"
                       onClick={handleToggleCompare}
-                      className={`flex items-center gap-2 transition-colors cursor-pointer ${isInCompare
-                        ? "text-[#98022e]"
-                        : "text-gray-700 hover:text-[#98022e]"
-                        }`}
+                      className={`flex items-center gap-2 transition-colors cursor-pointer ${
+                        isInCompare
+                          ? "text-[#98022e]"
+                          : "text-gray-700 hover:text-[#98022e]"
+                      }`}
                     >
                       <Repeat
                         size={16}

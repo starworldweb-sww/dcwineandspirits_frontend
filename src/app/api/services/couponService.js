@@ -7,8 +7,14 @@ export const couponService = {
        
         const res = await axiosInstance.post(`/coupon`, { code:code, cartTotal:cartTotal, customerId:customerId })
         return res?.data;
-    }
+    },
 
+
+
+       getActiveCoupons: async () => {
+        const res = await axiosInstance.get(`/coupon/active`)
+        return res?.data;
+    }
 
 
 }
