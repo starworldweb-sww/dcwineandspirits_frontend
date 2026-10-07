@@ -4,16 +4,32 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import GoogleCustomerReviewsOptIn from "./GoogleCustomerReview";
+
+const REDIRECT_SECONDS = 8; // 2s is too short for the Google popup
 
 const OrderConfirmation = () => {
-
   const router = useRouter();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [countdown, setCountdown] = useState(2);
-
+  const [countdown, setCountdown] = useState(REDIRECT_SECONDS);
+  const [optInData, setOptInData] = useState(null);
+  console.log("GoogleCustomerReviewsOptIn props:", {
+    optInData:optInData
+  });
   useEffect(() => {
     const checkoutType = sessionStorage.getItem("checkoutType");
     const redirectPath = sessionStorage.getItem("redirectAfterThankYou") || "/";
+
+    // Load review opt-in data (once)
+    try {
+      const raw = sessionStorage.getItem("reviewOptInData");
+      if (raw) {
+        setOptInData(JSON.parse(raw));
+        sessionStorage.removeItem("reviewOptInData");
+      }
+    } catch (e) {
+      console.warn("Review opt-in data error:", e?.message);
+    }
 
     if (checkoutType === "register" || checkoutType === "login") {
       setIsLoggingIn(true);
@@ -31,7 +47,7 @@ const OrderConfirmation = () => {
         console.warn("Failed to clear session keys:", e?.message);
       }
       router.replace(redirectPath);
-    }, 2000);
+    }, REDIRECT_SECONDS * 1000);
 
     return () => {
       clearInterval(tickInterval);
@@ -41,6 +57,14 @@ const OrderConfirmation = () => {
 
   return (
     <div className="py-5 px-5 bg-[#eeeeee] flex items-center justify-center font-['cambriaregular']">
+      {optInData && (
+        <GoogleCustomerReviewsOptIn
+          orderId={optInData.orderId}
+          customerEmail={optInData.customerEmail}
+          deliveryCountry={optInData.deliveryCountry}
+          estimatedDeliveryDate={optInData.estimatedDeliveryDate}
+        />
+      )}
       <div className="bg-white max-w-[600px] w-full mx-auto shadow-md px-10 py-5 flex flex-col items-center text-center">
 
         {/* Check Icon */}
