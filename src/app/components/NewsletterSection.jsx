@@ -47,9 +47,9 @@ export default function NewsletterSection() {
   return (
     <section className="w-full bg-[#E9E9E9]">
       <div className="px-3 2xl:px-32 py-12 text-center">
-        <h2 className="text-3xl md:text-4xl text-gray-700">
+        <h3 className="text-3xl md:text-4xl text-gray-700">
           Let's Stay In Touch
-        </h2>
+        </h3>
         <div className="mx-auto mt-3 h-[2px] w-16 bg-[#b8225a]" />
 
         <p className="mx-auto mt-4 max-w-xl text-sm md:text-base text-gray-700">

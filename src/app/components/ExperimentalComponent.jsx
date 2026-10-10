@@ -66,7 +66,7 @@ const ExperimentalComponent = () => {
                 <p className="line-clamp-2 break-words text-[11px] leading-tight font-semibold text-gray-900 sm:line-clamp-1 sm:text-sm sm:leading-normal">
                   {card.title}
                 </p>
-                <p className="hidden truncate font-hind-madurai text-xs text-gray-400 sm:block">
+                <p className="hidden truncate font-hind-madurai text-xs text-gray-700 sm:block">
                   {card.subtitle}
                 </p>
               </div>

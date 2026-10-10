@@ -366,10 +366,12 @@ const SearchBar = () => {
           )}
 
           {/* Main Input */}
+          {/* FIX: aria-label add kiya taaki input ka accessible name ho (placeholder custom span hai, real label nahi) */}
           <input
             ref={inputRef}
             type="text"
             name="search"
+            aria-label="Search products"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -381,15 +383,15 @@ const SearchBar = () => {
             autoComplete="off"
             spellCheck="false"
             dir="auto"
-            className={`relative w-full h-full pl-5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent ${inputPaddingClass}`}
+            className={`relative w-full h-full pl-5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none bg-transparent ${inputPaddingClass}`}
           />
 
           {/* Animated Placeholder (when no input, not focused, not listening) */}
           {showAnimatedPlaceholder && (
-            <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-sm text-gray-400 flex items-center gap-1">
+            <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-sm text-gray-600 flex items-center gap-1">
               {STATIC_PREFIX}
               <span>{displayedText}</span>
-              <span className="ml-0.5 w-[1px] h-[14px] bg-gray-400 animate-caret" />
+              <span className="ml-0.5 w-[1px] h-[14px] bg-gray-600 animate-caret" />
             </span>
           )}
 

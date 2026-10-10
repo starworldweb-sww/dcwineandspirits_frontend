@@ -32,8 +32,8 @@ export default function AgeVerificationGate({ onClose }) {
 
   const handleAllow = () => {
     setCookie("ageVerified", "true", 365);
-    setShow(false); // ✅ CRITICAL FIX: Hide the popup
-    if (onClose) onClose(); // Notify parent
+    setShow(false); 
+    if (onClose) onClose(); 
   };
 
   const handleDeny = () => {
@@ -66,7 +66,7 @@ export default function AgeVerificationGate({ onClose }) {
                 Age Verification
               </h2>
 
-              <p className="text-[13px] text-gray-500 leading-relaxed mb-6">
+              <p className="text-[13px] text-gray-600 leading-relaxed mb-6">
                 This website features wine and spirits. <br />
                 You must be 21 years of age or older to enter.
               </p>
@@ -78,18 +78,20 @@ export default function AgeVerificationGate({ onClose }) {
                 >
                   Yes, I Am 21+
                 </button>
+                
                 <a
                   type="button"
                   href="https://www.google.com/search?q=dc+wine+and+spirits"
                   
                   onClick={handleDeny}
-                  className="flex-1 py-3 rounded-sm bg-white text-gray-400 text-[12px] tracking-[0.12em] uppercase border border-gray-200 cursor-pointer hover:border-gray-400 hover:text-black transition-colors"
+                  className="flex-1 py-3 rounded-sm bg-white text-gray-600 text-[12px] tracking-[0.12em] uppercase border border-gray-500 cursor-pointer hover:border-black hover:text-black transition-colors"
                 >
                   No, I Am Not
                 </a>
               </div>
 
-              <p className="text-[11px] text-gray-400 leading-relaxed mt-5">
+              
+              <p className="text-[11px] text-gray-600 leading-relaxed mt-5">
                 By selecting "Yes", you confirm that you are at least 21 years
                 old and legally permitted to purchase alcohol in your region.
               </p>
@@ -102,7 +104,8 @@ export default function AgeVerificationGate({ onClose }) {
               <p className="font-['cambriaregular',Cambria,Georgia,serif] text-[18px] font-bold text-[#1a1a1a]">
                 Access Restricted
               </p>
-              <p className="text-[12px] text-gray-400 leading-relaxed">
+            
+              <p className="text-[12px] text-gray-600 leading-relaxed">
                 You must be 21 or older to enter this site. <br />
                 Please return when you are of legal drinking age.
               </p>

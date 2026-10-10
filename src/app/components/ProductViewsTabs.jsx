@@ -154,13 +154,13 @@ function ProductCard({ product }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3
+          <span
             title={decodeHtml(product.name)}
             className="truncate text-[13px] font-semibold leading-tight text-[#1A202C]"
             style={{ fontFamily: "var(--font-sarabun)" }}
           >
             {decodeHtml(product.name)}
-          </h3>
+          </span>
 
           <div
             className="mt-1 flex items-center gap-2"
@@ -183,23 +183,35 @@ function ProductCard({ product }) {
           </div>
 
           <div className="mt-2 flex items-center justify-start gap-5">
+            {/* TOUCH FIX 1: p-1 se button 20px -> 28px hua (24px minimum se upar).
+                -my-1 lagaya taaki upar-neeche ki extra height card ke fixed
+                h-[93px] mein overflow na kare (layout same rahega).
+                gap-5 (20px) + 28px = dono buttons ke centers 48px door. */}
             <button
               type="button"
+              aria-label={`Add ${decodeHtml(product.name)} to cart`}
               onClick={handleAddToCartClick}
               disabled={isAddingToCart}
-              className="transition disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="p-1 -my-1 transition disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
-              <ShoppingCart size={17} />
+              <ShoppingCart size={20} aria-hidden="true" />
             </button>
 
+            {/* TOUCH FIX 2: wishlist button par bhi wahi p-1 -my-1 */}
             <button
               type="button"
+              aria-label={
+                isInWishlist
+                  ? `${decodeHtml(product.name)} is in your wishlist`
+                  : `Add ${decodeHtml(product.name)} to wishlist`
+              }
               onClick={handleAddToWishlistClick}
               disabled={isAddingToWishlist || isInWishlist}
-              className="transition disabled:cursor-not-allowed"
+              className="p-1 -my-1 transition disabled:cursor-not-allowed"
             >
               <Heart
-                size={17}
+                size={20}
+                aria-hidden="true"
                 className={isInWishlist ? "fill-[#98022e] text-[#98022e]" : ""}
               />
             </button>
@@ -310,9 +322,10 @@ export default function ProductViewTabs() {
           className="mb-6 flex gap-8 border-b border-gray-700"
           style={{ fontFamily: "var(--font-sumana)" }}
         >
+          {/* TOUCH FIX 3: pb-2 -> py-3, taaki tab ki height ~48px ho jaye */}
           <button
             onClick={() => setActiveTab("recently")}
-            className={`pb-2 uppercase font-bold tracking-wide cursor-pointer ${
+            className={`py-3 uppercase font-bold tracking-wide cursor-pointer ${
               activeTab === "recently"
                 ? "border-b-2 border-[#B08D3E] text-white"
                 : "text-gray-400"
@@ -322,7 +335,7 @@ export default function ProductViewTabs() {
           </button>
           <button
             onClick={() => setActiveTab("most")}
-            className={`pb-2 uppercase font-bold tracking-wide cursor-pointer ${
+            className={`py-3 uppercase font-bold tracking-wide cursor-pointer ${
               activeTab === "most"
                 ? "border-b-2 border-[#B08D3E] text-white"
                 : "text-gray-400"
@@ -334,11 +347,12 @@ export default function ProductViewTabs() {
 
         {/* Product row with left/right scroll arrows (only when > 4 items) */}
         <div className="relative">
+          {/* TOUCH FIX 4: h-8 w-8 (32px) -> h-12 w-12 (48px), left arrow */}
           {isSlider && canScrollLeft && (
             <button
               type="button"
               onClick={() => scrollByAmount("left")}
-              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
             >
               <ChevronLeft size={16} />
             </button>
@@ -376,11 +390,12 @@ export default function ProductViewTabs() {
             </div>
           )}
 
+          {/* TOUCH FIX 5: right arrow bhi 48px */}
           {isSlider && canScrollRight && (
             <button
               type="button"
               onClick={() => scrollByAmount("right")}
-              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-[#334155] text-white shadow-md transition hover:bg-[#1e293b]"
             >
               <ChevronRight size={16} />
             </button>

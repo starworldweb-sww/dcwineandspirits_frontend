@@ -30,6 +30,7 @@ const HomePageClient = () => {
 
   return (
     <>
+    <main id="main-content">
       <div className="bg-white">
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
@@ -51,6 +52,7 @@ const HomePageClient = () => {
         <WhyChooseUs/>
         
       </div>
+      </main>
     </>
   );
 };
