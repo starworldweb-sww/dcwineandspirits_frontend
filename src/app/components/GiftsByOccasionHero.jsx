@@ -57,7 +57,7 @@ const GiftsByOccasionHero = ({ data, isLoading: propLoading, isError: propError 
   }));
 
 
-  console.log("GiftsByOccasionHero occasions:", occasions);
+  
   return (
     <div className={`w-full bg-white px-3 2xl:px-32 py-4 `}>
 

@@ -43,12 +43,12 @@ const WhyChooseUs = () => {
       <div className="mx-auto max-w-6xl">
         {/* Heading */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <h2
+          <h3
             id="why-choose-us-heading"
             className="font-sumana text-2xl sm:text-3xl text-black"
           >
             Why Shop with DC Wine &amp; Spirits
-          </h2>
+          </h3>
           <div className="mt-2 h-[2px] w-12 rounded-full bg-[#98022e]" />
         </div>
 
@@ -68,11 +68,11 @@ const WhyChooseUs = () => {
                 />
               </div>
 
-              <h3 className="font-sarabun text-gray-800 text-[12px] mb-1 transition-all duration-200 group-hover:text-white font-bold">
+              <h3 className="font-sarabun text-gray-900 text-[12px] mb-1 transition-all duration-200 group-hover:text-white font-bold">
                 {title}
               </h3>
 
-              <p className="font-hind-madurai text-gray-500 text-xs leading-snug max-w-[150px] transition-colors duration-200 group-hover:text-white/80">
+              <p className="font-hind-madurai text-gray-700 text-xs leading-snug max-w-[150px] transition-colors duration-200 group-hover:text-white/80">
                 {description}
               </p>
             </li>

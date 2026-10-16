@@ -173,7 +173,7 @@ const Stickynav = () => {
             )}
 
             <span className="relative bg-[#98022e] group-hover:bg-[#7e1a3c] w-11 h-11 flex items-center justify-center transition-colors">
-              <ShoppingBag size={20} className="text-white" strokeWidth={1.5} />
+              <ShoppingBag    aria-label={cartItemCount > 0 ? `View cart, ${cartItemCount} items` : "View cart"} size={20} className="text-white" strokeWidth={1.5} />
               {cartItemCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-white text-[#98022e] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#98022e]">
                   {cartItemCount}

@@ -100,18 +100,25 @@ const CategoryShowcase = ({ data, isLoading: propLoading, isError: propError }) 
           )}
         </div>
 
+        {/* FIX 1: type="button" + aria-label add kiya (left arrow) */}
         <button
+          type="button"
+          aria-label="Scroll categories left"
           onClick={() => scrollSliderByOneCard(-1)}
           className="absolute -left-2 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
         >
-          <ChevronLeft size={18} />
+          {/* FIX 2: icon sirf decoration hai, screen reader ignore kare */}
+          <ChevronLeft size={18} aria-hidden="true" />
         </button>
 
+        {/* FIX 3: type="button" + aria-label add kiya (right arrow) */}
         <button
+          type="button"
+          aria-label="Scroll categories right"
           onClick={() => scrollSliderByOneCard(1)}
           className="absolute -right-2 top-[45%] -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-black hover:text-white transition-colors hover:cursor-pointer"
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={18} aria-hidden="true" />
         </button>
       </div>
 
