@@ -13,7 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import SearchBar from "./navcomponents/SearchBar";
-import { useUser, useLogout } from "@/app/api/hooks/useAuth"; // apna actual path daal dena
+import { useUser, useLogout } from "@/app/api/hooks/useAuth";
 import { useGetWishlist } from "@/app/api/hooks/wishlist/useGetWishlist";
 
 const Navbar = () => {

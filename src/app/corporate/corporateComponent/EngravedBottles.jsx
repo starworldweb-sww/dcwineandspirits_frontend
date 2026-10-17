@@ -1,316 +1,320 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-
-/**
- * EngravedBottles
- * ------------------------------------------------------------------
- * DC Wine & Spirits ke liye "Engraved Bottles" section.
- *
- * Do parts hain:
- *   1. "How It Works" — 3 simple steps (Choose Bottle -> Add Message -> Deliver)
- *   2. 3D "360" rotating bottle carousel — LaptopComponent jaisa hi
- *      drag/swipe + autoplay mechanism, bas laptop images ki jagah
- *      engraved bottle images aur unka engraving text/price caption.
- *
- * Carousel ka kaam kaise karta hai (LaptopComponent se same pattern):
- *   - Har bottle ek 3D ring pe angleStep degrees apart rakhi hai
- *   - rotation state ring ko ghumati hai taaki active bottle front pe aa jaye
- *   - Autoplay har `holdDuration` ms baad next bottle pe move karta hai
- *   - User drag/hover kare to autoplay pause ho jata hai
- * ------------------------------------------------------------------
- */
 
 const MAROON = "#98022e";
-const GOLD = "#c99000";
+const GOLD = "#c9a24b";
+const AUTO_SCROLL_MS = 3000;
+const CENTER_SCALE = 1.175;
+const SIDE_TILT = 6;
 
-// ================================================================
-// 1. "HOW IT WORKS" STEPS DATA
-// ================================================================
-const ENGRAVING_STEPS = [
+const BOTTLES = [
   {
-    stepNumber: "01",
-    title: "Choose Your Bottle",
-    description:
-      "Wine, champagne, whisky ya spirits — apni pasand ki bottle select karein.",
+    name: "Dom Perignon",
+    src: encodeURI("/corporate/bottles/engravedbottle03.png"),
+    tilt: -6,
+    delay: 0.15,
+    height: "h-[260px] md:h-[400px]",
+    floatDuration: "6s",
+    floatDelay: "0s",
   },
   {
-    stepNumber: "02",
-    title: "Add Your Message",
-    description:
-      "Naam, date, ya koi bhi special message likhein jo bottle pe engrave karna hai.",
+    name: "Bottle Two",
+    src: encodeURI("/corporate/bottles/domperignon.png"),
+    tilt: 0,
+    delay: 0.35,
+    height: "h-[300px] md:h-[470px]",
+    floatDuration: "5s",
+    floatDelay: "0.8s",
   },
   {
-    stepNumber: "03",
-    title: "We Engrave & Deliver",
-    description:
-      "Hamari team carefully engrave karke, safely packed bottle aapke doorstep tak pahunchati hai.",
+    name: "Bottle Three",
+    src: encodeURI("/corporate/bottles/engravedbottle.png"),
+    tilt: 6,
+    delay: 0.55,
+    height: "h-[260px] md:h-[400px]",
+    floatDuration: "6.5s",
+    floatDelay: "1.6s",
+  },
+  {
+    name: "Bottle Four",
+    src: encodeURI("/corporate/bottles/silveroakmessage.png"),
+    tilt: 6,
+    delay: 0.55,
+    height: "h-[260px] md:h-[400px]",
+    floatDuration: "6.5s",
+    floatDelay: "1.6s",
+  },
+  {
+    name: "Bottle Five",
+    src: encodeURI("/corporate/bottles/messagebottle.png"),
+    tilt: 6,
+    delay: 0.55,
+    height: "h-[260px] md:h-[400px]",
+    floatDuration: "6.5s",
+    floatDelay: "1.6s",
   },
 ];
 
-// ================================================================
-// 2. ENGRAVED BOTTLES DATA (carousel slides)
-// Har bottle: image, naam, price, aur engraving caption
-// imageSrc ko apne actual product images ke path se replace karein
-// ================================================================
-const DEFAULT_BOTTLES = [
+const CUSTOM_OPTIONS = [
   {
-    src: "/corporate/bottles/engravedbottle.png",
-    alt: "Engraved Champagne Bottle",
-    name: "Engraved Champagne Bottle",
-    price: "$89.99",
-    text: "Happy Anniversary, Sarah & Tom",
+    title: "Custom Logo",
+    description: "Your company logo, engraved with crisp detail on the bottle.",
+    image: "/corporate/bottles/examplelogo.png",
+    alt: "Custom logo laser engraved on a bottle",
+    delay: 0.8,
   },
   {
-    src: "/corporate/bottles/engravedbottle02.png",
-    alt: "Engraved Whisky Bottle",
-    name: "Engraved Whisky Bottle",
-    price: "$74.99",
-    text: "To the Best Boss Ever",
+    title: "Custom Message",
+    description:
+      "A personal note, name or date engraved to make the gift unforgettable.",
+    image: "/corporate/bottles/examplemessage.png",
+    alt: "Custom message laser engraved on a bottle",
+    delay: 1,
   },
   {
-    src: "/corporate/bottles/engravedbottle03.png",
-    alt: "Engraved Red Wine Bottle",
-    name: "Engraved Red Wine Bottle",
-    price: "$59.99",
-    text: "Congratulations on Your New Home",
+    title: "Logo & Message on Box",
+    description:
+      "Your logo and a personal message printed on the gift box for a premium first impression.",
+    image: "/corporate/bottles/examplebox.png",
+    alt: "Custom logo and message on a gift box",
+    delay: 1.2,
   },
-
+  {
+    title: "Message on Gift Card",
+    description: "A custom message on a gift card, delivered with the gift.",
+    image: "/corporate/bottles/examplecard.png",
+    alt: "Custom message on a gift card",
+    delay: 1.4,
+  },
 ];
 
-// Drag sensitivity: how many degrees of rotation per full stage-width swipe.
-const DRAG_DEGREES_PER_STAGE_WIDTH = 180;
-// Fallback stage width (px) used only if the ref isn't measured yet.
-const FALLBACK_STAGE_WIDTH = 800;
+const EngravedBottles = () => {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
 
-export default function EngravedBottles({
-  bottles = DEFAULT_BOTTLES,
-  autoPlay = true,
-  radius = 420, // px — depth of the 3D ring (laptop wale se thoda kam, bottle chhoti hoti hai)
-  holdDuration = 3800, // ms — har bottle kitni der front pe ruki rahe
-}) {
-  // 3. Guard against a bad/empty prop instead of crashing on division by zero.
-  const slides =
-    Array.isArray(bottles) && bottles.length > 0 ? bottles : DEFAULT_BOTTLES;
-  const count = slides.length;
-  const angleStep = useMemo(() => 360 / count, [count]);
-
-  const [rotation, setRotation] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const [captionVisible, setCaptionVisible] = useState(false);
-
-  const dragState = useRef({ startX: 0, startRotation: 0 });
-  const stageRef = useRef(null);
-
-  // 4. All pending timers live here so a single cleanup function can always
-  // find and clear them — avoids orphaned callbacks firing after the
-  // slide (or component) has already changed.
-  const pendingTimers = useRef([]);
-  const clearPendingTimers = () => {
-    pendingTimers.current.forEach(clearTimeout);
-    pendingTimers.current = [];
-  };
-  const trackTimer = (id) => {
-    pendingTimers.current.push(id);
-    return id;
-  };
-
-  const shouldAutoAdvance = autoPlay && !isDragging && !isHovering && count > 1;
-
-  // ---------- 5. navigation ----------
-  const goTo = useCallback(
-    (index) => {
-      const normalized = ((index % count) + count) % count;
-      setActiveIndex(normalized);
-      setRotation(-normalized * angleStep);
-    },
-    [count, angleStep]
-  );
-
-  const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
-  const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
-
-  // ---------- 6. caption fade-in whenever the active slide changes ----------
   useEffect(() => {
-    setCaptionVisible(false);
-    const fadeInTimer = setTimeout(() => setCaptionVisible(true), 120);
-    trackTimer(fadeInTimer);
-    return () => clearTimeout(fadeInTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex]);
+    const node = sectionRef.current;
+    if (!node) return;
 
-  // ---------- 7. autoplay: hold on the slide, then advance ----------
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
-    if (!shouldAutoAdvance) return;
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
 
-    const advanceTimer = setTimeout(goNext, holdDuration);
-    trackTimer(advanceTimer);
+    const updateVisibleCount = () => {
+      setVisibleCount(mediaQuery.matches ? 3 : 1);
+      setCurrentIndex(0);
+    };
 
-    return () => clearTimeout(advanceTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldAutoAdvance, holdDuration, goNext, activeIndex]);
+    updateVisibleCount();
+    mediaQuery.addEventListener("change", updateVisibleCount);
+    return () => mediaQuery.removeEventListener("change", updateVisibleCount);
+  }, []);
 
-  // Final safety net: clear every timer on unmount.
-  useEffect(() => clearPendingTimers, []);
+  const maxIndex = Math.max(BOTTLES.length - visibleCount, 0);
 
-  // ---------- 8. drag / swipe to rotate ----------
-  const getClientX = (e) => (e.touches ? e.touches[0].clientX : e.clientX);
+  useEffect(() => {
+    if (!isVisible || isPaused) return;
 
-  const handlePointerDown = (e) => {
-    if (count <= 1) return;
-    setIsDragging(true);
-    dragState.current = { startX: getClientX(e), startRotation: rotation };
-  };
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, AUTO_SCROLL_MS);
 
-  const handlePointerMove = (e) => {
-    if (!isDragging) return;
-    const deltaX = getClientX(e) - dragState.current.startX;
-    const stageWidth = stageRef.current?.offsetWidth || FALLBACK_STAGE_WIDTH;
-    const deltaDeg = (deltaX / stageWidth) * DRAG_DEGREES_PER_STAGE_WIDTH;
-    setRotation(dragState.current.startRotation + deltaDeg);
-  };
+    return () => clearInterval(timer);
+  }, [isVisible, isPaused, maxIndex]);
 
-  const handlePointerUp = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    const nearestIndex = Math.round(-rotation / angleStep);
-    goTo(nearestIndex);
-  };
+  const centerIndex =
+    Math.min(currentIndex, maxIndex) + Math.floor(visibleCount / 2);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "ArrowRight") goNext();
-    if (e.key === "ArrowLeft") goPrev();
-  };
-
-  const active = slides[activeIndex] || {};
+  const centerScale = visibleCount === 3 ? CENTER_SCALE : 1;
 
   return (
-    <section className="w-full bg-white py-14 md:py-16 lg:py-20 font-hind-madurai px-3 2xl:px-32">
-      <div className="max-w-[1400px] mx-auto">
-        {/* ============ 9. SECTION HEADING ============ */}
-        <div className="text-center mb-10 md:mb-14">
-          <h2 className="font-sumana text-3xl md:text-4xl lg:text-[44px] font-bold text-[#1c1f22] leading-tight">
-            <span className="italic font-bold text-[#98022e]" >
-              Engraved{" "}
-            </span>
-            Bottles
-          </h2>
+    <section
+      ref={sectionRef}
+      className="bg-white py-12 md:py-20 px-3 2xl:px-32 font-hind-madurai overflow-hidden"
+    >
+      <style>{`
+        @keyframes tb-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
 
-          <p className="italic text-sm md:text-base text-[#4a4a4a] max-w-2xl mx-auto mt-4">
-            Want to add a personal touch to your gift? Etch a name, a date,
-            or a company crest directly into the glass of any wine or
-            champagne bottle. We'll engrave, pack, and ship it for you — no
-            separate order to manage.
-          </p>
-        </div>
+        .tb-float { animation: tb-float 6s ease-in-out infinite; }
 
-        
-       
+        @media (prefers-reduced-motion: reduce) {
+          .tb-float, .tb-glow, .tb-shine { animation: none; }
+        }
+      `}</style>
 
-        {/* ============ 11. 3D 360 ROTATING BOTTLE CAROUSEL ============ */}
-        <div className="flex w-full flex-col items-center">
-          {/* caption — bottle name + price + engraving text, fades in per slide */}
-          
+      <div className="max-w-[1100px] mx-auto text-center mb-14 md:mb-20">
+        <h2 className="text-2xl md:text-[32px] font-bold mb-3 font-sarabun">
+          Our Personalized Collection
+        </h2>
+        <p className="text-[#555] text-sm md:text-base leading-relaxed max-w-lg mx-auto">
+          Premium bottles, engraved with your logo or message.
+        </p>
+      </div>
 
-          {/* 3D rotating stage */}
+      <div
+        className="relative max-w-[1100px] py-3 mx-auto"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <div
+          className="tb-glow absolute left-1/2 top-1/2 w-[80%] h-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl pointer-events-none"
+          style={{
+            background: `radial-gradient(circle, ${GOLD}55 0%, ${MAROON}18 55%, transparent 75%)`,
+          }}
+        />
+
+        <div className="relative overflow-x-clip overflow-y-visible pt-12 md:pt-32 pb-12">
           <div
-            ref={stageRef}
-            tabIndex={0}
-            role="region"
-            aria-label="Engraved bottles carousel — drag to rotate"
-            onKeyDown={handleKeyDown}
-            onMouseDown={handlePointerDown}
-            onMouseMove={handlePointerMove}
-            onMouseUp={handlePointerUp}
-            onMouseLeave={() => {
-              handlePointerUp();
-              setIsHovering(false);
-            }}
-            onMouseEnter={() => setIsHovering(true)}
-            onTouchStart={handlePointerDown}
-            onTouchMove={handlePointerMove}
-            onTouchEnd={handlePointerUp}
-            className="relative w-full max-w-[1000px] outline-none"
+            className="flex items-end transition-transform duration-1000 ease-in-out"
             style={{
-              height: "clamp(280px, 38vw, 460px)",
-              perspective: "1600px",
-              cursor: count > 1 ? (isDragging ? "grabbing" : "grab") : "default",
-              touchAction: "pan-y",
+              transform: `translateX(-${
+                Math.min(currentIndex, maxIndex) * (100 / visibleCount)
+              }%)`,
             }}
           >
-            {/* soft contact shadow under the ring */}
-            <div
-              className="absolute left-[8%] right-[8%] -bottom-2 h-10 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(ellipse, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0) 70%)",
-                filter: "blur(2px)",
-              }}
-            />
+            {BOTTLES.map((bottle, index) => {
+              const isCenter = index === centerIndex;
+              const tilt = isCenter
+                ? 0
+                : index < centerIndex
+                  ? -SIDE_TILT
+                  : SIDE_TILT;
+              const scale = isCenter ? centerScale : 1;
 
-            <div
-              className="absolute inset-0"
-              style={{
-                transformStyle: "preserve-3d",
-                transform: `translateZ(-${radius}px) rotateY(${rotation}deg)`,
-                transition: isDragging
-                  ? "none"
-                  : "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
-              }}
-            >
-              {slides.map((bottle, i) => {
-                const slideAngle = i * angleStep;
-                const isActive = i === activeIndex;
-                return (
+              return (
+                <div
+                  key={bottle.src}
+                  className="flex-none flex justify-center items-end"
+                  style={{ width: `${100 / visibleCount}%` }}
+                >
                   <div
-                    key={`${bottle.src}-${i}`}
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: `rotateY(${slideAngle}deg) translateZ(${radius}px)`,
-                      opacity: isActive ? 1 : 0.3,
-                      filter: isActive
-                        ? "brightness(1) saturate(1)"
-                        : "brightness(0.7) saturate(0.8)",
-                      transition: "opacity 700ms ease, filter 700ms ease",
-                      pointerEvents: isActive ? "auto" : "none",
-                    }}
+                    className="origin-bottom transition-transform duration-1000 ease-in-out"
+                    style={{ transform: `rotate(${tilt}deg) scale(${scale})` }}
                   >
-                    <img
-                      src={bottle.src}
-                      alt={bottle.alt || bottle.name || `Slide ${i + 1}`}
-                      draggable={false}
-                      className="h-full w-auto max-w-full object-contain"
-                      style={{
-                        filter: isActive
-                          ? "drop-shadow(0 18px 30px rgba(152,2,46,0.18))"
-                          : "none",
-                      }}
-                    />
+                    <div
+                      className={`group transition-all duration-1000 ease-out ${
+                        isVisible
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-16"
+                      }`}
+                      style={{ transitionDelay: `${bottle.delay}s` }}
+                    >
+                      <div className="transition-transform duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-[1.03]">
+                        <div
+                          className="tb-float"
+                          style={{
+                            animationDuration: bottle.floatDuration,
+                            animationDelay: bottle.floatDelay,
+                          }}
+                        >
+                          <div className="relative aspect-[3/4] h-[300px] md:h-[400px] px-2">
+                            <Image
+                              src={bottle.src}
+                              alt={`${bottle.name} laser engraved bottle`}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 300px"
+                              className="object-contain drop-shadow-2xl"
+                            />
+
+                            <div
+                              className="tb-shine absolute inset-0 pointer-events-none"
+                              style={{
+                                animationDelay: bottle.floatDelay,
+                                background:
+                                  "linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.5) 50%, transparent 62%)",
+                                backgroundSize: "250% 100%",
+                                WebkitMaskImage: `url(${bottle.src})`,
+                                maskImage: `url(${bottle.src})`,
+                                WebkitMaskSize: "contain",
+                                maskSize: "contain",
+                                WebkitMaskRepeat: "no-repeat",
+                                maskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                                maskPosition: "center",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[900px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mt-12 md:mt-16">
+        {CUSTOM_OPTIONS.map((option) => (
+          <div
+            key={option.title}
+            className={`group transition-all duration-1000 ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-16"
+            }`}
+            style={{ transitionDelay: `${option.delay}s` }}
+          >
+            <div
+              className="relative aspect-[16/9] overflow-hidden rounded-lg border transition-shadow duration-500 group-hover:shadow-lg"
+              style={{ borderColor: `${GOLD}66` }}
+            >
+              <Image
+                src={option.image}
+                alt={option.alt}
+                fill
+                sizes="(max-width: 768px) 50vw, 220px"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </div>
+
+            <div className="text-center mt-2">
+              <h3 className="text-xs md:text-sm font-bold font-sarabun mb-0.5">
+                {option.title}
+              </h3>
             </div>
           </div>
+        ))}
+      </div>
 
-         
-        </div>
-
-        {/* ============ 13. CTA BUTTON ============ */}
-        <div className="text-center mt-12 md:mt-14">
-          <Link
-            href={"/engraved-champagne-bottles/"}
-            
-            className="inline-block px-8 py-3 rounded-full font-sumana font-bold text-white text-sm md:text-base tracking-wide transition-transform duration-200 hover:scale-105 cursor-pointer"
-            style={{ backgroundColor: MAROON }}
-          >
-            Shop All Engraved Bottles
-          </Link>
-        </div>
+      <div className="flex justify-center mt-12 md:mt-16">
+        <Link
+          href="/personalized/"
+          className="inline-flex items-center justify-center text-white px-8 py-3 font-semibold text-sm tracking-wide no-underline transition-colors"
+          style={{ backgroundColor: MAROON }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#7a0225")
+          }
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = MAROON)}
+        >
+          Shop Personalized Gifts
+        </Link>
       </div>
     </section>
   );
-}
+};
+
+export default EngravedBottles;

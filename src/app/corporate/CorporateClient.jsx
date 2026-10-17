@@ -17,7 +17,17 @@ import BulkSubmitPopUp from "./corporateComponent/BulkSumbitPopUp";
 import CorporateReasons from "./corporateComponent/CorporateReasons";
 import LaptopComponent from "./corporateComponent/LaptopComponent";
 import EngravedBottles from "./corporateComponent/EngravedBottles";
-import BulkOrderSteps from "./corporateComponent/BulkOrderSteps";
+import HowToBulkOrder from "./corporateComponent/HowToBulkOrder";
+import CorporateProducts from "./corporateComponent/CorporateProducts";
+import BrandsClient from "../brands/BrandsClient";
+import CorporateBrands from "./corporateComponent/CorporateBrands";
+import CategoryShowcase from "../components/categoryShowcase/CategoryShowcase";
+import CorporateCategories from "./corporateComponent/CorporateCategories";
+import CorporateNow from "./corporateComponent/CorporateNow";
+import CorporateSupport from "./corporateComponent/CorporateSupport";
+import CorporateContactForm from "./corporateComponent/CorporateContactForm";
+import BulkOrderForm from "./corporateComponent/BulkOrderForm";
+import CorporateBulkOrderOnPage from "./corporateComponent/CorporateBulkOrderOnPage";
 
 const PRODUCT_TABS = ["Gift Baskets", "Wine", "Champagne"];
 
@@ -230,240 +240,102 @@ export default function CorporateClient() {
         breadcrumbs={breadcrumbs}
       />
 
-      <section className="relative min-h-[320px] md:min-h-[440px] flex items-center overflow-hidden bg-white">
-        <Image
-          src="/corporate/finalmainbanner.png"
-          alt="Corporate Gifting"
-          fill
-          priority
-          className="object-contain object-center md:object-right"
-        />
-        <div className="relative z-10 px-6 md:px-16 py-10 max-w-[600px] font-hind-madurai text-left">
-          <h2
-            className="text-2xl md:text-[38px] font-bold leading-tight mb-3"
-            style={{ fontFamily: "'cambriaregular', Georgia, serif" }}
-          >
-            <span className="text-[#1c1f22]">Corporate &amp;</span>
-            <br />
-            <span style={{ color: ACCENT }}>Bulk Gift Orders</span>
-          </h2>
+ {/* Mobile: stacked | Desktop: banner image as background */}
+<section className="relative flex flex-col md:flex-row md:items-center md:min-h-[440px] overflow-hidden bg-white">
+  {/* Image wrapper: normal block on mobile, absolute background on desktop */}
+  <div className="relative w-full h-[220px] md:absolute md:inset-0 md:h-full">
+    <Image
+      src="/corporate/finalmainbanner.png"
+      alt="Corporate Gifting"
+      fill
+      priority
+      sizes="100vw"
+      className="object-contain object-center md:object-right"
+    />
 
-          <p className="text-sm md:text-base max-w-[480px] text-[#666] mb-6">
-            Curated wine, champagne &amp; gourmet gift baskets to celebrate your
-            team, clients &amp; partners.
-          </p>
+    {/* Left side white gradient (desktop only) */}
+    <div
+      className="hidden md:block absolute inset-y-0 left-0 w-[80%] pointer-events-none"
+      style={{
+        background:
+          "linear-gradient(to right, #ffffff 0%, #ffffff 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 100%)",
+      }}
+    />
+  </div>
 
-          {/* Feature icons row */}
-          <div className="grid grid-cols-4 gap-3 mb-7 max-w-[440px]">
-            {[
-              { Icon: FiGift, label: "Personalized Gifting" },
-              { Icon: FiUsers, label: "For Teams & Clients" },
-              { Icon: FiTruck, label: "Same Day Delivery" },
-              { Icon: FiShield, label: "Trusted Quality" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex flex-col items-center text-center gap-1.5"
-              >
-                <div
-                  className="w-10 h-10 rounded-full border flex items-center justify-center"
-                  style={{ borderColor: ACCENT, color: ACCENT }}
-                >
-                  <item.Icon size={18} />
-                </div>
-                <span className="text-[10px] md:text-[11px] leading-tight text-[#444]">
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
+  <div className="relative z-10 w-full px-4 sm:px-6 2xl:px-32 py-6 md:py-10 md:max-w-[600px] font-hind-madurai text-center md:text-left">
+    <h2
+      className="text-2xl md:text-[38px] font-bold leading-tight mb-3"
+      style={{ fontFamily: "'cambriaregular', Georgia, serif" }}
+    >
+      <span className="text-[#1c1f22]">Corporate &amp;</span>
+      <br />
+      <span style={{ color: ACCENT }}>Bulk Gift Orders</span>
+    </h2>
 
-          {/* CTA buttons */}
-          <div className="flex flex-nowrap gap-3 sm:gap-4">
-            <a
-              href="/bulk-order-form.xlsx"
-              download={"bulk_order_form.xlsx"}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-white px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide no-underline transition-colors"
-              style={{ backgroundColor: ACCENT }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#7e1a3c")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = ACCENT)
-              }
-            >
-              <FiDownload size={15} />
-              Download Bulk Order Form
-            </a>
-            <button
-              type="button"
-              onClick={() => setShowBulkPopup(true)}
-              className="inline-flex text-white border-0 items-center justify-center gap-2 whitespace-nowrap px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer bg-[#98022e]"
-            >
-              <FiSend size={14} />
-              Submit Bulk Order Form
-            </button>
-          </div>
-        </div>
-      </section>
-      {/* Hero */}
-      <section className="relative min-h-[280px] md:min-h-[360px] flex items-center py-10 px-4 overflow-hidden">
-        <Image
-          src="/coprate_page_banner_main.webp"
-          alt=""
-          fill
-          priority
-          className="object-cover -z-10"
-        />
-        <div className="absolute inset-0 bg-[#1c1f22]/55 -z-10" />
-        <div className="max-w-[700px] mx-auto bg-white/95 px-6 py-8 md:px-10 md:py-9 text-center rounded-sm">
-          <h2 className="text-2xl md:text-[30px] font-bold mb-3 font-hind-madurai">
-            Corporate Gift Baskets
-          </h2>
-          <p className="text-sm text-[#555] mb-5 leading-relaxed font-hind-madurai">
-            Keep your office space boosted with tokens of appreciation and
-            acknowledgement.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 text-sm mb-5 font-hind-madurai">
-            <span>✉ contact@dcwineandspirits.com</span>
-            <span>📞 (202) 459-8489</span>
-          </div>
-          <a
-            href="/bulk-order-form.xlsx"
-            download={"bulk_order_form.xlsx"}
-            className="inline-block text-white px-7 py-3 font-semibold text-sm tracking-wide no-underline transition-colors font-hind-madurai"
-            style={{ backgroundColor: ACCENT }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#7e1a3c")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = ACCENT)
-            }
-          >
-            Download Our Bulk Order Form
-          </a>
-        </div>
-      </section>
+    <p className="text-sm md:text-base max-w-[480px] mx-auto md:mx-0 text-[#666] mb-6">
+      Curated wine, champagne &amp; gourmet gift baskets to celebrate your
+      team, clients &amp; partners.
+    </p>
 
-      {/* keys */}
+    {/* Offer box (replaces the feature icons) */}
+    <div
+      className="mb-7 mx-auto md:mx-0 inline-block max-w-[440px] rounded-md border border-dashed px-5 py-3 text-center md:text-left"
+      style={{ borderColor: ACCENT }}
+    >
+      <p className="text-lg md:text-2xl font-bold leading-tight text-[#1c1f22]">
+        Up to <span style={{ color: ACCENT }}>15% off</span> on bulk orders
+      </p>
+      <p className="mt-1 text-xs md:text-sm uppercase tracking-widest text-[#98022e]">
+        Valid until 31st Oct
+      </p>
+    </div>
 
-      {/* Key Features */}
-  
-
-      {/* */}
-      <CorporateReasons />
-      
-      <LaptopComponent />
-
-      {/* Bottles + Lead form */}
-      <section className="max-w-[1200px] mx-auto px-4 sm:px-5 -mt-8 md:-mt-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 shadow-lg">
-          <div className="relative bg-[#eeeeee] min-h-[260px] md:min-h-[320px]"></div>
-
-          <div className="bg-white px-6 py-8 md:px-10 md:py-8">
-            <h3 className="text-xl font-bold text-center mb-1.5 font-hind-madurai">
-              Let&apos;s Get Started
-            </h3>
-            <p className="text-xs text-center text-[#777] mb-4 leading-relaxed font-hind-madurai">
-              Please enter your contact information in the fields below and we
-              will be in touch within 24 hours.
-            </p>
-            <hr className="border-t border-[#e5e5e5] mb-5" />
-
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-4 font-hind-madurai"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold block mb-1.5">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm border border-[#d9d9d9] rounded-[3px] outline-none focus:border-[#98022e] focus:ring-1 focus:ring-[#98022e]/30"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold block mb-1.5">
-                    Business Name
-                  </label>
-                  <input
-                    type="text"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm border border-[#d9d9d9] rounded-[3px] outline-none focus:border-[#98022e] focus:ring-1 focus:ring-[#98022e]/30"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold block mb-1.5">
-                    Your Email ID
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm border border-[#d9d9d9] rounded-[3px] outline-none focus:border-[#98022e] focus:ring-1 focus:ring-[#98022e]/30"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold block mb-1.5">
-                    Your Phone No.
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2.5 text-sm border border-[#d9d9d9] rounded-[3px] outline-none focus:border-[#98022e] focus:ring-1 focus:ring-[#98022e]/30"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold block mb-1.5">
-                  Message
-                </label>
-                <textarea
-                  name="message"
-                  rows={4}
-                  value={formData.message}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-sm border border-[#d9d9d9] rounded-[3px] resize-y outline-none focus:border-[#98022e] focus:ring-1 focus:ring-[#98022e]/30"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full text-white py-3.5 font-semibold text-sm tracking-wide transition-colors cursor-pointer"
-                style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#7e1a3c")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = ACCENT)
-                }
-              >
-                Submit
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-col sm:flex-row sm:flex-nowrap gap-3 sm:gap-4">
+      <a
+        href="/bulk-order-form.xlsx"
+        download={"bulk_order_form.xlsx"}
+        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 whitespace-nowrap text-white px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide no-underline transition-colors"
+        style={{ backgroundColor: ACCENT }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "#7e1a3c")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = ACCENT)
+        }
+      >
+        <FiDownload size={15} />
+        Download Bulk Order Form
+      </a>
+      <button
+        type="button"
+        onClick={() => setShowBulkPopup(true)}
+        className="inline-flex w-full sm:w-auto text-black border-0 items-center justify-center gap-2 whitespace-nowrap px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer bg-[#d1d1d1]"
+      >
+        <FiSend size={14} />
+        Submit Bulk Order Form
+      </button>
+    </div>
+  </div>
+</section>
+<CorporateBulkOrderOnPage/>
+{/* <BulkOrderForm/>       */}
+<CorporateProducts/>
+<HowToBulkOrder/>
+<CorporateReasons />
+<CorporateBrands/>
+<CorporateCategories/>
+<LaptopComponent />
+<EngravedBottles/>
+<CorporateSupport/>
+<CorporateNow/>
+<CorporateContactForm/>
+<BulkSubmitPopUp
+open={showBulkPopup}
+onClose={() => setShowBulkPopup(false)}/>
 
 
-      <BulkSubmitPopUp
-        open={showBulkPopup}
-        onClose={() => setShowBulkPopup(false)}
-      />
+
     </main>
   );
 }

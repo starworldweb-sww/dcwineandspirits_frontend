@@ -82,6 +82,7 @@ export default function CorporateReasons({
             backgroundImage: `url("${imageSrc}")`,
             backgroundPosition: "left center",
             backgroundSize: "auto 100%",
+              backgroundSize: "cover",
           }}
         />
 
