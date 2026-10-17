@@ -472,13 +472,27 @@ const CheckoutClient = () => {
   const effectiveZoneId = shippingSameAsBilling
     ? billing?.zone_id
     : shipping?.zone_id;
-  
-  const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
-    countryId: effectiveCountryId,
-    zoneId: effectiveZoneId,
-    // quantity: cartTotalQty || 1,
-  });
+  const effectivePostcode = shippingSameAsBilling
+    ? billing?.postcode
+    : shipping?.postcode;
 
+  // sirf 5 digit poore hone par bhejo, taaki har keystroke par API call na ho
+  const rawPostcode = String(effectivePostcode || "").trim().slice(0, 5);
+  const currentPostcode = rawPostcode.length === 5 ? rawPostcode : "";
+
+  const cartProductIds = useMemo(
+    () => cartItems.map((i) => i.product_id).sort((a, b) => a - b),
+    [cartItems]
+  );
+  console.log("cart", cartItems);
+  console.log("cartProductIds", cartProductIds, effectiveCountryId, effectiveZoneId, currentPostcode)
+  const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
+    countryId: effectiveCountryId || 223,
+    zoneId: effectiveZoneId,
+    quantity: cartTotalQty || 1,
+    postcode: currentPostcode,
+    productIds: cartProductIds,
+  });
   const SHIPPING_METHODS = useMemo(() => {
     if (shippingRate?.allMatches && shippingRate?.allMatches.length > 0) {
       return shippingRate.allMatches.map((match, idx) => ({
@@ -1160,7 +1174,7 @@ const CheckoutClient = () => {
         })
       );
 
-     
+
       clearMissingOrder();
       setCoupon("");
       const redirect =
