@@ -105,6 +105,10 @@ export const metadata = {
       "https://www.dcwineandspirits.com/image/cache/catalog/logo/dcwineandspirits-logo-1200x630-200x200h.webp",
     ],
   },
+
+   other: {
+    "p:domain_verify": "fa672b70123b4314c9c17550fcea68a0",
+  },
 };
 
 const onlineStoreSchema = generateOnlineStoreSchema();
