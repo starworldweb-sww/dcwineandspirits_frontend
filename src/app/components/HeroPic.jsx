@@ -51,7 +51,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
         {/* Overlay on the left side, centered vertically.
             pointer-events-none lets clicks on the text fall through to the image link below. */}
         <div className="absolute inset-y-0 left-0 w-[48%] flex flex-col items-start justify-center gap-2 md:gap-4 lg:gap-5 pl-[5%] pointer-events-none">
-          <p className="font-[family-name:var(--font-new-rocker)] text-white text-xl md:text-4xl lg:text-5xl 2xl:text-6xl leading-[1.1]">
+          <p className="font-[family-name:var(--font-new-rocker)] text-white text-xs md:text-4xl lg:text-5xl 2xl:text-6xl leading-[1.1]">
             <span className="spooky-shiver block">No Tricks,</span>
             {/* Negative delay so the two lines never shake in sync */}
             <span
