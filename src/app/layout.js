@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Caveat, Geist, Geist_Mono, New_Rocker } from "next/font/google";
 import "./globals.css";
 // import Script from "next/script";
 import Navbar from "./components/Navbar";
@@ -20,6 +20,7 @@ import ProductViewTabs from "./components/ProductViewsTabs";
 import AgeVerificationGate from "./components/AgeVerification";
 import OfflineBanner from "./components/OfflineBanner";
 import { generateOnlineStoreSchema } from "@/libs/onlineStoreSchema";
+import HalloweenBatsSwarm from "./components/HalloweenBatsSwarm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,10 +39,26 @@ const hindMadurai = Hind_Madurai({
   variable: "--font-hind-madurai",
 });
 
+
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-caveat",
+});
+
 const sarabun = Sarabun({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sarabun",
+});
+
+
+const newRocker = New_Rocker({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-new-rocker",
 });
 
 const geistMono = Geist_Mono({
@@ -104,7 +121,7 @@ export default async function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sumana.variable} ${hindMadurai.variable} ${sarabun.variable} ${newRocker.variable} ${caveat.variable} h-full antialiased`}
     >
       <head>
         {/* online store schema */}
@@ -145,6 +162,7 @@ export default async function RootLayout({ children }) {
         {/* End Google Tag Manager (noscript) */}
 
         <Provider>
+           <HalloweenBatsSwarm/> 
           <GoToTopButton />
           <AgeVerificationGate />
           <PhoneHeader />

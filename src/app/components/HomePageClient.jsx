@@ -17,6 +17,7 @@ import LoveBanner from "./LoveBanner";
 import SeasonalComponent from "./SeasonalComponent";
 
 
+
 const HomePageClient = () => {
   const { data: homeData, isLoading, isError } = useHomePageAllData();
 
@@ -35,7 +36,7 @@ const HomePageClient = () => {
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
         <ExperimentalComponent/>
-        <SeasonalComponent/>
+        <SeasonalComponent/> 
         <CategoryShowcase data={homeData?.topCategories} isLoading={isLoading} isError={isError} />
         <LoveBanner data={homeData?.loveBanners}/>
         <GiftsByOccasionHero

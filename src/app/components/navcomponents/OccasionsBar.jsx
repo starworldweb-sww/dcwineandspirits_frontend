@@ -2,10 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { Gem, GraduationCap, Gift, Cake, Martini, Home } from "lucide-react";
+import { GraduationCap, Gift, Cake, Martini, Home } from "lucide-react";
+import { GiPumpkinLantern } from "react-icons/gi";
 import { useOccasionMenu } from "@/app/api/hooks/category/useOccasionMenu";
 
-const ICONS = [Gem, GraduationCap, Gift, Cake, Martini, Home];
+// First icon is the Halloween pumpkin, the rest are the same as before
+const ICONS = [GiPumpkinLantern, GraduationCap, Gift, Cake, Martini, Home];
 
 const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
   // 1. Agar parent se data diya gaya hai to hook ko disable kar dete hain
@@ -31,6 +33,13 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
           const label = occasion.title || occasion.label || occasion.heading;
           const slug = occasion.seo_url || occasion.custom_url || occasion.href;
 
+          // react-icons are filled icons, so strokeWidth would only make the pumpkin look blurry.
+          // Only the lucide icons get it.
+          const strokeProps =
+            Icon === GiPumpkinLantern
+              ? {}
+              : { strokeWidth: active ? 2 : 1.5 };
+
           return (
            
             <div
@@ -47,7 +56,7 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
               >
                 <Icon
                   size={16}
-                  strokeWidth={active ? 2 : 1.5}
+                  {...strokeProps}
                   className="text-[#98022e]"
                 />
                 {label}
