@@ -12,6 +12,7 @@ import {
   Sparkles,
   TreePine,
   Gem,
+  Handshake,
 } from "lucide-react";
 import { GiPumpkinLantern } from "react-icons/gi";
 import { useOccasionMenu } from "@/app/api/hooks/category/useOccasionMenu";
@@ -25,6 +26,7 @@ const ICON_RULES = [
   { keywords: ["graduation", "graduate"], icon: GraduationCap },
   { keywords: ["birthday"], icon: Cake },
   { keywords: ["wedding"], icon: Gem }, // Wedding ke liye Gem icon
+  { keywords: ["corporate"], icon: Handshake }, // Corporate ke liye Handshake icon
   { keywords: ["anniversary", "valentine", "love"], icon: Heart },
   { keywords: ["housewarming", "house-warming", "new-home", "home"], icon: Home },
   { keywords: ["cocktail", "party", "happy-hour"], icon: Martini },
@@ -33,6 +35,9 @@ const ICON_RULES = [
 
 // Step 2: Koi keyword match na ho toh ye default icon dikhega
 const DEFAULT_ICON = Gift;
+
+// Corporate occasion ka slug API se nahi, hamari taraf se fixed hoga
+const CORPORATE_SLUG = "corporate/";
 
 // Step 3: Label + slug se sahi icon dhundhne wala helper function
 const getIconForOccasion = (label = "", slug = "") => {
@@ -64,10 +69,16 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
         {occasions.map((occasion, index) => {
           const active = index === 0;
           const label = occasion.title || occasion.label || occasion.heading;
-          const slug = occasion.seo_url || occasion.custom_url || occasion.href;
+          const apiSlug = occasion.seo_url || occasion.custom_url || occasion.href;
+
+          // Agar label/slug me "corporate" hai toh API ka slug ignore karke apna slug use karo
+          const isCorporate = `${label ?? ""} ${apiSlug ?? ""}`
+            .toLowerCase()
+            .includes("corporate");
+          const slug = isCorporate ? CORPORATE_SLUG : apiSlug;
 
           // Icon ab index se nahi, naam/slug se decide hoga
-          const Icon = getIconForOccasion(label, slug);
+          const Icon = getIconForOccasion(label, apiSlug);
 
           // react-icons filled hote hain, isliye pumpkin pe strokeWidth nahi lagate
           const strokeProps =

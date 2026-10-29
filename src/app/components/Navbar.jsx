@@ -11,6 +11,8 @@ import {
   FileText,
   LogOut,
   ChevronDown,
+  Handshake,
+  Box,
 } from "lucide-react";
 import SearchBar from "./navcomponents/SearchBar";
 import { useUser, useLogout } from "@/app/api/hooks/useAuth";
@@ -161,17 +163,31 @@ const Navbar = () => {
           )}
         </Link>
 
-        {/* Bulk Orders Form Button */}
-        <a
-          download={true}
-          href="/bulk-order-form.xlsx"
-          className="flex items-center gap-2 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-sm font-semibold px-3 md:px-4 py-3 hover:rounded-md whitespace-nowrap transition-colors"
-        >
-          <Download size={16} />
-          <span className="hidden md:inline font-sarabun">
-            BULK ORDERS FORM
-          </span>
-        </a>
+        {/* Corporate Inquiry + Bulk Orders buttons (dono same color, corporate pehle) */}
+        <div className="flex items-center gap-2">
+          {/* Corporate Inquiry Button - ab pehle aata hai, same filled style */}
+          <Link
+            href="/corporate"
+            className="flex items-center gap-1.5 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-xs font-semibold px-2.5 md:px-3 py-2 hover:rounded-md whitespace-nowrap transition-colors"
+          >
+         <Box size={16} strokeWidth={2.25} />
+            <span className="hidden md:inline font-sarabun">
+              ONLINE BULK ORDER
+            </span>
+          </Link>
+
+          {/* Bulk Orders Form Button - icon ab text ke right me hai */}
+          <a
+            download={true}
+            href="/bulk-order-form.xlsx"
+            className="flex items-center gap-1.5 bg-[#98022e] hover:bg-[#7e1a3c] text-white text-xs font-semibold px-2.5 md:px-3 py-2 hover:rounded-md whitespace-nowrap transition-colors"
+          >
+            <span className="hidden md:inline font-sarabun">
+              BULK ORDERS FORM
+            </span>
+            <Download size={14} />
+          </a>
+        </div>
       </div>
     </div>
   );
