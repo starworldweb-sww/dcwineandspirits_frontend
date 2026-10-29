@@ -55,17 +55,18 @@ const StepCard = ({ icon: Icon, title, text, number }) => (
 );
 
 const CorporateBulkOrderOnPage = () => {
-  // CHANGE 2: accordion khula hai ya band (false = band se start hoga)
-  // Page khulte hi form khula chahiye toh useState(true) kar do
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   return (
     // STEP 4: Grey section background (screenshot jaisa)
-    <section className="w-full bg-[#eeeeee] px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
+    <section className="w-full bg-white px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
       {/* STEP 5: Heading + maroon underline */}
       <div className="mb-6 md:mb-8">
         <h2 className="font-sarabun text-3xl font-semibold text-[#1c1f22] md:text-[40px]">
           Bulk Ordering, Made Simple
+          <span className="ml-2 text-[16px] lg:text-[22px] text-[#98022e]">
+            (By online form)
+          </span>
         </h2>
         <div className="mt-3 h-[3px] w-20" style={{ backgroundColor: MAROON }} />
         <p className="mt-4 max-w-3xl text-sm text-gray-600 md:text-base">
@@ -77,24 +78,24 @@ const CorporateBulkOrderOnPage = () => {
       {/* CHANGE 3: STEP 6 - Accordion (header bar + collapsible body) */}
       <div className="border border-gray-200 bg-white">
         {/* 6a: Clickable header bar */}
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-          aria-controls="bulk-order-panel"
-          className="flex w-full cursor-pointer items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-[#eeeeee]"
-        >
-          <span className="text-[15px] font-semibold uppercase tracking-wide text-[#1c1f22] md:text-base">
-            Place Your Bulk Order
-          </span>
-          {/* Arrow: khulne par 180 degree ghoomta hai */}
-          <TbChevronDown
-            size={22}
-            className={`shrink-0 text-[#98022e] transition-transform duration-300 ${
-              open ? "rotate-180" : ""
-            }`}
-          />
-        </button>
+    <button
+  type="button"
+  onClick={() => setOpen((prev) => !prev)}
+  aria-expanded={open}
+  aria-controls="bulk-order-panel"
+  className="flex w-full cursor-pointer items-center justify-between gap-3 bg-[#98022e] px-5 py-4 text-left text-white transition-colors hover:bg-[#7a0225]"
+>
+  <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold uppercase tracking-wide md:text-base">
+    Place Your Bulk Order
+    
+  </span>
+  <TbChevronDown
+    size={22}
+    className={`shrink-0 text-white transition-transform duration-300 ${
+      open ? "rotate-180" : ""
+    }`}
+  />
+</button>
 
         {/* 6b: Collapsible body (grid-rows trick se smooth open/close) */}
         <div
@@ -109,11 +110,7 @@ const CorporateBulkOrderOnPage = () => {
           <div className={`overflow-hidden ${open ? "visible" : "invisible"}`}>
             <div className="border-t border-gray-200 bg-[#eeeeee] p-3 sm:p-5">
               {/* How it works (3 equal cards) */}
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
-                {STEPS.map((step, index) => (
-                  <StepCard key={step.title} {...step} number={index + 1} />
-                ))}
-              </div>
+             
 
               {/* Actual form (white card) */}
               <div className="mt-4 border border-gray-200 bg-white p-4 text-[#1c1f22] [color-scheme:light] sm:p-6 md:mt-6">

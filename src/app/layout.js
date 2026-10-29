@@ -166,7 +166,7 @@ export default async function RootLayout({ children }) {
         {/* End Google Tag Manager (noscript) */}
 
         <Provider>
-           <HalloweenBatsSwarm/> 
+       
           <GoToTopButton />
           <AgeVerificationGate />
           <PhoneHeader />

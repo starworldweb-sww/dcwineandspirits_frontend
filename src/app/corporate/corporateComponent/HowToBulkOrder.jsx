@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiDownload, FiMail, FiInfo, FiX } from "react-icons/fi";
+import { FiDownload, FiMail, FiInfo, FiX, FiSend } from "react-icons/fi";
+import { TbFileDownload, TbClipboardText, TbSend } from "react-icons/tb";
+import BulkSubmitPopUp from "./BulkSumbitPopUp";
 
-// DC Wine & Spirits brand colours
 const MAROON = "#98022e";
 const GOLD = "#c99000";
 
 const EMAIL = "contact@dcwineandspirits.com";
 
-// Steps data: change the text here only.
-// info = content shown in the modal, action = icon/button for download or email
+// Steps data: edit text here only
 const STEPS = [
   {
     title: "Download the Form",
     description: "Download our bulk order form (Excel file).",
+    icon: TbFileDownload,
     info: {
       title: "Download the Form",
       intro: "Download our bulk order form, which is an Excel file.",
@@ -32,6 +33,7 @@ const STEPS = [
   {
     title: "Fill in the Details",
     description: "Add product names, quantities and delivery address.",
+    icon: TbClipboardText,
     info: {
       title: "Fill in the Details",
       intro: "Fill in the following details in the form:",
@@ -49,7 +51,9 @@ const STEPS = [
   },
   {
     title: "Submit the Form",
-    description: "Upload the completed form and our team will contact you.",
+    description:
+      "Email the completed form to us, or upload it here, and our team will contact you.",
+    icon: TbSend,
     info: {
       title: "Submit the Form",
       intro: `Email the filled form to ${EMAIL}, or submit it using the Submit Bulk Order Form button on this page.`,
@@ -62,31 +66,30 @@ const STEPS = [
       label: "Email the completed form",
       buttonText: "Email Us",
     },
+    // Optional second button that opens the popup
+    popupButton: {
+      label: "Submit the completed form here",
+      buttonText: "Submit Here",
+    },
   },
 ];
 
-// Shared style for the small round icon buttons under each step
+// Small round icon button (info)
 const iconBtnClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[#98022e] no-underline transition-colors duration-300 hover:bg-[#98022e] hover:text-white cursor-pointer bg-transparent p-0";
 
+// Text buttons (maroon bg is set inline)
+const textBtnBase =
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border-0 px-4 py-2 text-xs font-semibold tracking-wide no-underline transition-colors cursor-pointer";
+const emailBtnClass = `${textBtnBase} text-white hover:bg-[#7a0225]`;
+const submitBtnClass = `${textBtnBase} bg-[#d1d1d1] text-black hover:bg-[#c2c2c2]`;
+
 export default function HowToBulkOrder() {
-  // activeStep: 0, 1, 2 = current step | 3 = all steps completed
-  const [activeStep, setActiveStep] = useState(0);
-
-  // openInfo: index of the step whose modal is open (null = closed)
+  // Index of the step whose modal is open (null = closed)
   const [openInfo, setOpenInfo] = useState(null);
+  const [showBulkPopup, setShowBulkPopup] = useState(false);
 
-  // Move to the next step every 2.2 seconds, loop back to 0 at the end
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev >= STEPS.length ? 0 : prev + 1));
-    }, 2200);
-    return () => clearInterval(timer);
-  }, []);
-
-  // While the modal is open:
-  // - close on Escape
-  // - lock page scroll without layout shift (scrollbar width is compensated with padding)
+  // While modal is open: close on Escape and lock page scroll
   useEffect(() => {
     if (openInfo === null) return;
 
@@ -115,180 +118,110 @@ export default function HowToBulkOrder() {
   const openStep = openInfo !== null ? STEPS[openInfo] : null;
   const activeInfo = openStep ? openStep.info : null;
   const modalAction = openStep ? openStep.action : null;
+  const modalPopupButton = openStep ? openStep.popupButton : null;
 
   return (
-    <section className="bg-white py-10 md:py-14 px-3 2xl:px-32 font-hind-madurai">
-      {/* Animation keyframes for this component */}
+    <section className="bg-[#eeeeee] py-10 md:py-14 px-3 2xl:px-32 font-hind-madurai">
       <style>{`
-        @keyframes bulkPulse {
-          0%   { box-shadow: 0 0 0 0 rgba(201,144,0,0.45); }
-          70%  { box-shadow: 0 0 0 14px rgba(201,144,0,0); }
-          100% { box-shadow: 0 0 0 0 rgba(201,144,0,0); }
-        }
-        @keyframes bulkPop {
-          0%   { transform: scale(0); }
-          60%  { transform: scale(1.25); }
-          100% { transform: scale(1); }
-        }
         @keyframes bulkModalIn {
           0%   { opacity: 0; transform: translateY(12px) scale(0.97); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .bulk-pulse { animation: bulkPulse 1.6s ease-out infinite; }
-        .bulk-pop   { animation: bulkPop 0.4s ease-out; }
         .bulk-modal { animation: bulkModalIn 0.25s ease-out; }
         @media (prefers-reduced-motion: reduce) {
-          .bulk-pulse, .bulk-pop, .bulk-modal { animation: none; }
+          .bulk-modal { animation: none; }
         }
       `}</style>
 
       {/* Heading */}
-      <div className="text-center mb-8 md:mb-10">
-        <h2
-          className="text-2xl md:text-[32px] font-bold mb-2"
-          style={{ fontFamily: "'Sumana', serif", color: MAROON }}
-        >
+      <div className="mb-6 md:mb-8">
+        <h2 className="font-sarabun text-3xl font-semibold text-[#1c1f22] md:text-[40px]">
           How to Place a Bulk Order
+          <span className="ml-1 text-[16px] lg:text-[22px] text-[#98022e]">
+            (By excel form)
+          </span>
         </h2>
+        <div className="mt-3 h-[3px] w-20" style={{ backgroundColor: MAROON }} />
       </div>
 
-      {/* Stepper wrapper: vertical on mobile, horizontal on desktop */}
-      <div className="max-w-[420px] md:max-w-[900px] mx-auto flex flex-col md:flex-row">
+      {/* Step cards */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
         {STEPS.map((step, index) => {
-          const isCompleted = index < activeStep;
-          const isActive = index === activeStep;
-          const isLast = index === STEPS.length - 1;
+          const Icon = step.icon;
 
           return (
-            // Single step: circle on the left (mobile) or on top (desktop)
             <div
               key={step.title}
-              className="relative flex gap-4 min-h-[96px] md:flex-col md:items-center md:gap-0 md:flex-1 md:min-h-0"
+              className="flex h-full flex-col border border-gray-200 bg-white p-4"
             >
-              {/* Circle + vertical line (mobile only) */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={`relative z-10 w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-base font-bold border-2 transition-colors duration-500 ${
-                    isActive ? "bulk-pulse" : ""
-                  }`}
-                  style={{
-                    backgroundColor: isCompleted ? MAROON : "#ffffff",
-                    borderColor: isCompleted
-                      ? MAROON
-                      : isActive
-                      ? GOLD
-                      : "#dddddd",
-                    color: isActive ? GOLD : "#aaaaaa",
-                  }}
-                >
-                  {isCompleted ? (
-                    // Tick mark with pop animation
-                    <svg
-                      className="bulk-pop"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#ffffff"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-
-                {/* Vertical connector line (mobile only) */}
-                {!isLast && (
-                  <div className="md:hidden relative w-[3px] flex-1 my-1 rounded-full overflow-hidden bg-[#e5e5e5]">
-                    <div
-                      className="absolute top-0 left-0 w-full transition-all duration-700 ease-in-out"
-                      style={{
-                        height: isCompleted ? "100%" : "0%",
-                        backgroundColor: MAROON,
-                      }}
-                    />
-                  </div>
-                )}
+              <div className="flex h-24 items-center justify-center border border-gray-200 bg-white text-[#98022e]">
+                <Icon size={40} />
               </div>
 
-              {/* Horizontal connector line (desktop only):
-                  runs from the center of this circle to the center of the next one */}
-              {!isLast && (
-                <div className="hidden md:block absolute top-[20px] left-1/2 w-full h-[3px] rounded-full overflow-hidden bg-[#e5e5e5]">
-                  <div
-                    className="absolute top-0 left-0 h-full transition-all duration-700 ease-in-out"
-                    style={{
-                      width: isCompleted ? "100%" : "0%",
-                      backgroundColor: MAROON,
-                    }}
-                  />
-                </div>
-              )}
+              <p className="mt-4 text-lg font-bold text-[#98022e]">
+                Step {index + 1}
+              </p>
 
-              {/* Text + icon buttons: left aligned on mobile, centered on desktop */}
-              <div className="pt-1.5 pb-6 md:pt-4 md:pb-0 md:px-4 md:w-full md:text-center">
-                <h3
-                  className="text-lg font-bold leading-tight transition-colors duration-500"
-                  style={{
-                    fontFamily: "'Sumana', serif",
-                    color: isActive || isCompleted ? "#1c1f22" : "#aaaaaa",
-                  }}
-                >
-                  {step.title}
-                </h3>
+              <h3 className="mt-1 text-[15px] font-medium uppercase tracking-wide text-[#1c1f22]">
+                {step.title}
+              </h3>
 
-                {/* Fixed min height keeps the icons aligned across all steps */}
-                <p
-                  className="text-sm mt-0.5 md:min-h-[44px] transition-colors duration-500"
-                  style={{ color: isActive ? GOLD : "#888888" }}
-                >
-                  {step.description}
-                </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                {step.description}
+              </p>
 
-                <div className="mt-2 flex items-center gap-2 md:justify-center">
-                  {/* Action icon: download or email */}
-                  {step.action && (
-                    <a
-                      href={step.action.href}
-                      {...(step.action.type === "download"
-                        ? { download: step.action.fileName }
-                        : {})}
-                      aria-label={step.action.label}
-                      title={step.action.label}
-                      className={iconBtnClass}
-                      style={{ borderColor: MAROON }}
-                    >
-                      {step.action.type === "download" ? (
-                        <FiDownload size={15} />
-                      ) : (
-                        <FiMail size={15} />
-                      )}
-                    </a>
-                  )}
+              {/* Buttons row (mt-auto keeps it at the bottom) */}
+              <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
+                {step.action && (
+                  <a
+                    href={step.action.href}
+                    {...(step.action.type === "download"
+                      ? { download: step.action.fileName }
+                      : {})}
+                    aria-label={step.action.label}
+                    title={step.action.label}
+                    className={emailBtnClass}
+                    style={{ backgroundColor: MAROON }}
+                  >
+                    {step.action.type === "download" ? (
+                      <FiDownload size={14} />
+                    ) : (
+                      <FiMail size={14} />
+                    )}
+                    {step.action.buttonText}
+                  </a>
+                )}
 
-                  {/* Info icon: opens the modal */}
+                {step.popupButton && (
                   <button
                     type="button"
-                    onClick={() => setOpenInfo(index)}
-                    aria-label={`More info: ${step.title}`}
-                    title="More info"
-                    className={iconBtnClass}
-                    style={{ borderColor: MAROON }}
+                    onClick={() => setShowBulkPopup(true)}
+                    aria-label={step.popupButton.label}
+                    title={step.popupButton.label}
+                    className={submitBtnClass}
                   >
-                    <FiInfo size={15} />
+                    <FiSend size={14} />
+                    {step.popupButton.buttonText}
                   </button>
-                </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setOpenInfo(index)}
+                  aria-label={`More info: ${step.title}`}
+                  title="More info"
+                  className={iconBtnClass}
+                  style={{ borderColor: MAROON }}
+                >
+                  <FiInfo size={15} />
+                </button>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Info modal: closes on backdrop click, X button or Escape */}
+      {/* Info modal */}
       {activeInfo && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4"
@@ -301,7 +234,6 @@ export default function HowToBulkOrder() {
             onClick={(e) => e.stopPropagation()}
             className="bulk-modal relative w-full max-w-[480px] rounded-xl bg-white px-6 py-8 shadow-2xl md:px-8"
           >
-            {/* Close button */}
             <button
               type="button"
               onClick={() => setOpenInfo(null)}
@@ -311,7 +243,6 @@ export default function HowToBulkOrder() {
               <FiX size={16} />
             </button>
 
-            {/* Modal heading + small gold line */}
             <h3
               className="mb-3 pr-8 text-xl font-bold text-black md:text-2xl"
               style={{ fontFamily: "'Sumana', serif" }}
@@ -323,12 +254,10 @@ export default function HowToBulkOrder() {
               style={{ backgroundColor: GOLD }}
             />
 
-            {/* Intro text */}
             <p className="text-sm leading-relaxed text-[#1c1f22] md:text-base">
               {activeInfo.intro}
             </p>
 
-            {/* Bullet list (only if the step has list items) */}
             {activeInfo.list.length > 0 && (
               <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm text-[#111] md:text-base">
                 {activeInfo.list.map((item) => (
@@ -343,34 +272,57 @@ export default function HowToBulkOrder() {
               </ul>
             )}
 
-            {/* Small note (only if the step has a note) */}
             {activeInfo.note && (
               <p className="mt-4 text-xs leading-relaxed text-[#444] md:text-sm">
                 {activeInfo.note}
               </p>
             )}
 
-            {/* Action button inside the modal (download / email) */}
-            {modalAction && (
-              <a
-                href={modalAction.href}
-                {...(modalAction.type === "download"
-                  ? { download: modalAction.fileName }
-                  : {})}
-                className="mt-6 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide text-white no-underline transition-colors hover:bg-[#7a0225]"
-                style={{ backgroundColor: MAROON }}
-              >
-                {modalAction.type === "download" ? (
-                  <FiDownload size={15} />
-                ) : (
-                  <FiMail size={15} />
+            {(modalAction || modalPopupButton) && (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {modalAction && (
+                  <a
+                    href={modalAction.href}
+                    {...(modalAction.type === "download"
+                      ? { download: modalAction.fileName }
+                      : {})}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold tracking-wide text-white no-underline transition-colors hover:bg-[#7a0225]"
+                    style={{ backgroundColor: MAROON }}
+                  >
+                    {modalAction.type === "download" ? (
+                      <FiDownload size={15} />
+                    ) : (
+                      <FiMail size={15} />
+                    )}
+                    {modalAction.buttonText}
+                  </a>
                 )}
-                {modalAction.buttonText}
-              </a>
+
+                {/* Closes the modal, then opens the popup */}
+                {modalPopupButton && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenInfo(null);
+                      setShowBulkPopup(true);
+                    }}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 border-0 bg-[#d1d1d1] px-6 py-3 text-sm font-semibold tracking-wide text-black transition-colors hover:bg-[#c2c2c2]"
+                  >
+                    <FiSend size={15} />
+                    {modalPopupButton.buttonText}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Bulk order popup */}
+      <BulkSubmitPopUp
+        open={showBulkPopup}
+        onClose={() => setShowBulkPopup(false)}
+      />
     </section>
   );
 }

@@ -169,17 +169,7 @@ const decodeAndStrip = (str) => {
       },
     },
 
-    // 🔹 Related Products mapping (Clean Lightweight Objects - No nested offers)
-    ...(product?.related_products?.length && {
-      isRelatedTo: product.related_products
-        .filter((p) => p?.name && p?.seo_url)
-        .map((p) => ({
-          "@type": "Product",
-          name: decodeHtml(p.name),
-          url: `https://www.dcwineandspirits.com/${p.seo_url}/`,
-          ...(p.image && { image: safeUrl(p.image) }),
-        })),
-    }),
+ 
 
     // 🔹 Aggregate Rating
     ...(hasAggregateRating && {

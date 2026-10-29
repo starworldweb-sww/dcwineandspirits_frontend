@@ -24,18 +24,23 @@ export async function generateMetadata({ params }) {
 
   if (meta) {
     try {
-      // limit 1 — hume sirf category ki image chahiye, poori list nahi
       categoryData = await productsService.getProductBySlugOrId(slug, {}, 1, 1);
-
-    
-    } catch (e) {
+      } catch (e) {
       console.error("Category OG image fetch failed:", e.message);
     }
+  
   }
 
-  if (!meta) {
-    meta = await getMetaByType("manufacturer", slug);
+if (!meta) {
+  meta = await getMetaByType("manufacturer", slug);
+  if (meta) {
+    try {
+      categoryData = await productsService.getProductBySlugOrId(slug, {}, 1, 1);
+    } catch (e) {
+      console.error("Manufacturer OG image fetch failed:", e.message);
+    }
   }
+}
 
   let productData = null;
 
@@ -55,9 +60,13 @@ export async function generateMetadata({ params }) {
     notFound();
   }
 
+   console.log("category data", categoryData)
+
   const rawImage = productData?.image || categoryData?.image || meta?.image;
 
   const ogImage = rawImage ? `${IMAGE_BASE_URL}${rawImage}` : FALLBACK_IMAGE;
+
+  console.log("ogImage", ogImage)
 
 
   return {
@@ -115,9 +124,11 @@ export default async function ProductsSlugPage({ params }) {
   const currentPage =
     Number(cookieStore.get(`current_page_${slug}`)?.value) || 1;
   let meta = await getMetaByType("category", slug);
+ 
 
   if (!meta) {
     meta = await getMetaByType("manufacturer", slug);
+    
   }
 
   const productMeta = await getMetaByType("product", slug);
@@ -198,6 +209,9 @@ export default async function ProductsSlugPage({ params }) {
       productsService.getProductBySlugOrId(slug, filter, p, limit),
     ),
   );
+
+
+  console.log("pagesData", pagesData)
 
   queryClient.setQueryData(queryKey, {
     pages: pagesData,

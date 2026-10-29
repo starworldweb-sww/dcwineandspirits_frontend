@@ -2,7 +2,7 @@ import React from 'react';
 import BrandsClient from './BrandsClient';
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/libs/get-query-client";
-import { productsService } from "../api/services/productsService"; // path apne project ke hisaab se confirm kar lena
+import { productsService } from "../api/services/productsService"; 
 import { manufacturerKeys } from "@/libs/queryKeys";
 
 export const metadata = {

@@ -318,15 +318,19 @@ export default function CorporateClient() {
     </div>
   </div>
 </section>
+<HowToBulkOrder/>
 <CorporateBulkOrderOnPage/>
 {/* <BulkOrderForm/>       */}
+
+
 <CorporateProducts/>
-<HowToBulkOrder/>
+<EngravedBottles/>
+<CorporateCategories/>
 <CorporateReasons />
 <CorporateBrands/>
-<CorporateCategories/>
+
 <LaptopComponent />
-<EngravedBottles/>
+
 <CorporateSupport/>
 <CorporateNow/>
 <CorporateContactForm/>

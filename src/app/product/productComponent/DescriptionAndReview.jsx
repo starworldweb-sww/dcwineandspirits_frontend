@@ -173,6 +173,39 @@ const DescriptionAndReview = ({ product = {} }) => {
     );
   };
 
+
+
+  // "Write a review" click par: reviews tab/accordion open karo, phir scroll karo
+useEffect(() => {
+  const handleOpenReviews = () => {
+    // lg (1024px) se upar desktop tabs dikhte hain, neeche accordion
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+
+    if (isDesktop) {
+      setActiveTab("reviews");
+    } else {
+      setOpenAccordions((prev) =>
+        prev.includes("reviews") ? prev : [...prev, "reviews"],
+      );
+    }
+
+    // Thoda ruko taaki section render ho jaye (mobile accordion animation 300ms ka hai)
+    setTimeout(
+      () => {
+        const el = document.getElementById(
+          isDesktop ? "product-review-section" : "product-review-section-mobile",
+        );
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+      isDesktop ? 100 : 350,
+    );
+  };
+
+  window.addEventListener("open-review-section", handleOpenReviews);
+  return () =>
+    window.removeEventListener("open-review-section", handleOpenReviews);
+}, []);
+
   const [rating, setRating] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);

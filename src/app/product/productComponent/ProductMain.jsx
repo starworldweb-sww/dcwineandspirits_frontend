@@ -287,10 +287,9 @@ export default function ProductMain({ product }) {
     }
   };
 
-  const handleWriteReviewClick = () => {
-    const reviewSection = document.getElementById("product-review-section");
-    if (reviewSection) reviewSection.scrollIntoView({ behavior: "smooth" });
-  };
+ const handleWriteReviewClick = () => {
+  window.dispatchEvent(new CustomEvent("open-review-section"));
+};
 
   useEffect(() => {
     if (product?.product_id) {
