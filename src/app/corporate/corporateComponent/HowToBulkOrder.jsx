@@ -136,9 +136,9 @@ export default function HowToBulkOrder() {
       {/* Heading */}
       <div className="mb-6 md:mb-8">
         <h2 className="font-sarabun text-3xl font-semibold text-[#1c1f22] md:text-[40px]">
-          How to Place a Bulk Order
+          Place a Bulk Order
           <span className="ml-1 text-[16px] lg:text-[22px] text-[#98022e]">
-            (By excel form)
+            (By excel form / Manual Way)
           </span>
         </h2>
         <div className="mt-3 h-[3px] w-20" style={{ backgroundColor: MAROON }} />

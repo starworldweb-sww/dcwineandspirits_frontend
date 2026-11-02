@@ -20,7 +20,6 @@ import ProductViewTabs from "./components/ProductViewsTabs";
 import AgeVerificationGate from "./components/AgeVerification";
 import OfflineBanner from "./components/OfflineBanner";
 import { generateOnlineStoreSchema } from "@/libs/onlineStoreSchema";
-import HalloweenBatsSwarm from "./components/HalloweenBatsSwarm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

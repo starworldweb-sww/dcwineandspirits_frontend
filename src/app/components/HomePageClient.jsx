@@ -15,7 +15,6 @@ import WhyChooseUs from "./WhyChooseUs";
 import ExperimentalComponent from "./ExperimentalComponent";
 import LoveBanner from "./LoveBanner";
 import SeasonalComponent from "./SeasonalComponent";
-import HalloweenBatsSwarm from "./HalloweenBatsSwarm";
 
 
 
@@ -34,7 +33,6 @@ const HomePageClient = () => {
     <>
     <main id="main-content">
       <div className="bg-white">
-        <HalloweenBatsSwarm/> 
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
         <ExperimentalComponent/>

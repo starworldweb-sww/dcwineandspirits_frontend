@@ -26,7 +26,7 @@
 //     enabled: enabled && !!search?.trim(),
 //     placeholderData: keepPreviousData, // smooth pagination, purana data dikhta rehta hai jab tak naya na aaye
 //     staleTime: 1000 * 60, // 1 min — apni zarurat ke hisaab se adjust karo
-//   });
+//   })
 // };
 
 

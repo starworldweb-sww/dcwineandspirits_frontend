@@ -8,12 +8,13 @@ import {
   TbLoader2,
   TbCheck,
   TbClipboardText,
-  TbFileSpreadsheet,
 } from "react-icons/tb";
 import { toast } from "sonner";
 import { useCreateBulkOrder } from "@/app/api/hooks/bulkorderr/useCreateBulkOrder";
 import { useUser } from "@/app/api/hooks/useAuth";
-import { useSearchResults } from "@/app/api/hooks/useSearchResults"; // path apne hooks file ke hisaab se adjust karna
+import { useSearchResults } from "@/app/api/hooks/useSearchResults"; 
+import ExportBulkOrderButton from "@/app/components/ExportOrdersButtonFile";
+// 👇 NEW: export button ka alag component (apna actual path daalo)
 
 /* -------------------------------------------------------------------------- */
 /*  Constants                                                                 */
@@ -22,51 +23,13 @@ import { useSearchResults } from "@/app/api/hooks/useSearchResults"; // path apn
 const MAX_ROWS = 100;
 const START_ROWS = 5;
 
-// Excel template (put bulk-order-form.xlsx inside /public).
-// IMPORTANT: change the cell addresses below to match your real template.
-const TEMPLATE = {
-  url: "/bulk-order-form.xlsx",
-  sheetIndex: 0,
-  fileName: "bulk_order.xlsx",
-  firstRow: 12, // first recipient row in the template
-  // Customer block cells
-  customer: {
-    name: "C4",
-    email: "C5",
-    mobile: "C6",
-    company: "C7",
-    billing: "C8",
-  },
-  instructions: "C9",
-  // Logo / image shown in the exported file (put it in /public).
-  // tl = top-left cell (0-based col/row), ext = size in pixels. Set logo: null to skip.
-  logo: {
-    url: "/logo.png",
-    extension: "png", // "png" or "jpeg"
-    tl: { col: 0, row: 0 },
-    ext: { width: 180, height: 60 },
-  },
-  // Column widths (characters). Make bigger if text still looks cramped.
-  colWidths: { A: 8, B: 26, C: 48, D: 18, E: 34, F: 34, G: 28 },
-  // Recipients grid columns
-  cols: {
-    srNo: "A",
-    recipient: "B",
-    address: "C",
-    mobile: "D",
-    product: "E",
-    mpn: null, // SKU / MPN ka column letter (jaise "F"). Template mein column nahi hai to null rehne do
-    message: "F",
-    remarks: "G",
-  },
-};
-
 // Same column order as bulk-order-form.xlsx, so pasted Excel rows line up
 const ROW_FIELDS = [
   "recipient",
   "address",
   "mobile",
   "product",
+  "model",
   "message",
   "remarks",
 ];
@@ -76,7 +39,7 @@ const COLUMNS = [
   { key: "address", label: "Shipping Address", required: true, w: "min-w-[16rem]", multiline: true },
   { key: "mobile", label: "Mobile No.", w: "min-w-[9rem]" },
   { key: "product", label: "Product Name or Item Code", required: true, w: "min-w-[12rem]" },
-  { key: "mpn", label: "SKU / MPN", w: "min-w-[9rem]" }, // product pick karne par auto-fill hota hai
+  { key: "model", label: "Model No.", w: "min-w-[9rem]" }, // product pick karne par auto-fill hota hai
   { key: "message", label: "Message", w: "min-w-[12rem]", multiline: true },
   { key: "remarks", label: "Remarks", w: "min-w-[10rem]", multiline: true },
 ];
@@ -102,7 +65,7 @@ const emptyRow = () => ({
   address: "",
   mobile: "",
   product: "",
-  mpn: "",
+  model: "",
   message: "",
   remarks: "",
 });
@@ -144,8 +107,8 @@ const cleanText = (v) =>
     .replace(/&(amp|lt|gt|quot|apos|#0?39);/g, (_, e) => HTML_ENTITIES[e])
     .trim();
 
-// Product pick hone par uski SKU / MPN yahan se fetch hoti hai (jab search result mein na ho).
-// { success, data: { sku, mpn, ... } } maana gaya hai. Auth header lagta ho to yahin add karo.
+// Product pick hone par uska model no. yahan se fetch hota hai (jab search result mein na ho).
+// { success, data: { model, ... } } maana gaya hai. Auth header lagta ho to yahin add karo.
 const PRODUCT_DETAIL_URL = (id) => `${process.env.NEXT_PUBLIC_BACKEDN_URL}/products/single-product/${id}`;
 
 async function fetchProductDetail(id) {
@@ -196,10 +159,6 @@ function parseTSV(text) {
   return rows;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Validation                                                                */
-/* -------------------------------------------------------------------------- */
-
 function validate(v) {
   let errors = {};
   const add = (path, msg) => {
@@ -215,7 +174,6 @@ function validate(v) {
   else if (toPhone10(c.mobile).length < 10) add("customer.mobile", "Enter at least 10 digits.");
   if (!c.billing.trim()) add("customer.billing", "Billing address is required.");
 
-  // Recipient rows. Rows with nothing in them are skipped, same as the Excel form.
   const filled = v.rows.map((r, i) => (isFilled(r) ? i : -1)).filter((i) => i >= 0);
 
   if (filled.length === 0) {
@@ -236,9 +194,6 @@ function validate(v) {
   return errors;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Payload (what goes to the backend)                                        */
-/* -------------------------------------------------------------------------- */
 
 const buildPayload = (v) => ({
   customer: {
@@ -248,7 +203,6 @@ const buildPayload = (v) => ({
     company: v.customer.company.trim(),
     billing: v.customer.billing.trim(),
   },
-  // Filled rows only, renumbered from 1 (the Sr. No. column in the Excel form)
   rows: v.rows
     .filter(isFilled)
     .map((r, i) => ({
@@ -257,16 +211,13 @@ const buildPayload = (v) => ({
       address: r.address.trim(),
       mobile: r.mobile.trim() ? toPhone10(r.mobile) : "",
       product: r.product.trim(),
-      mpn: String(r.mpn ?? "").trim(),
+      model: String(r.model ?? "").trim(),
       message: r.message.trim(),
       remarks: r.remarks.trim(),
     })),
   instructions: v.instructions.trim(),
 });
 
-/* -------------------------------------------------------------------------- */
-/*  Small UI pieces                                                           */
-/* -------------------------------------------------------------------------- */
 
 function Field({ formik, name, label, required, className = "", multiline, ...props }) {
   const error = getIn(formik.touched, name) && getIn(formik.errors, name);
@@ -302,7 +253,6 @@ function Section({ title, hint, right, children }) {
   );
 }
 
-// A single cell in the recipients grid
 function Cell({ formik, index, col, onPaste }) {
   const name = `rows.${index}.${col.key}`;
   const error = getIn(formik.touched, name) && getIn(formik.errors, name);
@@ -313,7 +263,7 @@ function Cell({ formik, index, col, onPaste }) {
         {...formik.getFieldProps(name)}
         {...(col.multiline ? { rows: 2 } : {})}
         {...(col.key === "mobile" ? { inputMode: "tel" } : {})}
-        autoComplete="off" // keeps the browser's saved-address dropdown from covering the grid
+        autoComplete="off" 
         aria-label={`${col.label}, row ${index + 1}`}
         onPaste={(e) => onPaste(e, index, col.key)}
         className={`${inputCls} ${error ? errorInputCls : ""}`}
@@ -334,7 +284,7 @@ function ProductCell({ formik, index, col, onPaste }) {
   const [debouncedValue, setDebouncedValue] = useState(""); // typing ruk jaane ke baad ki value
   const [dropdownPos, setDropdownPos] = useState(null); // dropdown ki screen position
   const inputRef = useRef(null);
-  const lastPickedMpn = useRef(""); // auto-fill hui MPN yaad rakhne ke liye
+  const lastPickedModel = useRef(""); // auto-fill hua Model No. yaad rakhne ke liye
   const pickToken = useRef(0); // late aane wali fetch ko ignore karne ke liye
 
   // 1. Debounce: user 300ms ruke tabhi search karo
@@ -344,12 +294,20 @@ function ProductCell({ formik, index, col, onPaste }) {
   }, [typedValue]);
 
   // 2. Search hook: sirf focused cell mein, aur kam se kam 2 characters par
-  const { data } = useSearchResults({
+ const { data } = useSearchResults({
     search: debouncedValue,
     limit: 8,
     options: { enabled: isOpen && debouncedValue.length >= 2 },
   });
   const suggestions = data?.pages?.[0]?.products?.items || [];
+
+  // DEBUG: search ka data console me dekhne ke liye (kaam hone ke baad hata dena)
+  useEffect(() => {
+    if (!data) return;
+    console.log("Search raw data:", data);          // poora response (pages ke saath)
+    console.log("Suggestions items:", suggestions); // sirf products ki list
+    console.log("First item:", suggestions[0]);     // ek product ke saare fields (model, image, etc.)
+  }, [data]);
 
   // 3. Dropdown ko input ke neeche fixed position par kholo
   //    (table ka overflow-x-auto absolute dropdown ko kaat deta hai)
@@ -380,28 +338,28 @@ function ProductCell({ formik, index, col, onPaste }) {
     };
   }, [isOpen]);
 
-  // 5. Suggestion pe click karne par uska naam cell mein bhar do
-  //    Saath mein SKU / MPN bhi bhar do (agar product ke paas hai)
-  const mpnPath = `rows.${index}.mpn`;
+  // 5. Suggestion pe click karne par naam aur Model No. cell mein bhar do
+  const modelPath = `rows.${index}.model`;
   const pickSuggestion = async (item) => {
-    // Search result mein SKU / MPN ho to turant bhar do
-    const quick = cleanText(item.mpn || item.sku);
+    // Search result mein model aata hai, to turant bhar do
+    const quickModel = cleanText(item.model);
     const token = ++pickToken.current;
-    lastPickedMpn.current = quick;
+    lastPickedModel.current = quickModel;
     formik.setFieldValue(name, cleanText(item.name));
-    formik.setFieldValue(mpnPath, quick);
+    formik.setFieldValue(modelPath, quickModel);
     setIsOpen(false);
-    if (quick) return;
+    if (quickModel) return; // model mil gaya, fetch ki zaroorat nahi
 
-    // Nahi hai to product detail se fetch karo
+    // Khali ho to product detail se fetch karo
     const id = item.product_id ?? item.id;
     if (!id) return;
     const detail = await fetchProductDetail(id);
     if (token !== pickToken.current) return; // beech mein dusra product chuna ya naam badla
-    const fetched = cleanText(detail?.mpn || detail?.sku);
-    if (!fetched) return;
-    lastPickedMpn.current = fetched;
-    formik.setFieldValue(mpnPath, fetched);
+
+    const fetchedModel = cleanText(detail?.model);
+    if (!fetchedModel) return;
+    lastPickedModel.current = fetchedModel;
+    formik.setFieldValue(modelPath, fetchedModel);
   };
 
   const showDropdown =
@@ -418,11 +376,11 @@ function ProductCell({ formik, index, col, onPaste }) {
         onChange={(e) => {
           fieldProps.onChange(e);
           pickToken.current++; // chal rahi fetch ka result ab ignore hoga
-          // Product badal diya, to auto-fill hui purani MPN hata do (user ki likhi hui nahi)
-          const currentMpn = String(getIn(formik.values, mpnPath) ?? "");
-          if (lastPickedMpn.current && currentMpn === lastPickedMpn.current) {
-            formik.setFieldValue(mpnPath, "");
-            lastPickedMpn.current = "";
+          // Product badal diya, to auto-fill hua purana Model No. hata do (user ka likha hua nahi)
+          const currentModel = String(getIn(formik.values, modelPath) ?? "");
+          if (lastPickedModel.current && currentModel === lastPickedModel.current) {
+            formik.setFieldValue(modelPath, "");
+            lastPickedModel.current = "";
           }
           openDropdown();
         }}
@@ -502,7 +460,6 @@ function ProductCell({ formik, index, col, onPaste }) {
 export function BulkOrderForm({ onSubmit, onDone }) {
   const [pasteNote, setPasteNote] = useState("");
   const [done, setDone] = useState(null); // { count } after a successful submit
-  const [exporting, setExporting] = useState(false);
 
   // mutateAsync so the await / try-catch in onSubmit works
   const { mutateAsync: createBulkOrder } = useCreateBulkOrder();
@@ -540,10 +497,8 @@ export function BulkOrderForm({ onSubmit, onDone }) {
     },
   });
 
-  // Fill name, email and mobile from the profile
   const prefill = (u, onlyEmpty = true) => {
     if (!u) return;
-    // Field names depend on the profile API response, adjust if they differ
     const fullName =
       u.name || `${u.firstname || ""} ${u.lastname || ""}`.trim();
     const email = u.email || "";
@@ -604,9 +559,9 @@ export function BulkOrderForm({ onSubmit, onDone }) {
     const next = v.rows.map((r) => ({ ...r }));
     let skipped = 0;
 
-    // SKU / MPN column Excel ke order ka hissa nahi hai, isliye yahan sirf
+    // Model No. column Excel ke order ka hissa nahi hai, isliye yahan sirf
     // is column ke neeche wali cells bharte hain (har line ki pehli cell)
-    if (colKey === "mpn") {
+    if (colKey === "model") {
       grid.forEach((cells, li) => {
         const ri = rowIndex + li;
         if (ri >= MAX_ROWS) {
@@ -614,7 +569,7 @@ export function BulkOrderForm({ onSubmit, onDone }) {
           return;
         }
         while (next.length <= ri) next.push(emptyRow());
-        next[ri].mpn = cells[0] ?? "";
+        next[ri].model = cells[0] ?? "";
       });
       formik.setFieldValue("rows", next);
       setPasteNote(
@@ -654,103 +609,8 @@ export function BulkOrderForm({ onSubmit, onDone }) {
     prefill(user, false);
   };
 
-  // Fills bulk-order-form.xlsx (from /public) with the form data and downloads it
-  const handleExport = async () => {
-    const payload = buildPayload(formik.values);
-    if (payload.rows.length === 0) {
-      toast.error("Add at least one recipient before exporting.");
-      return;
-    }
-
-    setExporting(true);
-    try {
-      // Load ExcelJS only when the button is clicked
-      const mod = await import("exceljs/dist/exceljs.min.js");
-      const ExcelJS = mod.default ?? mod;
-
-      // Open the template
-      const res = await fetch(TEMPLATE.url);
-      if (!res.ok) throw new Error("Template file not found.");
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(await res.arrayBuffer());
-      const sheet = workbook.worksheets[TEMPLATE.sheetIndex];
-      if (!sheet) throw new Error("Template sheet missing.");
-
-      // Wider columns so the text is readable
-      Object.entries(TEMPLATE.colWidths).forEach(([col, width]) => {
-        sheet.getColumn(col).width = width;
-      });
-
-      // Logo / image (added again so it always shows in the exported file)
-      if (TEMPLATE.logo) {
-        try {
-          const imgRes = await fetch(TEMPLATE.logo.url);
-          if (imgRes.ok) {
-            const imageId = workbook.addImage({
-              buffer: await imgRes.arrayBuffer(),
-              extension: TEMPLATE.logo.extension,
-            });
-            sheet.addImage(imageId, {
-              tl: TEMPLATE.logo.tl,
-              ext: TEMPLATE.logo.ext,
-            });
-          }
-        } catch {
-          // A missing logo should not stop the export
-        }
-      }
-
-      // Customer block + instructions
-      const c = payload.customer;
-      Object.entries(TEMPLATE.customer).forEach(([key, addr]) => {
-        sheet.getCell(addr).value = c[key] || "";
-      });
-      sheet.getCell(TEMPLATE.instructions).value = payload.instructions;
-
-      // Recipients. Rows after the first copy its style (borders, wrap, font)
-      const styleRow = sheet.getRow(TEMPLATE.firstRow);
-      payload.rows.forEach((r, i) => {
-        const rowNo = TEMPLATE.firstRow + i;
-        const row = sheet.getRow(rowNo);
-
-        if (i > 0) {
-          styleRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            row.getCell(colNumber).style = { ...cell.style };
-          });
-        }
-
-        Object.entries(TEMPLATE.cols).forEach(([key, col]) => {
-          if (!col) return; // template mein is field ka column nahi hai
-          const value = key === "srNo" ? r.srNo : r[key];
-          const cell = sheet.getCell(`${col}${rowNo}`);
-          cell.value = value;
-          cell.alignment = {
-            ...cell.alignment,
-            wrapText: true,
-            vertical: "top",
-          };
-        });
-      });
-
-      // Download
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = TEMPLATE.fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (err) {
-      toast.error(err?.message || "Could not export the Excel file.");
-    } finally {
-      setExporting(false);
-    }
-  };
+  // 👇 CHANGED: purana handleExport yahan se hata diya.
+  // Ab export ka poora kaam <ExportBulkOrderButton /> ke andar hota hai.
 
   /* ------------------------------ Success view ----------------------------- */
   if (done) {
@@ -912,7 +772,7 @@ export function BulkOrderForm({ onSubmit, onDone }) {
         )}
       </Section>
 
-      {/* Instructions */}
+      
       <Section title="Instructions" hint="Anything we should know about this order (optional).">
         <Field formik={formik} name="instructions" label="Instructions" multiline rows={4} />
       </Section>
@@ -928,19 +788,11 @@ export function BulkOrderForm({ onSubmit, onDone }) {
           </p>
         )}
         <div className="flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={busy || exporting}
+          <ExportBulkOrderButton
+            payload={buildPayload(formik.values)}
+            disabled={busy}
             className={`${btnOutline} px-6 py-2.5`}
-          >
-            {exporting ? (
-              <TbLoader2 size={16} className="animate-spin" />
-            ) : (
-              <TbFileSpreadsheet size={16} />
-            )}
-            {exporting ? "Preparing…" : "Export to Excel"}
-          </button>
+          />
           <button type="submit" disabled={busy} className={`${btnPrimary} px-6 py-2.5`}>
             {busy && <TbLoader2 size={16} className="animate-spin" />}
             {busy

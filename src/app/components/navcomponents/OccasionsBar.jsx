@@ -65,7 +65,9 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
 
   return (
     <div className="w-full bg-[#f2f2f2] border-y border-gray-200 px-3 2xl:px-32 hidden md:block">
-      <div className="flex items-center justify-between flex-wrap gap-y-2 py-2 2xl:py-3">
+      {/* 👇 CHANGED: flex-wrap hata kar flex-nowrap + overflow-x-auto lagaya
+          (items ek hi line mein rahenge, jagah kam ho to scroll hoga, scrollbar hidden hai) */}
+      <div className="flex flex-nowrap items-center justify-between gap-x-3 overflow-x-auto py-2 2xl:py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {occasions.map((occasion, index) => {
           const active = index === 0;
           const label = occasion.title || occasion.label || occasion.heading;
@@ -89,11 +91,13 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
           return (
             <div
               key={occasion.id || label}
-              className="flex items-center pr-3 border-r border-gray-300 last:border-r-0 last:pr-0"
+              // 👇 CHANGED: shrink-0 add kiya taaki item dabe/toote nahi
+              className="flex shrink-0 items-center pr-3 border-r border-gray-300 last:border-r-0 last:pr-0"
             >
               <Link
                 href={`/${slug}`}
-                className={`flex font-sumana items-center gap-1.5 text-[14px] font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
+                // 👇 CHANGED: text-[14px] ki jagah responsive size (lg: 12px, xl: 13px, 2xl: 14px)
+                className={`flex font-sumana items-center gap-1.5 text-[12px] xl:text-[13px] 2xl:text-[14px] font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
                   active
                     ? "text-[#98022e] font-bold"
                     : "text-[#2b2b2b] font-normal hover:text-[#98022e]"

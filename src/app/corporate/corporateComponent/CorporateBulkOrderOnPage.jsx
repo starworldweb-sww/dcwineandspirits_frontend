@@ -58,14 +58,18 @@ const CorporateBulkOrderOnPage = () => {
   const [open, setOpen] = useState(true);
 
   return (
-    // STEP 4: Grey section background (screenshot jaisa)
-    <section className="w-full bg-white px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
+    // STEP 4: Section background
+    // 👇 CHANGED: plain "bg-white" ki jagah halka maroon-tint gradient + upar maroon border,
+    //            taaki ye section baaki page se alag dikhe.
+    <section className="w-full border-t-1 bg-gradient-to-b from-[#fbe9ee] via-[#fdf5f7] to-white px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
       {/* STEP 5: Heading + maroon underline */}
       <div className="mb-6 md:mb-8">
+        
+
         <h2 className="font-sarabun text-3xl font-semibold text-[#1c1f22] md:text-[40px]">
           Bulk Ordering, Made Simple
           <span className="ml-2 text-[16px] lg:text-[22px] text-[#98022e]">
-            (By online form)
+            (By online form )
           </span>
         </h2>
         <div className="mt-3 h-[3px] w-20" style={{ backgroundColor: MAROON }} />
@@ -76,8 +80,9 @@ const CorporateBulkOrderOnPage = () => {
       </div>
 
       {/* CHANGE 3: STEP 6 - Accordion (header bar + collapsible body) */}
-      <div className="border border-gray-200 bg-white">
-        {/* 6a: Clickable header bar */}
+      {/* 👇 CHANGED: shadow-xl + maroon ring add kiya, taaki box uthha hua dikhe */}
+      <div className="border border-gray-200 bg-white shadow-xl ring-2 ring-[#98022e]/20">
+       
     <button
   type="button"
   onClick={() => setOpen((prev) => !prev)}
@@ -86,6 +91,11 @@ const CorporateBulkOrderOnPage = () => {
   className="flex w-full cursor-pointer items-center justify-between gap-3 bg-[#98022e] px-5 py-4 text-left text-white transition-colors hover:bg-[#7a0225]"
 >
   <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold uppercase tracking-wide md:text-base">
+    {/* 👇 NEW: blinking dot (animate-ping) jo nazar kheenchta hai */}
+    <span className="relative flex h-2.5 w-2.5">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+    </span>
     Place Your Bulk Order
     
   </span>

@@ -40,7 +40,7 @@ export const AUTHORS = [
     name: "Editorial Team",
     title: "Editorial Team",
     bio: "The DC Wine & Spirits editorial team is a passionate group of wine experts and storytellers exploring wines from different cultures around the world. We simplify everything from tasting notes and food pairings to regions and gifting ideas through an easy, everyday lifestyle lens — making wine simple, relatable, and enjoyable for every reader, beginner or enthusiast alike.",
-    image: "/authors/dcwineEditorial.png",
+    image: "/authors/dcwin-editorial.png",
     linkedin: "https://www.linkedin.com/company/dc-wine-spirits/",
     instagram: "https://www.instagram.com/dcwineandspirits/",
   },
