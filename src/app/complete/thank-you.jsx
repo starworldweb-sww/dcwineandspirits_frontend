@@ -13,9 +13,7 @@ const OrderConfirmation = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [countdown, setCountdown] = useState(REDIRECT_SECONDS);
   const [optInData, setOptInData] = useState(null);
-  console.log("GoogleCustomerReviewsOptIn props:", {
-    optInData:optInData
-  });
+  
   useEffect(() => {
     const checkoutType = sessionStorage.getItem("checkoutType");
     const redirectPath = sessionStorage.getItem("redirectAfterThankYou") || "/";

@@ -217,6 +217,7 @@ const CheckoutClient = () => {
   const [orderError, setOrderError] = useState("");
 
   const autoUpdateTimerRef = useRef(null);
+  const orderSubmittedRef = useRef(false);
   const isCouponActive = useRef(false);
   const [email, setEmail] = useState(null)
   const [password, setPassword] = useState(null)
@@ -442,6 +443,7 @@ const CheckoutClient = () => {
         name: prod.name || "Product",
         slug: prod.slug || "#",
         model: prod.model || "",
+        mpn: prod.mpn || "",
         image: getImageUrl(prod.image),
         quantity: Number(item.quantity || 1),
         unitPrice: finalUnitPrice,
@@ -484,8 +486,7 @@ const CheckoutClient = () => {
     () => cartItems.map((i) => i.product_id).sort((a, b) => a - b),
     [cartItems]
   );
-  console.log("cart", cartItems);
-  console.log("cartProductIds", cartProductIds, effectiveCountryId, effectiveZoneId, currentPostcode)
+ 
   const { data: shippingRate, isLoading: shippingRateLoading } = useshippingRate({
     countryId: effectiveCountryId || 223,
     zoneId: effectiveZoneId,
@@ -819,6 +820,7 @@ const CheckoutClient = () => {
           product_id: item.product_id,
           name: item.name,
           model: item.model,
+          mpn: item.mpn,
           quantity: item.quantity,
           price: item.unitPrice,
           total: item.total,
@@ -862,13 +864,14 @@ const CheckoutClient = () => {
   );
 
   const triggerAutoUpdate = useCallback(() => {
-
+    if (orderSubmittedRef.current) return;
     if (!isBillingComplete || !isShippingComplete) return;
     if (!cartItems.length) return;
 
     if (autoUpdateTimerRef.current) clearTimeout(autoUpdateTimerRef.current);
 
     autoUpdateTimerRef.current = setTimeout(async () => {
+      if (orderSubmittedRef.current) return;
       try {
         const payload = buildOrderPayload();
         const result = await placeOrderMut(payload);
@@ -976,6 +979,10 @@ const CheckoutClient = () => {
       });
 
     pr.on("paymentmethod", async (event) => {
+      if (autoUpdateTimerRef.current) {
+        clearTimeout(autoUpdateTimerRef.current);
+        autoUpdateTimerRef.current = null;
+      }
       setExpressPaymentMethod(event.paymentMethod);
       setExpressPaymentType(
         event.paymentMethod.type === "card" ? "apple_pay" : event.paymentMethod.type
@@ -1032,6 +1039,7 @@ const CheckoutClient = () => {
 
 
   const handleConfirmOrder = async () => {
+    if (orderSubmittedRef.current) return;
     setOrderError("");
 
     if (!validateBilling()) return;
@@ -1059,7 +1067,12 @@ const CheckoutClient = () => {
         return;
       }
     }
-
+    if (autoUpdateTimerRef.current) {
+      clearTimeout(autoUpdateTimerRef.current);
+      autoUpdateTimerRef.current = null;
+    }
+    orderSubmittedRef.current = true;
+    let orderCompleted = false;
     setIsSubmitting(true);
 
     try {
@@ -1090,6 +1103,7 @@ const CheckoutClient = () => {
 
         if (pmError) {
           setOrderError(pmError.message);
+          setExpressPaymentMethod(null);
           setIsSubmitting(false);
           return;
         }
@@ -1098,6 +1112,7 @@ const CheckoutClient = () => {
 
       if (!pm?.id) {
         setOrderError("Payment method could not be created. Please try again.");
+        setExpressPaymentMethod(null);
         setIsSubmitting(false);
         return;
       }
@@ -1108,6 +1123,7 @@ const CheckoutClient = () => {
 
       if (!secret || !intentId) {
         setOrderError("Payment setup is not ready yet. Please wait a moment and try again.");
+        setExpressPaymentMethod(null);
         setIsSubmitting(false);
         return;
       }
@@ -1118,6 +1134,7 @@ const CheckoutClient = () => {
 
       if (confirmError) {
         setOrderError(confirmError.message);
+        setExpressPaymentMethod(null);
         setIsSubmitting(false);
         return;
       }
@@ -1184,12 +1201,14 @@ const CheckoutClient = () => {
 
       sessionStorage.setItem("checkoutType", finalCheckoutType);
       sessionStorage.setItem("redirectAfterThankYou", redirect);
-
+      orderCompleted = true;
       cartItems.forEach((item) => clearCartMut(item.cart_id));
       router.replace("/complete");
     } catch (err) {
       setOrderError(err?.message || "Something went wrong.");
+      setExpressPaymentMethod(null);
     } finally {
+      if (!orderCompleted) orderSubmittedRef.current = false;
       setIsSubmitting(false);
     }
   };

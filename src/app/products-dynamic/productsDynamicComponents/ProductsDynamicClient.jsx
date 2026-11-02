@@ -164,8 +164,7 @@ React.useEffect(() => {
 
   const isLoading = search ? searchLoading : dynamicLoading;
   const isFetching = search ? searchFetching : dynamicFetching;
-  console.log("search",search)
-  console.log("searchFetching",searchFetching)
+ 
   const isError = search ? searchError : dynamicError;
   const fetchNextPage = search ? fetchNextSearchPage : fetchNextDynamicPage;
   const hasNextPage = search ? hasNextSearchPage : hasNextDynamicPage;

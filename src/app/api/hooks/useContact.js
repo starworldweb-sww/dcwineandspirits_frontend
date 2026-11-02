@@ -33,7 +33,7 @@ export const useBulkOrder = () => {
         },
         onSuccess: (data) => {
             toast.success(data?.message)
-            console.log(data)
+            
         },
         onError: (err) => {
             toast.error(err?.response?.data?.message || "Something went wrong. Please try again.")

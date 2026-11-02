@@ -47,7 +47,7 @@ const page = async () => {
   // })
 
   const pageParams = Array.from({ length: currentPage }, (_, i) => i + 1);
-  console.log("currentPage", currentPage)
+  
   const limit = 48;
 
   const queryKey = [...productKeys.allProducts(limit)];
@@ -55,7 +55,7 @@ const page = async () => {
   const pagesData = await Promise.all(
     pageParams.map((p) => productsService.getAllProducts({ showNum: limit, pageParam: p }))
   );
-  console.log("pagesData", pagesData)
+  
 
   queryClient.setQueryData(queryKey, {
     pages: pagesData,

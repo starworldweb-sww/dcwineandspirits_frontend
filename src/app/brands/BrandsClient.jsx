@@ -58,7 +58,7 @@ function BrandCard({ brand }) {
       ? encodeURI(brand.image)
       : `${process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL || ""}${brand.image}`
     : null;
-  console.log("brand.image", brand.image);
+ 
   return (
     // 3. Poora card ab Link ke andar wrap hai, onClick ki zaroorat nahi
     <Link

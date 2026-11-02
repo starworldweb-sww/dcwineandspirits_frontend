@@ -88,7 +88,7 @@ export default function ProductMain({ product }) {
         init[key] = "";
       }
     });
-    console.log("init", init);
+    
     return init;
   }, [rawOptions]);
 
@@ -600,7 +600,7 @@ export default function ProductMain({ product }) {
                       )
                         .toLowerCase()
                         .trim();
-                      console.log("opt", opt);
+                     
                       const label = (
                         <label
                           htmlFor={`option-${key}`}
