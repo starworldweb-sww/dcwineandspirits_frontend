@@ -175,7 +175,7 @@ const Filters = ({
   const [priceOpen, setPriceOpen] = useState(true);
   const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [brandsOpen, setBrandsOpen] = useState(true);
-console.log("Filters data:", data);
+
   const closeTimeoutRef = useRef(null);
 
   useEffect(() => {

@@ -49,7 +49,7 @@ if (!meta) {
     if (meta) {
       try {
         productData = await productsService.getSingleProductDetails(slug);
-        console.log("Product data for og:", productData);
+       
       } catch (e) {
         console.error("Product OG image fetch failed:", e.message);
       }
@@ -60,13 +60,12 @@ if (!meta) {
     notFound();
   }
 
-   console.log("category data", categoryData)
-
+   
   const rawImage = productData?.image || categoryData?.image || meta?.image;
 
   const ogImage = rawImage ? `${IMAGE_BASE_URL}${rawImage}` : FALLBACK_IMAGE;
 
-  console.log("ogImage", ogImage)
+ 
 
 
   return {
@@ -211,7 +210,6 @@ export default async function ProductsSlugPage({ params }) {
   );
 
 
-  console.log("pagesData", pagesData)
 
   queryClient.setQueryData(queryKey, {
     pages: pagesData,

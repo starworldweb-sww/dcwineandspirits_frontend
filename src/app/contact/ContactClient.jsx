@@ -42,7 +42,7 @@ const ContactClient = () => {
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      console.log("values",values)
+     
        contactSubmit(values)
        resetForm()
     },

@@ -25,7 +25,7 @@ export default function GoogleCustomerReviewsOptIn({
       delivery_country: deliveryCountry,
       estimated_delivery_date: estimatedDeliveryDate,
     };
-    console.log("GCR opt-in params:", params);
+    
 
     const render = () =>
       window.gapi.load("surveyoptin", () => window.gapi.surveyoptin.render(params));

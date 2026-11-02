@@ -292,7 +292,7 @@ const AuthorPostsClient = ({ authorSlug }) => {
   // pura profile (id/name/title/bio/photo) dhoond lo — sabse pehle,
   // kyunki isi se firstname/lastname nikalenge posts fetch karne ke liye.
   const authorMeta = getAuthorBySlug(authorSlug);
-  console.log("authorSlug:", authorSlug, "authorMeta:", authorMeta);
+ 
 
   // Step 2: Naye backend route (/posts/author?firstname=..&lastname=..)
   // ko firstname/lastname chahiye, id nahi. Static "name" field
