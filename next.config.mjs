@@ -1,66 +1,24 @@
 /** @type {import('next').NextConfig} */
+
+// Repo ka naam, bilkul wahi jo URL mein hai (case-sensitive)
+const repoName = "Vlnexis-frontend";
+
+// Sirf production build mein basePath lagao, taaki localhost pe normal chale
+const isProd = process.env.NODE_ENV === "production";
+
 const nextConfig = {
-  reactCompiler: true,
+  // Static HTML export banata hai (GitHub Pages sirf static files chalata hai)
+  output: "export",
+
+  // Site /Vlnexis-frontend/ ke andar chalti hai, isliye saare links/assets ke aage ye lagega
+  basePath: isProd ? `/${repoName}` : "",
+  assetPrefix: isProd ? `/${repoName}/` : "",
+
+  // Static export mein Next ka image optimizer nahi chalta
+  images: { unoptimized: true },
+
+  // /about ki jagah /about/index.html banata hai, GitHub Pages pe refresh par 404 nahi aata
   trailingSlash: true,
-
-  images: {
-    formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-
-        {
-        protocol: "https",
-        hostname: "www.admin.dcwineandspirits.com",
-        pathname: "/image/**",
-      },
-      {
-        protocol: "https",
-        hostname: "www.dcwineandspirits.com",
-        pathname: "/**",
-      },
-    ],
-  },
-
-
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/sitemap.xml",
-          destination: "/api/sitemaps/root",
-        },
-        {
-          source: "/sitemap-pages.xml",
-          destination: "/api/sitemaps/pages",
-        },
-        {
-          source: "/sitemap-categories.xml",
-          destination: "/api/sitemaps/categories",
-        },
-        {
-          source: "/sitemap-products.xml",
-          destination: "/api/sitemaps/products",
-        },
-        {
-          source: "/sitemap-brands.xml",
-          destination: "/api/sitemaps/brands",
-        },
-        {
-          source: "/sitemap-blogs.xml",
-          destination: "/api/sitemaps/blogs",
-        },
-        // {
-        //   source: "/sitemap-information.xml",
-        //   destination: "/api/sitemaps/information",
-        // },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
-
-
-    htmlLimitedBots: /.*/,
-
 };
 
-export default nextConfig;
+export default nextConfig; // agar file next.config.js hai aur CommonJS use karte ho: module.exports = nextConfig;
