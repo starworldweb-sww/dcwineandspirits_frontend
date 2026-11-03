@@ -23,7 +23,6 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
   const slug = banner?.seo_url;
   const imageUrl = banner?.image;
   const altText = banner?.alt;
-  const titleText = banner?.title;
   const customUrl = banner?.custom_url;
   const bannerLink = slug ? `/${slug}` : customUrl || "/";
 
@@ -32,8 +31,6 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
       className="w-full lg:px-3 2xl:px-32 lg:py-4"
       aria-label="Top Banner"
     >
-      {/* The wrapper is relative so the text overlay can sit on top of the image.
-          The image link and the button link are siblings, because a link can't live inside another link. */}
       <div className="relative">
         <Link href={bannerLink} className="block">
           <Image
@@ -48,44 +45,31 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
           />
         </Link>
 
-        {/* Overlay on the left side, centered vertically.
-            pointer-events-none lets clicks on the text fall through to the image link below. */}
-        <div className="absolute inset-y-0 left-0 w-[48%] flex flex-col items-start justify-center gap-2 md:gap-4 lg:gap-5 pl-[5%] pointer-events-none">
-          
+        {/* Left side overlay: corporate message (no box) */}
+        <div className="absolute inset-y-0 left-0 w-[62%] md:w-[48%] flex items-center pl-[4%] pointer-events-none bg-gradient-to-r from-black/60 via-black/30 to-transparent">
+          <div className="flex flex-col items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
+            <p className="text-white font-bold leading-tight drop-shadow-lg text-sm sm:text-lg md:text-2xl lg:text-4xl">
+              Gifts That Build
+              <span className="block text-[#f6f6f6] shadow-white italic drop-shadow-md text-sm sm:text-lg md:text-2xl lg:text-4xl">
+                Lasting Business Bonds
+              </span>
+            </p>
 
-          {/* pointer-events-auto turns clicks back on, just for the button */}
-          
+            <p className="hidden sm:block text-[#f2f2f2] drop-shadow-md text-xs md:text-sm lg:text-base max-w-md">
+              Up to 15% off on bulk orders
+            </p>
+
+            <div className="flex items-center gap-2 md:gap-3 pointer-events-auto mt-0.5">
+              <Link
+                href="/corporate/"
+                className="hidden sm:inline-block border border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
+              >
+                Corporate Enquiry
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        /* Very light, uneven jitter so it looks like a subtle shiver */
-        @keyframes spooky-shiver {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          10% { transform: translate(-0.5px, 0.5px) rotate(-0.15deg); }
-          20% { transform: translate(0.5px, -0.5px) rotate(0.15deg); }
-          30% { transform: translate(-0.5px, -0.5px) rotate(0deg); }
-          40% { transform: translate(0.5px, 0.5px) rotate(0.15deg); }
-          50% { transform: translate(-0.5px, 0) rotate(-0.15deg); }
-          60% { transform: translate(0.5px, 0.5px) rotate(0deg); }
-          70% { transform: translate(0, -0.5px) rotate(0.15deg); }
-          80% { transform: translate(-0.5px, 0.5px) rotate(-0.15deg); }
-          90% { transform: translate(0.5px, 0) rotate(0deg); }
-        }
-
-        /* Shivers for about 3 seconds (7 runs x 0.45s) and then settles.
-           It ends exactly where it started, so there's no jump when it stops. */
-        .spooky-shiver {
-          animation: spooky-shiver 0.45s linear 7;
-        }
-
-        /* Respect users who prefer less motion */
-        @media (prefers-reduced-motion: reduce) {
-          .spooky-shiver {
-            animation: none;
-          }
-        }
-      `}</style>
     </section>
   );
 };

@@ -25,20 +25,24 @@ export const bulkOrderService = {
 
 // ---------------------------------------------------------
 // STEP 3: Hook (component mein isko call karna hai)
+// CHANGE 3: onSuccess ko options se alag nikala, taaki ...options usko override na kare
 // ---------------------------------------------------------
 export const useCreateBulkOrder = (options = {}) => {
   const queryClient = useQueryClient();
 
+  // Component ka onSuccess alag, baaki options alag
+  const { onSuccess, ...restOptions } = options;
+
   return useMutation({
     mutationKey: bulkOrderKeys.create(),
     mutationFn: bulkOrderService.createBulkOrder,
+    ...restOptions, // pehle baaki options (onError, onSettled, etc.)
     onSuccess: (...args) => {
       // Agar kabhi bulk orders ki list query banao, toh wo refresh ho jayegi
       queryClient.invalidateQueries({ queryKey: bulkOrderKeys.all });
 
       // Component se diya hua onSuccess bhi chalega
-      options.onSuccess?.(...args);
+      onSuccess?.(...args);
     },
-    ...options,
   });
 };
