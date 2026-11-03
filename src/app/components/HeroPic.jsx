@@ -62,7 +62,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
             <div className="flex items-center gap-2 md:gap-3 pointer-events-auto mt-0.5">
               <Link
                 href="/corporate/"
-                className="hidden sm:inline-block border border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
+                className=" sm:inline-block border border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
               >
                 Corporate Enquiry
               </Link>
