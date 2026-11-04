@@ -59,10 +59,11 @@ const CorporateBulkOrderOnPage = () => {
 
   return (
     // STEP 4: Section background
-    // 👇 CHANGED: plain "bg-white" ki jagah halka maroon-tint gradient + upar maroon border,
-    //            taaki ye section baaki page se alag dikhe.
-    <section className="w-full border-t-1 bg-gradient-to-b from-[#fbe9ee] via-[#fdf5f7] to-white px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
+    // 👇 CHANGED: pattern + <style> block hata diya. Background pura white,
+    //            upar 6px ki maroon border (border-t-[6px]) taaki section alag dikhe
+    <section className="w-full bg-white px-3 py-10 font-hind-madurai md:py-14 2xl:px-32">
       {/* STEP 5: Heading + maroon underline */}
+      {/* 👇 CHANGED: left side mein 4px maroon bar (border-l-4) + pl-4 gap */}
       <div className="mb-6 md:mb-8">
         
 
@@ -80,8 +81,8 @@ const CorporateBulkOrderOnPage = () => {
       </div>
 
       {/* CHANGE 3: STEP 6 - Accordion (header bar + collapsible body) */}
-      {/* 👇 CHANGED: shadow-xl + maroon ring add kiya, taaki box uthha hua dikhe */}
-      <div className="border border-gray-200 bg-white shadow-xl ring-2 ring-[#98022e]/20">
+      {/* 👇 CHANGED: ring ab pura maroon (ring-[#98022e]) + maroon glow shadow, taaki box highlight ho */}
+      <div className="border border-gray-200 bg-white shadow-[0_12px_40px_rgba(152,2,46,0.30)] ring-2 ring-[#98022e]">
        
     <button
   type="button"
@@ -91,7 +92,7 @@ const CorporateBulkOrderOnPage = () => {
   className="flex w-full cursor-pointer items-center justify-between gap-3 bg-[#98022e] px-5 py-4 text-left text-white transition-colors hover:bg-[#7a0225]"
 >
   <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold uppercase tracking-wide md:text-base">
-    {/* 👇 NEW: blinking dot (animate-ping) jo nazar kheenchta hai */}
+    {/* NEW: blinking dot (animate-ping) jo nazar kheenchta hai */}
     <span className="relative flex h-2.5 w-2.5">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
@@ -132,7 +133,7 @@ const CorporateBulkOrderOnPage = () => {
       </div>
 
       {/* STEP 7: Help bar (white card) */}
-      <div className="mt-6 flex flex-col items-center justify-between gap-3 border border-gray-200 bg-white px-5 py-4 text-sm text-[#1c1f22] sm:flex-row md:mt-8">
+      <div className="mt-6 flex flex-col items-center justify-center gap-5 border border-gray-200 bg-white px-5 py-4 text-sm text-[#1c1f22] sm:flex-row md:mt-8">
         <p className="font-medium uppercase tracking-wide">
           Need help with a large or custom order?
         </p>

@@ -50,7 +50,7 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
           <div className="flex flex-col items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
             <p className="text-white font-bold leading-tight drop-shadow-lg text-sm sm:text-lg md:text-2xl lg:text-4xl">
               Gifts That Build
-              <span className="block text-[#f6f6f6] shadow-white italic drop-shadow-md text-sm sm:text-lg md:text-2xl lg:text-4xl">
+              <span className="block font-sarabun text-[#f6f6f6] shadow-white drop-shadow-md text-sm sm:text-lg md:text-2xl lg:text-4xl">
                 Lasting Business Bonds
               </span>
             </p>
