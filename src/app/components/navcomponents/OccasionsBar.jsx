@@ -36,9 +36,6 @@ const ICON_RULES = [
 // Step 2: Koi keyword match na ho toh ye default icon dikhega
 const DEFAULT_ICON = Gift;
 
-// Corporate occasion ka slug API se nahi, hamari taraf se fixed hoga
-const CORPORATE_SLUG = "corporate/";
-
 // Step 3: Label + slug se sahi icon dhundhne wala helper function
 const getIconForOccasion = (label = "", slug = "") => {
   const searchText = `${label} ${slug}`.toLowerCase();
@@ -73,11 +70,8 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
           const label = occasion.title || occasion.label || occasion.heading;
           const apiSlug = occasion.seo_url || occasion.custom_url || occasion.href;
 
-          // Agar label/slug me "corporate" hai toh API ka slug ignore karke apna slug use karo
-          const isCorporate = `${label ?? ""} ${apiSlug ?? ""}`
-            .toLowerCase()
-            .includes("corporate");
-          const slug = isCorporate ? CORPORATE_SLUG : apiSlug;
+          // 👇 CHANGED: forced corporate slug hata diya, ab har occasion API ka slug use karta hai
+          const slug = apiSlug;
 
           // Icon ab index se nahi, naam/slug se decide hoga
           const Icon = getIconForOccasion(label, apiSlug);
