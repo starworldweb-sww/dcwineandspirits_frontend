@@ -229,3 +229,10 @@ export const reviewKeys = {
   all: ["reviews"],
   byProduct: (productId) => ["reviews", "product", productId],
 };
+
+
+
+export const testimonialKeys = {
+  all: ["testimonials"],
+  list: (page = 1, limit = 12) => [...testimonialKeys.all, "list", page, limit],
+};
