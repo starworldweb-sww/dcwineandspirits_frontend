@@ -15,6 +15,7 @@ import WhyChooseUs from "./WhyChooseUs";
 import ExperimentalComponent from "./ExperimentalComponent";
 import LoveBanner from "./LoveBanner";
 import SeasonalComponent from "./SeasonalComponent";
+import SameDayDeliveryHomepage from "./SameDayDeliveryHomepage";
 
 
 
@@ -35,20 +36,21 @@ const HomePageClient = () => {
       <div className="bg-white">
         <OccasionBar data={homeData?.occasionMenu} isLoading={isLoading} isError={isError} />
         <HeroPic data={homeData?.homeTopBanner} isLoading={isLoading} isError={isError} />
+        <SameDayDeliveryHomepage/>
+        
         <ExperimentalComponent/>
         <SeasonalComponent/> 
         <CategoryShowcase data={homeData?.topCategories} isLoading={isLoading} isError={isError} />
         <LoveBanner data={homeData?.loveBanners}/>
         <GiftsByOccasionHero
-          data={homeData?.giftByOccasion}
-          bannersData={homeData?.loveBanners}
-          isLoading={isLoading}
-          isError={isError}
+        data={homeData?.giftByOccasion}
+        bannersData={homeData?.loveBanners}
+        isLoading={isLoading}
+        isError={isError}
         />
         <HomeProductSlider data={homeData?.homePageProducts} isLoading={isLoading} isError={isError} />
         <ShopByBrand data={homeData?.shopByBrandTitle} isLoading={isLoading} isError={isError} />
         <BulkOrderBanner />
-
         <HomepageSeoSection data={homeData?.homePageText} isLoading={isLoading} isError={isError} />
         <WhyChooseUs/>
         

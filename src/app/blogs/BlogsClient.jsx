@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
-const BLOGS_PER_PAGE = 10; // API ka default limit bhi 10 hai (pagination.limit)
+const BLOGS_PER_PAGE = 10; 
 
 
 const breadcrumbs = [
@@ -106,8 +106,8 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
 
   // 7) Loading skeleton - jab tak API response nahi aata
   const SkeletonCard = () => (
-    <div className="flex flex-col md:flex-row gap-6 py-8 animate-pulse">
-      <div className="w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md bg-gray-200 shrink-0" />
+    <div className="flex flex-col md:flex-row lg:flex-col gap-6 py-8 lg:py-0 animate-pulse">
+      <div className="w-full md:w-[420px] lg:w-full h-[260px] md:h-[300px] lg:h-[240px] rounded-md bg-gray-200 shrink-0" />
       <div className="flex-1 space-y-3">
         <div className="h-4 bg-gray-200 rounded w-1/3" />
         <div className="h-6 bg-gray-200 rounded w-3/4" />
@@ -144,7 +144,7 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
         </div>
 
         {isLoading || isFetching ? (
-          <div className="flex flex-col divide-y divide-gray-200">
+          <div className="flex flex-col divide-y divide-gray-200 lg:grid lg:grid-cols-3 lg:gap-8 lg:divide-y-0">
             {[1, 2, 3].map((i) => (
               <SkeletonCard key={i} />
             ))}
@@ -156,7 +156,7 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
         ) : posts.length === 0 ? (
           <p className="text-center text-gray-500 py-10">No blog posts found.</p>
         ) : (
-          <div className="flex flex-col divide-y divide-gray-200">
+          <div className="flex flex-col divide-y divide-gray-200 lg:grid lg:grid-cols-3 lg:gap-8 lg:divide-y-0">
             {posts.map((post) => {
               const { day, month } = formatBlogDate(post.date_created);
               const authorName = [post.author_firstname, post.author_lastname]
@@ -167,19 +167,19 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
               return (
                 <article
                   key={post.post_id}
-                  className="flex flex-col md:flex-row gap-6 py-8 first:pt-0"
+                  className="flex flex-col md:flex-row lg:flex-col gap-6 py-8 lg:py-0 first:pt-0"
                 >
-                  {/* Blog Image with date badge */}
+                  
                   <Link
                     href={`/blogs/${post.slug}`}
-                    className="relative shrink-0 w-full md:w-[420px] h-[260px] md:h-[300px] rounded-md overflow-hidden bg-gray-100"
+                    className="relative shrink-0 w-full md:w-[420px] lg:w-full h-[260px] md:h-[300px] lg:h-[240px] rounded-md overflow-hidden bg-gray-100"
                   >
                     <Image
                       src={getBlogImageUrl(post.image)}
                       alt={post.title}
                       priority
                       fill
-                      sizes="(max-width: 768px) 100vw, 420px"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 420px, 33vw"
                       className="object-cover"
                     />
                     <div className="absolute top-3 left-3 bg-[#98022e] text-white text-center rounded px-2.5 py-1.5 leading-tight shadow-md">
@@ -188,8 +188,7 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
                     </div>
                   </Link>
 
-                  {/* Blog Content */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex-1 min-w-0 flex flex-col justify-center lg:justify-start">
 
                     {/* Meta row: author + reading time + views
                         Note: API "comments" field boolean hai (count nahi),
@@ -229,7 +228,7 @@ const BlogsClient = ({ initialData,initialPage=1 }) => {
                     {/* Continue Reading button */}
                     <Link
                       href={`/blogs/${post.slug}`}
-                      className="inline-flex items-center gap-2 w-fit bg-gray-900 hover:bg-[#98022e] text-white text-xs font-semibold tracking-wider uppercase px-5 py-3 rounded transition-all hover:rounded-xl group"
+                      className="inline-flex items-center gap-2 w-fit lg:mt-auto bg-gray-900 hover:bg-[#98022e] text-white text-xs font-semibold tracking-wider uppercase px-5 py-3 rounded transition-all hover:rounded-xl group"
                     >
                       Continue Reading
                       <ArrowRight size={14} className='group-hover:ml-1 transition-all' />
