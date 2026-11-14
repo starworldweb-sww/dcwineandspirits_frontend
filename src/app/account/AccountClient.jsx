@@ -15,6 +15,7 @@ import {
   Undo2,
   RefreshCcw,
   History,
+  Package,
 } from "lucide-react";
 import ProductsHeader from "../components/TittleAndBreadcrumb";
 import AccountSidebar from "../components/AccountSidebar";
@@ -42,6 +43,7 @@ const accountCards = [
 
 const orderCards = [
   { href: "/account/order", icon: ClipboardList, label: "View your order history" },
+  {href: "/account/bulk-orders", icon: Package, label: "View your bulk orders" }, 
   // { href: "/account/downloads", icon: CloudDownload, label: "Downloads" },
   // { href: "/account/rewards", icon: PiggyBank, label: "Your Reward Points" },
   // { href: "/account/return-product", icon: Undo2, label: "View your return requests" },

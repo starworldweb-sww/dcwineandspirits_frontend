@@ -24,13 +24,13 @@ const CorporateNow = () => {
           </p>
 
           <p className="mt-4 font-hind-madurai text-lg italic text-[#1c1f22] md:text-2xl">
-            Valid until 31st Oct
+            Valid until 31st Dec
           </p>
 
           <a
           download={"bulk-order-form.xlsx"}
-            href='/bulk-order-form.xlsx'
-            className="mt-8 inline-block border-b border-[#1c1f22] pb-1 text-sm uppercase tracking-[0.25em] text-[#1c1f22] transition-colors hover:border-[#7a0225] hover:text-[#7a0225]"
+          href='/bulk-order-form.xlsx'
+          className="mt-8 inline-block border-b border-[#1c1f22] pb-1 text-sm uppercase tracking-[0.25em] text-[#1c1f22] transition-colors hover:border-[#7a0225] hover:text-[#7a0225]"
           >
             Order now
           </a>
@@ -39,5 +39,4 @@ const CorporateNow = () => {
     </section>
   )
 }
-
 export default CorporateNow

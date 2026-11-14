@@ -185,7 +185,6 @@ const KEY_FEATURES = [
   { label: "Mobile App", icon: "📱" },
 ];
 
-// --- BRAND ACCENT (DC Wine & Spirits) ---
 const ACCENT = "#98022e";
 
 const breadcrumbs = [{ label: "Corporate Bulk Order", href: "/corporate" }];
@@ -240,54 +239,57 @@ export default function CorporateClient() {
         breadcrumbs={breadcrumbs}
       />
 
- {/* Mobile: stacked | Desktop: banner image as background */}
-<section className="relative flex flex-col md:flex-row md:items-center md:min-h-[440px] overflow-hidden bg-white">
-  {/* Image wrapper: normal block on mobile, absolute background on desktop */}
-  <div className="relative w-full h-[220px] md:absolute md:inset-0 md:h-full">
+
+<section className="relative flex flex-col md:flex-row md:items-center min-h-[600px] md:min-h-[440px] overflow-hidden bg-[#9c0346]">
+  {/* 2. Image ab mobile + desktop dono pe absolute background hai (pehle mobile pe alag block thi) */}
+  <div className="absolute inset-0 h-full w-full">
+    {/* 3. Mobile: object-cover, image neeche/right focus. Desktop: pehle jaisa contain + right */}
     <Image
-      src="/corporate/finalmainbanner.png"
+      src="/corporate/corporate-bulk-order.jpg"
       alt="Corporate Gifting"
       fill
       priority
       sizes="100vw"
-      className="object-contain object-center md:object-right"
+      className="object-cover object-[75%_bottom] md:object-contain md:object-right"
     />
 
-    {/* Left side white gradient (desktop only) */}
+    {/* 4. Sirf mobile (md:hidden): maroon fade, upar solid #9c0346 taaki text saaf dikhe,
+           neeche se image ki photo halki si nazar aaye. Desktop pe ye hidden hai. */}
     <div
-      className="hidden md:block absolute inset-y-0 left-0 w-[80%] pointer-events-none"
+      className="md:hidden absolute inset-0 pointer-events-none"
       style={{
         background:
-          "linear-gradient(to right, #ffffff 0%, #ffffff 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 100%)",
+          "linear-gradient(to bottom, #9c0346 0%, #9c0346 50%, rgba(156,3,70,0.75) 100%)",
       }}
     />
   </div>
 
-  <div className="relative z-10 w-full px-4 sm:px-6 2xl:px-32 py-6 md:py-10 md:max-w-[600px] font-hind-madurai text-center md:text-left">
+  {/* 5. Text container: image ke upar (z-10), mobile pe upar se start hota hai */}
+  <div className="relative z-10 w-full px-4 sm:px-6 2xl:px-32 py-8 md:py-10 md:max-w-[600px] font-hind-madurai text-center md:text-left">
     <h2
       className="text-2xl md:text-[38px] font-bold leading-tight mb-3"
       style={{ fontFamily: "'cambriaregular', Georgia, serif" }}
     >
-      <span className="text-[#1c1f22]">Corporate &amp;</span>
+      <span className="text-white">Corporate &amp;</span>
       <br />
-      <span style={{ color: ACCENT }}>Bulk Gift Orders</span>
+      <span style={{ color: "#f5d28a" }}>Bulk Gift Orders</span>
     </h2>
 
-    <p className="text-sm md:text-base max-w-[480px] mx-auto md:mx-0 text-[#666] mb-6">
+    <p className="text-sm md:text-base max-w-[480px] mx-auto md:mx-0 text-white/80 mb-6">
       Curated wine, champagne &amp; gourmet gift baskets to celebrate your
       team, clients &amp; partners.
     </p>
 
-    {/* Offer box (replaces the feature icons) */}
+    {/* Offer box */}
     <div
       className="mb-7 mx-auto md:mx-0 inline-block max-w-[440px] rounded-md border border-dashed px-5 py-3 text-center md:text-left"
-      style={{ borderColor: ACCENT }}
+      style={{ borderColor: "#f5d28a" }}
     >
-      <p className="text-lg md:text-2xl font-bold leading-tight text-[#1c1f22]">
-        Up to <span style={{ color: ACCENT }}>15% off</span> on bulk orders
+      <p className="text-lg md:text-2xl font-bold leading-tight text-white">
+        Up to <span style={{ color: "#f5d28a" }}>15% off</span> on bulk orders
       </p>
-      <p className="mt-1 text-xs md:text-sm uppercase tracking-widest text-[#98022e]">
-        Valid until 31st Oct
+      <p className="mt-1 text-xs md:text-sm uppercase tracking-widest text-white/90">
+        Valid until 31st DEC
       </p>
     </div>
 
@@ -295,13 +297,13 @@ export default function CorporateClient() {
       <a
         href="/bulk-order-form.xlsx"
         download={"bulk_order_form.xlsx"}
-        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 whitespace-nowrap text-white px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide no-underline transition-colors"
-        style={{ backgroundColor: ACCENT }}
+        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 whitespace-nowrap px-4 sm:px-6 py-3 font-semibold text-xs sm:text-sm tracking-wide no-underline transition-colors"
+        style={{ backgroundColor: "#ffffff", color: ACCENT }}
         onMouseEnter={(e) =>
-          (e.currentTarget.style.backgroundColor = "#7e1a3c")
+          (e.currentTarget.style.backgroundColor = "#f3e6ea")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.style.backgroundColor = ACCENT)
+          (e.currentTarget.style.backgroundColor = "#ffffff")
         }
       >
         <FiDownload size={15} />

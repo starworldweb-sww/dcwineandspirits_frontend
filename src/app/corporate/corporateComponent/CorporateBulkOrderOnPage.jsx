@@ -92,7 +92,6 @@ const CorporateBulkOrderOnPage = () => {
   className="flex w-full cursor-pointer items-center justify-between gap-3 bg-[#98022e] px-5 py-4 text-left text-white transition-colors hover:bg-[#7a0225]"
 >
   <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold uppercase tracking-wide md:text-base">
-    {/* NEW: blinking dot (animate-ping) jo nazar kheenchta hai */}
     <span className="relative flex h-2.5 w-2.5">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
@@ -107,8 +106,6 @@ const CorporateBulkOrderOnPage = () => {
     }`}
   />
 </button>
-
-        {/* 6b: Collapsible body (grid-rows trick se smooth open/close) */}
         <div
           id="bulk-order-panel"
           aria-hidden={!open}
@@ -116,14 +113,8 @@ const CorporateBulkOrderOnPage = () => {
             open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           }`}
         >
-          {/* "invisible" band hone par fields ko tab/keyboard se bhi block kar deta hai.
-              Form hamesha mounted rehta hai, isliye band karne par typed data nahi jaata. */}
           <div className={`overflow-hidden ${open ? "visible" : "invisible"}`}>
             <div className="border-t border-gray-200 bg-[#eeeeee] p-3 sm:p-5">
-              {/* How it works (3 equal cards) */}
-             
-
-              {/* Actual form (white card) */}
               <div className="mt-4 border border-gray-200 bg-white p-4 text-[#1c1f22] [color-scheme:light] sm:p-6 md:mt-6">
                 <BulkOrderForm />
               </div>
@@ -132,7 +123,6 @@ const CorporateBulkOrderOnPage = () => {
         </div>
       </div>
 
-      {/* STEP 7: Help bar (white card) */}
       <div className="mt-6 flex flex-col items-center justify-center gap-5 border border-gray-200 bg-white px-5 py-4 text-sm text-[#1c1f22] sm:flex-row md:mt-8">
         <p className="font-medium uppercase tracking-wide">
           Need help with a large or custom order?

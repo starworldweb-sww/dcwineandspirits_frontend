@@ -175,26 +175,43 @@ export const wishlistKeys = {
   addToWishlist: () => [...wishlistKeys.all, "add"],
   removeFromWishlist: () => [...wishlistKeys.all, "remove"],
 };
-
-// queryKeys/order.queryKeys.js
-
+ 
 export const orderKeys = {
   all: ["orders"],
   history: () => [...orderKeys.all, "history"],
   detail: (orderId) => [...orderKeys.all, "detail", orderId],
   track: (payload) => [...orderKeys.all, "track", payload],
+  bulkHistory: (page = 1, limit = 12) => [
+    ...orderKeys.all,
+    "bulk-history",
+    page,
+    limit,
+  ],
+  bulkDetail: (bulkOrderId) => [...orderKeys.all, "bulk-detail", bulkOrderId],
+  
 };
 
 export const blogKeys = {
   all: ["blog"],
-  posts: (params) => [...blogKeys.all, "posts", params], // params = { page, limit }
+  posts: (params) => [...blogKeys.all, "posts", params], 
   postBySlug: (slug) => [...blogKeys.all, "detail", slug],
   countViews: () => [...blogKeys.all, "count-views"],
   getCategory: () => [...blogKeys.all, "category"],
   search: (params) => [...blogKeys.all, "search", params],
-  postsByAuthor: (authorId, params) => [...blogKeys.all, "posts", "author", authorId, params],
-  recommendedPosts: (postId, params) => [...blogKeys.all, "posts", "recommended", postId, params],
-
+  postsByAuthor: (authorId, params) => [
+    ...blogKeys.all,
+    "posts",
+    "author",
+    authorId,
+    params,
+  ],
+  recommendedPosts: (postId, params) => [
+    ...blogKeys.all,
+    "posts",
+    "recommended",
+    postId,
+    params,
+  ],
 };
 
 export const manufacturerKeys = {
@@ -223,14 +240,10 @@ export const sitemapKeys = {
   information: () => [...sitemapKeys.lists(), "information"],
 };
 
-
-
 export const reviewKeys = {
   all: ["reviews"],
   byProduct: (productId) => ["reviews", "product", productId],
 };
-
-
 
 export const testimonialKeys = {
   all: ["testimonials"],
