@@ -51,7 +51,7 @@ const page = async ({ searchParams }) => {
   const currentPage = Number(pageParam) || Number(cookiePage) || 1;
 
   const queryClient = getQueryClient();
-  const initialData = await blogService.getAllPosts({ page: currentPage, limit: 10 });
+  const initialData = await blogService.getAllPosts({ page: currentPage, limit: 12 });
 
   await queryClient.prefetchQuery({
     queryKey: blogKeys.posts({ page: currentPage, limit: 10 }),

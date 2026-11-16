@@ -11,7 +11,7 @@ const NEXT_DAY_AREAS = [
   { name: 'NJ', slug: 'wine-basket-delivery-nj/' },
   { name: 'MD', slug: 'wine-basket-delivery-md/' },
   { name: 'CT', slug: 'wine-basket-delivery-ct/' },
-  { name: 'PA', slug: 'wine-basket-delivery-philadelphia-pa/' },
+  { name: 'PA', slug: 'wine-basket-delivery-pa/' },
   { name: 'MA', slug: 'wine-basket-delivery-ma/' },
 ]
 

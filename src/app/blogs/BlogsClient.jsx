@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_PRODUCTION_IMAGE_URL;
 
-const BLOGS_PER_PAGE = 10; 
+const BLOGS_PER_PAGE = 12; 
 
 
 const breadcrumbs = [

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { blogKeys } from "@/libs/queryKeys";       // jahan tumne blogKeys define kiya
-import { blogService } from "../../services/blogService"; // apna actual path daal dena
+import { blogKeys } from "@/libs/queryKeys";       
+import { blogService } from "../../services/blogService"; 
 import { getPostsAction } from "@/app/blogs/actions";
 
 export const useGetAllPosts = (params = {}, options = {}) => {
