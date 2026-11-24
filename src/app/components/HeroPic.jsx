@@ -59,14 +59,24 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
               Up to 15% off on bulk orders
             </p>
 
-            <div className="flex items-center gap-2 md:gap-3 pointer-events-auto mt-0.5">
+            <div className="flex items-center gap-1 md:gap-3 pointer-events-auto mt-0.5">
               <Link
                 href="/corporate/"
-                className=" sm:inline-block border border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
+                className=" sm:inline-block border border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-2 py-1 md:px-4 md:py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
               >
                 Corporate Enquiry
               </Link>
+
+
+              <Link
+                href="/thank-you-wine-gift-baskets/"
+                className=" sm:inline-block border bg-[#9c2f2f] border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
+              >
+                Thanksgiving Gifts
+              </Link>
             </div>
+
+            
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import ProductsHeader from "@/app/components/TittleAndBreadcrumb";
 import { SlidersHorizontal, X } from "lucide-react";
 import { p } from "motion/react-client";
 import MainDescription from "./MainDescription";
+import Snowfall from "@/app/components/ui/Snowfall";
 
 const flattenCategoryPages = (pages) => {
   if (!pages || !pages.length) return null;
@@ -72,6 +73,9 @@ const normalizeSearchToCategory = (raw) => {
 const ProductsDynamicClient = ({ slug }) => {
   const searchParams = useSearchParams();
   const search = searchParams.get("search");
+  const SNOW_SLUG = "christmas-wine-gift-baskets";
+const slugStr = [].concat(slug || "").join("/").replace(/^\/|\/$/g, "");
+const showSnow = slugStr === SNOW_SLUG && !search;
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
@@ -216,6 +220,8 @@ React.useEffect(() => {
 
   return (
     <>
+        {showSnow && <Snowfall />}
+
       <ProductsHeader
         categoryName={data?.meta_h1 || data?.name}
         breadcrumbs={data?.breadcrumbs}
