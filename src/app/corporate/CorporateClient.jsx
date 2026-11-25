@@ -28,6 +28,7 @@ import CorporateSupport from "./corporateComponent/CorporateSupport";
 import CorporateContactForm from "./corporateComponent/CorporateContactForm";
 import BulkOrderForm from "./corporateComponent/BulkOrderForm";
 import CorporateBulkOrderOnPage from "./corporateComponent/CorporateBulkOrderOnPage";
+import EsteemedClients from "./corporateComponent/EsteemedClients";
 
 const PRODUCT_TABS = ["Gift Baskets", "Wine", "Champagne"];
 
@@ -328,13 +329,15 @@ export default function CorporateClient() {
 <CorporateProducts/>
 <EngravedBottles/>
 <CorporateCategories/>
+
 <CorporateReasons />
 <CorporateBrands/>
 
 <LaptopComponent />
 
 <CorporateSupport/>
-<CorporateNow/>
+{/* <CorporateNow/> */}
+<EsteemedClients/>
 <CorporateContactForm/>
 <BulkSubmitPopUp
 open={showBulkPopup}

@@ -10,6 +10,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { p } from "motion/react-client";
 import MainDescription from "./MainDescription";
 import Snowfall from "@/app/components/ui/Snowfall";
+import SantaPeek from "@/app/components/ui/SantaPeek";
 
 const flattenCategoryPages = (pages) => {
   if (!pages || !pages.length) return null;
@@ -221,6 +222,7 @@ React.useEffect(() => {
   return (
     <>
         {showSnow && <Snowfall />}
+        {showSnow && <SantaPeek />}
 
       <ProductsHeader
         categoryName={data?.meta_h1 || data?.name}

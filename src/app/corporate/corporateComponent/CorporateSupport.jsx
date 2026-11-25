@@ -8,7 +8,7 @@ const PHONE_LINK = "+12024598489";
 
 const CorporateSupport = () => {
   return (
-    <section className="bg-white py-8 md:py-12 px-3 2xl:px-32 font-hind-madurai">
+    <section className="bg-white py-8 md:py-12 px-3 2xl:px-32 font-hind-madurai mb-4">
       <div className="max-w-[1000px] mx-auto grid md:grid-cols-[2fr_3fr] overflow-hidden rounded-xl bg-[#eeeeee] shadow-md">
         <div className="relative min-h-[180px] md:min-h-[280px]">
           <Image

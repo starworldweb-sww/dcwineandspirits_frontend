@@ -39,6 +39,9 @@ const CHRISTMAS_THEME_ENABLED = true;
 // The Christmas theme runs on these page slugs (removed trailing slash).
 const CHRISTMAS_SLUGS = ["holiday-gift-basket", "christmas-wine-gift-baskets"];
 
+// Santa cap shows only on this specific Christmas page slug
+const CHRISTMAS_CAP_SLUG = "christmas-wine-gift-baskets";
+
 // Christmas date window ("YYYY-MM-DD"). Set both to null to decide only by slug.
 const CHRISTMAS_START_DATE = "2026-11-01";
 const CHRISTMAS_END_DATE = "2026-12-31";
@@ -290,9 +293,13 @@ const ProductsHeader = ({ categoryName, breadcrumbs }) => {
     isThemeSlugPage(pathname, CHRISTMAS_SLUGS) &&
     isThemeActiveToday(CHRISTMAS_START_DATE, CHRISTMAS_END_DATE);
 
+  // Cap: only on the dedicated Christmas page slug during active Christmas window
+  const showSantaCap =
+    isChristmasTheme && isThemeSlugPage(pathname, CHRISTMAS_CAP_SLUG);
+
   const topStripClass = "bg-[#c28293]";
   const headerBgClass = "bg-[#eeeeee]";
-  const headerTopPaddingClass = isChristmasTheme ? "pt-6" : "pt-3";
+  const headerTopPaddingClass = showSantaCap ? "pt-6" : isChristmasTheme ? "pt-5" : "pt-3";
 
   const titleColorClass = isThanksgivingTheme
     ? "text-[#6b2410] font-bold [text-shadow:0_1px_0_rgba(255,255,255,0.8)]"
@@ -313,7 +320,7 @@ const ProductsHeader = ({ categoryName, breadcrumbs }) => {
         <h1
           className={`${sumana.className} block w-full max-w-[1400px] ${titleColorClass} text-[22px] md:text-[26px] leading-[31.2px] tracking-[1px] text-center capitalize transition-all duration-300 mb-2`}
         >
-          {isChristmasTheme ? (
+          {showSantaCap ? (
             <span className="relative inline-block">
               <SantaCap size={32} />
               {decodeHtml(categoryName)}
