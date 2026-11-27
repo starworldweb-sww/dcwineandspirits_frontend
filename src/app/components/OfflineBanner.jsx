@@ -24,7 +24,6 @@ export default function OfflineScreen() {
   const [mounted, setMounted] = useState(false);
   const [checking, setChecking] = useState(false);
   const [failed, setFailed] = useState(false);
-
   const hideTimer = useRef(null);
   const wasOffline = useRef(false);
   const retryBtn = useRef(null);

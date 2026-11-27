@@ -69,10 +69,10 @@ const HeroPic = ({ data, isLoading: propLoading, isError: propError }) => {
 
 
               <Link
-                href="/thank-you-wine-gift-baskets/"
+                href="/holiday-gift-basket/"
                 className=" sm:inline-block border bg-[#9c2f2f] border-[#f2f2f2] text-[#f2f2f2] hover:bg-[#f2f2f2] hover:text-black font-semibold rounded-full transition-colors px-4 py-1.5 text-xs md:px-6 md:py-2 md:text-sm lg:px-8 lg:py-3 lg:text-base"
               >
-                Thanksgiving Gifts
+                Holiday Gifts
               </Link>
             </div>
 

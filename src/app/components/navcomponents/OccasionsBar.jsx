@@ -19,26 +19,26 @@ import { GiPumpkinLantern } from "react-icons/gi";
 import { useOccasionMenu } from "@/app/api/hooks/category/useOccasionMenu";
 
 // Step 1: Keyword -> Icon mapping.
-// Naya occasion aaye toh bas yahan ek line add karo.
-// Order matter karta hai: pehle match hone wala keyword jeetega.
+// To support a new occasion, just add one line here.
+// Order matters: the first matching keyword wins.
 const ICON_RULES = [
   { keywords: ["thanksgiving"], icon: Leaf },
   { keywords: ["halloween", "pumpkin"], icon: GiPumpkinLantern },
   { keywords: ["christmas", "xmas", "holiday"], icon: TreePine },
   { keywords: ["graduation", "graduate"], icon: GraduationCap },
   { keywords: ["birthday"], icon: Cake },
-  { keywords: ["wedding"], icon: Gem }, // Wedding ke liye Gem icon
-  { keywords: ["corporate"], icon: Handshake }, // Corporate ke liye Handshake icon
+  { keywords: ["wedding"], icon: Gem },
+  { keywords: ["corporate"], icon: Handshake },
   { keywords: ["anniversary", "valentine", "love"], icon: Heart },
   { keywords: ["housewarming", "house-warming", "new-home", "home"], icon: Home },
   { keywords: ["cocktail", "party", "happy-hour"], icon: Martini },
   { keywords: ["new-year", "newyear"], icon: Sparkles },
 ];
 
-// Step 2: Koi keyword match na ho toh ye default icon dikhega
+// Step 2: Default icon when no keyword matches
 const DEFAULT_ICON = Gift;
 
-// Step 3: Label + slug se sahi icon dhundhne wala helper function
+// Step 3: Helper to find the right icon from label + slug
 const getIconForOccasion = (label = "", slug = "") => {
   const searchText = `${label} ${slug}`.toLowerCase();
 
@@ -47,15 +47,6 @@ const getIconForOccasion = (label = "", slug = "") => {
   );
 
   return matchedRule ? matchedRule.icon : DEFAULT_ICON;
-};
-
-// Step 4: Jis occasion ko highlight karna hai (bold + 2px bada text),
-// uska keyword yahan daalo. Label ya slug mein match hoga.
-const HIGHLIGHT_KEYWORDS = ["thanksgiving"];
-
-const isHighlighted = (label = "", slug = "") => {
-  const searchText = `${label} ${slug}`.toLowerCase();
-  return HIGHLIGHT_KEYWORDS.some((keyword) => searchText.includes(keyword));
 };
 
 const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
@@ -73,27 +64,18 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
 
   return (
     <div className="w-full bg-[#f2f2f2] border-y border-gray-200 px-3 2xl:px-32 hidden md:block">
-      {/* flex-nowrap + overflow-x-auto: items ek hi line mein, scrollbar hidden */}
+      {/* flex-nowrap + overflow-x-auto: items stay on one line, scrollbar hidden */}
       <div className="flex flex-nowrap items-center justify-between gap-x-3 overflow-x-auto py-2 2xl:py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {occasions.map((occasion, index) => {
-          const active = index === 0;
+        {occasions.map((occasion) => {
           const label = occasion.title || occasion.label || occasion.heading;
-          const apiSlug = occasion.seo_url || occasion.custom_url || occasion.href;
+          const slug = occasion.seo_url || occasion.custom_url || occasion.href;
 
-          // Har occasion API ka slug use karta hai
-          const slug = apiSlug;
+          // Icon is decided by name/slug
+          const Icon = getIconForOccasion(label, slug);
 
-          // Icon naam/slug se decide hota hai
-          const Icon = getIconForOccasion(label, apiSlug);
-
-          // Highlight hona chahiye ya nahi
-          const highlighted = isHighlighted(label, apiSlug);
-
-          // react-icons filled hote hain, isliye pumpkin pe strokeWidth nahi lagate
+          // react-icons are filled, so no strokeWidth for the pumpkin
           const strokeProps =
-            Icon === GiPumpkinLantern
-              ? {}
-              : { strokeWidth: active || highlighted ? 2 : 1.5 };
+            Icon === GiPumpkinLantern ? {} : { strokeWidth: 2 };
 
           return (
             <div
@@ -102,25 +84,9 @@ const OccasionBar = ({ data, isLoading: propLoading, isError: propError }) => {
             >
               <Link
                 href={`/${slug}`}
-                // Tailwind dynamic class build time pe nahi chalti,
-                // isliye dono size sets poore likhe hain (highlighted = normal + 2px)
-                className={`relative flex font-sumana items-center gap-1.5 font-serif tracking-wide uppercase whitespace-nowrap transition-colors ${
-                  highlighted
-                    ? "text-[14px] xl:text-[15px] 2xl:text-[16px] font-bold"
-                    : "text-[12px] xl:text-[13px] 2xl:text-[14px]"
-                } ${
-                  active
-                    ? "text-[#98022e] font-bold"
-                    : highlighted
-                    ? "text-[#98022e] hover:text-[#98022e]"
-                    : "text-[#2b2b2b] font-normal hover:text-[#98022e]"
-                }`}
+                className="relative flex font-sumana items-center gap-1.5 font-serif tracking-wide uppercase whitespace-nowrap transition-colors text-[14px] xl:text-[15px] 2xl:text-[16px] font-bold text-[#98022e]"
               >
-                <Icon
-                  size={highlighted ? 18 : 16}
-                  {...strokeProps}
-                  className="text-[#98022e]"
-                />
+                <Icon size={18} {...strokeProps} className="text-[#98022e]" />
                 {label}
               </Link>
             </div>
